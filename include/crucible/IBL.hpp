@@ -1,0 +1,4 @@
+
+namespace IBL {
+    void generateIBLmaps();
+}
