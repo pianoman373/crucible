@@ -268,11 +268,6 @@ namespace Renderer {
 		shadows = doShadows;
 		shadow_resolution = shadowResolution;
 
-		settings.fxaa = true;
-		settings.tonemap = true;
-		settings.vignette = true;
-		settings.bloom = true;
-
 
 		if (shadows) {
 			shadowBuffer0.setupShadow(shadow_resolution, shadow_resolution);
@@ -394,8 +389,19 @@ namespace Renderer {
 		skyboxShader.uniformMat4("projection", projection);
 		skyboxShader.uniformVec3("sun.direction", sun.direction);
 		skyboxShader.uniformVec3("sun.color", sun.color);
+		skyboxShader.uniformVec3("ambient", ambient);
+		deferredShader.uniformFloat("bloomStrength", settings.bloomStrength);
 
-		environment.bind(0);
+		if (environment.getID() != 0) {
+			environment.bind(0);
+			skyboxShader.uniformBool("isTextured", true);
+		}
+		else {
+			skyboxShader.uniformBool("isTextured", false);
+		}
+
+
+
 
 		cubemapMesh.render();
 		glDepthMask(GL_TRUE);
@@ -600,13 +606,21 @@ namespace Renderer {
         deferredShader.uniformInt("ssaoTex", 4);
         ssaoBuffer.getAttachment(0).bind(4);
 
-        deferredShader.uniformInt("irradiance", 5);
-        irradiance.bind(5);
-        deferredShader.uniformInt("prefilter", 6);
-        specular.bind(6);
-        deferredShader.uniformInt("brdf", 7);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, brdf);
+		deferredShader.uniformInt("irradiance", 5);
+		irradiance.bind(5);
+		deferredShader.uniformInt("prefilter", 6);
+		specular.bind(6);
+		deferredShader.uniformInt("brdf", 7);
+		glActiveTexture(GL_TEXTURE7);
+		glBindTexture(GL_TEXTURE_2D, brdf);
+
+        if (irradiance.getID() != 0 && specular.getID() != 0 && brdf != 0) {
+            deferredShader.uniformBool("doIBL", true);
+        }
+        else {
+            deferredShader.uniformBool("doIBL", false);
+        }
+
 
 		deferredShader.uniformVec3("cameraPos", vec3());
 		deferredShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
@@ -614,6 +628,7 @@ namespace Renderer {
 		deferredShader.uniformVec3("ambient", ambient);
 		deferredShader.uniformMat4("view", cam.getView());
 		deferredShader.uniformBool("ssaoEnabled", settings.ssao);
+		deferredShader.uniformFloat("bloomStrength", settings.bloomStrength);
 
 		deferredShader.uniformInt("pointLightCount", (int) pointLights.size());
 		for (unsigned int i = 0; i < pointLights.size(); i++) {

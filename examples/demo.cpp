@@ -17,11 +17,15 @@ int main(int argc, char *argv[]) {
 	Cubemap cubemap;
 	cubemap.loadEquirectangular("resources/canyon.hdr");
 
+	Renderer::ambient = vec3(1.2f, 0.2f, 0.3f);
+
 	Renderer::environment = cubemap;
 	Renderer::generateIBLmaps();
 
-	cubemap.setID(0);
-  	Renderer::environment = cubemap;
+    //Renderer::ambient = vec3();
+
+	//cubemap.setID(0);
+  	//Renderer::environment = cubemap;
 
 
 	Material ground;

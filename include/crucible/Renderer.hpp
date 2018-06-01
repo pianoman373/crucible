@@ -24,11 +24,12 @@ struct PointLight {
 };
 
 struct RendererSettings {
-	bool fxaa;
-	bool vignette;
-	bool tonemap;
-	bool bloom;
-	bool ssao;
+	bool fxaa = true;
+	bool vignette = true;
+	bool tonemap = true;
+	bool bloom = true;
+	float bloomStrength = 0.05f;
+	bool ssao = true;
 	float ssaoRadius = 10.0f;
 	int ssaoKernelSize = 64;
 };

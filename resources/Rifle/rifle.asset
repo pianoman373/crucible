@@ -9,6 +9,8 @@
             "normalTex": "Textures/normal.png",
             "normalTextured": true,
             "roughnessTex": "Textures/roughness.png",
+            "invertRoughness": false,
+            "roughnessMetallicAlpha": false,
             "roughnessTextured": true
         }
     ],

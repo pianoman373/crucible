@@ -139,6 +139,8 @@ void WorkspaceObject::open(std::string filename) {
         }
 
         mat.setUniformBool("roughnessTextured", jMaterial["roughnessTextured"]);
+        mat.setUniformBool("invertRoughness", jMaterial["invertRoughness"]);
+        mat.setUniformBool("roughnessMetallicAlpha", jMaterial["roughnessMetallicAlpha"]);
         if (jMaterial["roughnessTextured"]) {
             Texture tex = Renderer::getTexture(Path::getFullPath(workingDirectory, jMaterial["roughnessTex"]));
             mat.setUniformTexture("roughnessTex", tex, 1);
@@ -239,6 +241,8 @@ void WorkspaceObject::save(std::string path) {
         }
 
         jMaterial["roughnessTextured"] = roughnessTextured;
+        jMaterial["invertRoughness"] = *mat.material.getUniformBool("invertRoughness");
+        jMaterial["roughnessMetallicAlpha"] = *mat.material.getUniformBool("roughnessMetallicAlpha");
         if (roughnessTextured) {
             jMaterial["roughnessTex"] = Path::getRelativePath(path, mat.material.getUniformTexture("roughnessTex")->getFilepath());
         }

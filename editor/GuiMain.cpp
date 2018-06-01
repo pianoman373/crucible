@@ -96,12 +96,24 @@ void GuiMain::renderMaterial(WorkspaceMaterial *mat) {
 
     ImGui::Separator();
 
-    if (ImGuiMaterialEditBool("Roughness Textured", "roughnessTextured", &mat->material)) {
-        ImGuiMaterialEditTexture("Roughness", "roughnessTex", &mat->material, 1);
+    ImGuiMaterialEditBool("Invert Roughness", "invertRoughness", &mat->material);
+
+    if (*mat->material.getUniformBool("metallicTextured")) {
+        ImGuiMaterialEditBool("Use Metallic Alpha", "roughnessMetallicAlpha", &mat->material);
     }
     else {
-        ImGuiMaterialEditFloat("Roughness", "roughnessColor", &mat->material, 0.0f, 1.0f);
+        mat->material.setUniformBool("roughnessMetallicAlpha", false); // if metallicTextured gets turned off we need to turn this off as well
     }
+
+    if (!*mat->material.getUniformBool("roughnessMetallicAlpha")) { //if "use metallic alpha" is enabled we don't need these options
+        if (ImGuiMaterialEditBool("Roughness Textured", "roughnessTextured", &mat->material)) {
+            ImGuiMaterialEditTexture("Roughness", "roughnessTex", &mat->material, 1);
+        }
+        else {
+            ImGuiMaterialEditFloat("Roughness", "roughnessColor", &mat->material, 0.0f, 1.0f);
+        }
+    }
+
 
     ImGui::Separator();
 
@@ -228,6 +240,7 @@ void GuiMain::render() {
             ImGui::Text("graphics n stuff");
             ImGui::Checkbox("fxaa", &Renderer::settings.fxaa);
             ImGui::Checkbox("bloom", &Renderer::settings.bloom);
+            ImGui::DragFloat("bloomStrength", &Renderer::settings.bloomStrength, 0.01f, 0.0f, 1.0f);
             ImGui::Checkbox("ssao", &Renderer::settings.ssao);
             ImGui::Separator();
             ImGui::Text("Environment map");

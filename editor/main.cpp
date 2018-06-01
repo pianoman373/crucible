@@ -70,7 +70,7 @@ int main() {
     Renderer::environment = cubemap;
     Renderer::generateIBLmaps();
     cubemap.setID(0);
-    Renderer::environment = cubemap;
+    //Renderer::environment = cubemap;
 
     Renderer::setSun({ vec3(1.05f, -6.8f, -1.3f), vec3(10.0f, 9.5f, 9.0f) });
 

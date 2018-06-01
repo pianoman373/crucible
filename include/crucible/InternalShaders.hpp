@@ -216,6 +216,9 @@ uniform bool aoTextured;
 uniform sampler2D emissionTex;
 uniform bool emissionTextured;
 
+uniform bool invertRoughness;
+uniform bool roughnessMetallicAlpha;
+
 void main()
 {
     // store the fragment position vector in the first gbuffer texture
@@ -237,7 +240,7 @@ void main()
     }
 
     if (roughnessTextured) {
-        roughness = 1-texture(roughnessTex, fTexCoord).r;
+        roughness = texture(roughnessTex, fTexCoord).r;
     }
     else {
         roughness = roughnessColor;
@@ -245,7 +248,10 @@ void main()
 
     if (metallicTextured) {
         metallic = texture(metallicTex, fTexCoord).r;
-        roughness = texture(metallicTex, fTexCoord).a;
+
+        if (roughnessMetallicAlpha) {
+            roughness = texture(metallicTex, fTexCoord).a;
+        }
     }
     else {
         metallic = metallicColor;
@@ -272,6 +278,10 @@ void main()
     }
     else {
         emission = 0.0;
+    }
+
+    if (invertRoughness) {
+        roughness = 1.0-roughness;
     }
 
     if (albedo.a > 0.5) {
@@ -385,6 +395,7 @@ uniform sampler2D ssaoTex;
 
 
 uniform bool ssaoEnabled;
+uniform bool doIBL;
 
 uniform sampler2DShadow shadowTextures[4];
 uniform vec3 ambient;
@@ -396,6 +407,8 @@ uniform PointLight[MAX_POINT_LIGHTS] pointLights;
 
 uniform mat4 lightSpaceMatrix[4];
 uniform mat4 view;
+
+uniform float bloomStrength;
 
 uniform DirectionalLight sun;
 
@@ -509,19 +522,26 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
 
-	vec3 irradianceColor = texture(irradiance, normalize(mat3(inverse(view)) * N)).rgb * 1.5;
+	vec3 irradianceColor = texture(irradiance, normalize(mat3(inverse(view)) * N)).rgb;
 	vec3 diffuse = irradianceColor * albedo;
 
 	const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(prefilter, normalize(mat3(inverse(view)) * R),  roughness * MAX_REFLECTION_LOD).rgb * 1.5;
+    vec3 prefilteredColor = textureLod(prefilter, normalize(mat3(inverse(view)) * R),  roughness * MAX_REFLECTION_LOD).rgb;
 	vec2 brdfColor = texture(brdf, vec2(max(dot(N, V), 0.0), roughness)).rg;
 
 	vec3 specular = prefilteredColor * (F * brdfColor.x + brdfColor.y);
 
-
-	vec3 ambientColor = (kD * diffuse + specular);
+    vec3 ambientColor;
+    if (doIBL) {
+	    ambientColor = (kD * diffuse + specular);
+    }
+    else {
+        ambientColor = ambient * albedo;
+    }
 
     vec3 color = (ambientColor + Lo) * ao;
+    //color = ambient * ao;
+
 
     //color = color / (color + vec3(1.0));
     //color = pow(color, vec3(1.0/2.2));
@@ -556,7 +576,7 @@ vec3 postProcess(vec2 texCoord) {
     else
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 
-    BrightColor = vec4((0.05 * light) + (emission * Albedo), 1.0);
+    BrightColor = vec4((bloomStrength * light) + (emission * Albedo), 1.0);
 
     outColor1 = BrightColor; // TODO: very hacky
 
@@ -765,6 +785,7 @@ out vec3 fPosition;
 uniform mat4 projection;
 uniform mat4 view;
 
+
 void main()
 {
     fPosition = vPosition;
@@ -784,13 +805,20 @@ layout (location = 1) out vec4 outColor1;
 in vec3 fPosition;
 
 uniform samplerCube environmentMap;
+uniform vec3 ambient;
+uniform bool isTextured;
+uniform float12 bloomStrength;
 
 void main()
 {
-    vec3 envColor = texture(environmentMap, fPosition).rgb;
+    vec3 envColor;
+    if (isTextured)
+        envColor = texture(environmentMap, fPosition).rgb;
+    else
+        envColor = ambient;
 
     outColor = vec4(envColor, 1.0);
-    outColor1 = vec4(envColor * 0.05, 1.0);
+    outColor1 = vec4(envColor * bloomStrength, 1.0);
 }
 )";
 
