@@ -564,10 +564,6 @@ namespace Renderer {
 		HDRbuffer.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// render the skybox
-		// -----------------
-		renderSkybox(cam.getView(), cam.getProjection());
-
 		// render any sprites
 		// ------------------
 		glDepthMask(GL_FALSE);
@@ -713,6 +709,12 @@ namespace Renderer {
 		framebufferMesh.render();
 
 		Profiler::end();
+
+		// render the skybox
+		// -----------------
+		renderSkybox(cam.getView(), cam.getProjection());
+
+
 
 
 		Profiler::begin("post processing");
