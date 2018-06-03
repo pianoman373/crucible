@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 	Renderer::settings.vignette = true;
 	Renderer::settings.bloom = true;
 	Renderer::settings.ssao = true;
-	Renderer::settings.fxaa = false;
+	Renderer::settings.fxaa = true;
 	Shader s;
 	s.loadFile("resources/skybox.vsh", "resources/skybox.fsh");
 	//Renderer::setSkyboxShader(s);
@@ -57,22 +57,21 @@ int main(int argc, char *argv[]) {
         Util::updateSpaceCamera(cam);
 
 
-
         Renderer::render(&model, Transform(vec3(0.0f, 5.0f, 0.0f), vec3(), vec3(1.0f)), AABB());
-				Renderer::render(&cube, &ground, Transform(vec3(), vec3(), vec3(20.0f, 1.0f, 20.0f)), AABB()); //ground
+        Renderer::render(&cube, &ground, Transform(vec3(), vec3(), vec3(20.0f, 1.0f, 20.0f)), AABB()); //ground
 
-				Renderer::render(&cube, &ground, Transform(vec3(0.0f, -20.0f, 0.0f), vec3(), vec3(2000.0f, 1.0f, 2000.0f)), AABB());
+        Renderer::render(&cube, &ground, Transform(vec3(0.0f, -20.0f, 0.0f), vec3(), vec3(2000.0f, 1.0f, 2000.0f)), AABB());
 
-				Renderer::render(&sphere, &model.materials[0], Transform(vec3(0.0f, 1.5f, 0.0f), vec3(), vec3(1.0f)), AABB());
+        Renderer::render(&sphere, &model.materials[0], Transform(vec3(0.0f, 1.5f, 0.0f), vec3(), vec3(1.0f)), AABB());
 
-				//walls
-				Renderer::render(&cube, &ground, Transform(vec3(0.0f, 1.0f, 9.5f), vec3(), vec3(20.0f, 1.0f, 1.0f)), AABB());
-				Renderer::render(&cube, &ground, Transform(vec3(0.0f, 1.0f, -9.5f), vec3(), vec3(20.0f, 1.0f, 1.0f)), AABB());
+        //walls
+        Renderer::render(&cube, &ground, Transform(vec3(0.0f, 1.0f, 9.5f), vec3(), vec3(20.0f, 1.0f, 1.0f)), AABB());
+        Renderer::render(&cube, &ground, Transform(vec3(0.0f, 1.0f, -9.5f), vec3(), vec3(20.0f, 1.0f, 1.0f)), AABB());
 
-				Renderer::render(&cube, &ground, Transform(vec3(9.5f, 1.0f, 0.0f), vec3(), vec3(1.0f, 1.0f, 18.0f)), AABB());
-				Renderer::render(&cube, &ground, Transform(vec3(-9.5f, 1.0f, 0.0f), vec3(), vec3(1.0f, 1.0f, 18.0f)), AABB());
+        Renderer::render(&cube, &ground, Transform(vec3(9.5f, 1.0f, 0.0f), vec3(), vec3(1.0f, 1.0f, 18.0f)), AABB());
+        Renderer::render(&cube, &ground, Transform(vec3(-9.5f, 1.0f, 0.0f), vec3(), vec3(1.0f, 1.0f, 18.0f)), AABB());
 
-				Renderer::debug.renderDebugAABB(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f));
+        Renderer::debug.renderDebugAABB(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f));
 
         Renderer::flush(cam);
 

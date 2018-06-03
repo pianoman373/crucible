@@ -15,6 +15,7 @@
 #include <crucible/Input.hpp>
 #include <crucible/IBL.hpp>
 #include <crucible/DebugRenderer.hpp>
+#include <crucible/Profiler.hpp>
 
 #include <imgui.h>
 #include <stack>
@@ -125,22 +126,32 @@ static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f)
 }
 // ------------------------------------------------------------------------
 static void renderDebugGui() {
-	ImGui::Image(ImTextureID((long long) ssaoBuffer.getAttachment(0).getID()), ImVec2(128, 128), ImVec2(0, 1),
+    float aspect = (float)resolution.x / (float)resolution.y;
+
+    ImGui::Begin("frame buffers");
+	ImGui::Image(ImTextureID((long long) ssaoBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(0).getID()), ImVec2(128, 128), ImVec2(0, 1),
+    ImGui::SameLine(300);
+	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(1).getID()), ImVec2(128, 128), ImVec2(0, 1),
+	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(2).getID()), ImVec2(128, 128), ImVec2(0, 1),
+    ImGui::SameLine(300);
+	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(2).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(3).getID()), ImVec2(128, 128), ImVec2(0, 1),
+
+
+	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(3).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(0).getID()), ImVec2(128, 128), ImVec2(0, 1),
+    ImGui::SameLine(300);
+	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(1).getID()), ImVec2(128, 128), ImVec2(0, 1),
+	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) HDRbuffer2.getAttachment(0).getID()), ImVec2(128, 128), ImVec2(0, 1),
+    ImGui::SameLine(300);
+	ImGui::Image(ImTextureID((long long) HDRbuffer2.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+	ImGui::End();
 
 	bool p_open = false;
 	if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImVec2(0, 0), 0.3f,
@@ -150,6 +161,22 @@ static void renderDebugGui() {
 					ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
+
+	ImGui::SetNextWindowPos(ImVec2(Window::getWindowSize().x - 300, 0));
+    if (ImGui::Begin("Profiler", &p_open, ImVec2(300, 0), 0.3f,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings)) {
+        ImGui::Text("Profiler");
+        ImGui::Separator();
+
+        auto times = Profiler::getValues();
+
+        for (auto &i : times) {
+            ImGui::Text("%s = %.1fms", i.first.c_str(), i.second);
+        }
+
+        ImGui::End();
+    }
 }
 // ------------------------------------------------------------------------
 static void doBloom() {
@@ -451,6 +478,10 @@ namespace Renderer {
 
 	// ------------------------------------------------------------------------
 	void flush(Camera cam) {
+	    Profiler::begin("flush time");
+
+
+	    Profiler::begin("shadow pass");
 		glStencilMask(0x00);
 
 		mat4 lightSpaceMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
@@ -473,7 +504,10 @@ namespace Renderer {
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
+		Profiler::end();
 
+
+		Profiler::begin("object rendering");
 		// render objects in scene into g-buffer
 		// -------------------------------------
 		gBuffer.bind();
@@ -561,31 +595,37 @@ namespace Renderer {
 		}
 		glDepthMask(GL_TRUE);
 
-		// render the g-buffers for SSAO
-		// ---------------------------------------------
-		ssaoBuffer.bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		ssaoShader.bind();
+		if (settings.ssao) {
+            // render the g-buffers for SSAO
+            // ---------------------------------------------
+            ssaoBuffer.bind();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            ssaoShader.bind();
 
-		ssaoShader.uniformInt("gPosition", 0);
-		gBuffer.getAttachment(0).bind(0);
+            ssaoShader.uniformInt("gPosition", 0);
+            gBuffer.getAttachment(0).bind(0);
 
-		ssaoShader.uniformInt("gNormal", 1);
-		gBuffer.getAttachment(1).bind(1);
+            ssaoShader.uniformInt("gNormal", 1);
+            gBuffer.getAttachment(1).bind(1);
 
-		ssaoShader.uniformInt("texNoise", 2);
-		noiseTex.bind(2);
+            ssaoShader.uniformInt("texNoise", 2);
+            noiseTex.bind(2);
 
-		ssaoShader.uniformMat4("projection", cam.getProjection());
-		ssaoShader.uniformFloat("radius", settings.ssaoRadius);
-		ssaoShader.uniformInt("kernelSize", settings.ssaoKernelSize);
+            ssaoShader.uniformMat4("projection", cam.getProjection());
+            ssaoShader.uniformFloat("radius", settings.ssaoRadius);
+            ssaoShader.uniformInt("kernelSize", settings.ssaoKernelSize);
 
-		for (int i = 0; i < settings.ssaoKernelSize; i++) {
-			ssaoShader.uniformVec3(std::string("samples[") + std::to_string(i) + std::string("]"), ssaoKernel[i]);
+            for (int i = 0; i < settings.ssaoKernelSize; i++) {
+                ssaoShader.uniformVec3(std::string("samples[") + std::to_string(i) + std::string("]"), ssaoKernel[i]);
+            }
+            framebufferMesh.render();
 		}
-		framebufferMesh.render();
 
 
+		Profiler::end();
+
+
+		Profiler::begin("deferred pass");
 		HDRbuffer.bind();
 		// render the g-buffers with the deferred shader
 		// ---------------------------------------------
@@ -672,7 +712,10 @@ namespace Renderer {
 		}
 		framebufferMesh.render();
 
+		Profiler::end();
 
+
+		Profiler::begin("post processing");
 		/// bloom
 		// ---------------
 
@@ -729,6 +772,8 @@ namespace Renderer {
 		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
+		Profiler::end();
+
 
 		// render object outlines
 		// ----------------------
@@ -770,6 +815,8 @@ namespace Renderer {
 
 		renderQueue.clear();
 		renderQueueOutline.clear();
+
+		Profiler::end();
 	}
 
 	// ------------------------------------------------------------------------

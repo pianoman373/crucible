@@ -807,7 +807,7 @@ in vec3 fPosition;
 uniform samplerCube environmentMap;
 uniform vec3 ambient;
 uniform bool isTextured;
-uniform float12 bloomStrength;
+uniform float bloomStrength;
 
 void main()
 {

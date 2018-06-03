@@ -31,7 +31,7 @@ struct RendererSettings {
 	float bloomStrength = 0.05f;
 	bool ssao = true;
 	float ssaoRadius = 10.0f;
-	int ssaoKernelSize = 64;
+	int ssaoKernelSize = 8;
 };
 
 namespace Renderer {
