@@ -327,6 +327,7 @@ namespace Renderer {
 		Primitives::framebuffer(framebufferMesh);
 		Primitives::skybox(cubemapMesh);
 
+		glEnable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_STENCIL_TEST);

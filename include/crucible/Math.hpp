@@ -399,6 +399,23 @@ inline vector4<T> operator/(T lhs, vector4<T> rhs) {
 
 
 
+//--------equality---------//
+
+template <typename T>
+inline bool operator==(vector2<T> lhs, vector2<T> rhs) {
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+template <typename T>
+inline bool operator==(vector3<T> lhs, vector3<T> rhs) {
+    return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
+}
+
+template <typename T>
+inline bool operator==(vector4<T> lhs, vector4<T> rhs) {
+    return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
+}
+
 
 //--------negate--------//
 
