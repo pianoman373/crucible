@@ -640,6 +640,7 @@ vec3 postProcess(vec2 texCoord) {
     else {
         color = texture(texture3, texCoord).rgb;
     }
+
     vec3 grayscale = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
     vec2 texelSize = 1.0 / textureSize(texture0, 0).xy;
 
@@ -749,6 +750,8 @@ vec3 postProcess(vec2 texCoord) {
             result += texture(texture0, texCoord - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
         }
     }
+
+    result = clamp(result, 0, 100);
 
     return result;
 }
