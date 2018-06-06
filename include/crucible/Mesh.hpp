@@ -43,4 +43,6 @@ public:
     void render(int mode);
 
     void render();
+
+    void destroy();
 };

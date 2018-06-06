@@ -9,6 +9,7 @@ class DebugRenderer {
 private:
     MeshFactory debugRendererFactory;
     Shader debugShader;
+    Mesh debugRendererMesh;
 
 public:
     void init();

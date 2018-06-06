@@ -34,6 +34,8 @@ Mesh::Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<v
 }
 
 void Mesh::generate() {
+
+
     if (!VBO) {
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -73,7 +75,10 @@ void Mesh::generate() {
 		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
 		if (indices.size() > 0)
 		{
-			glGenBuffers(1, &EBO);
+		    if (!EBO)
+			    glGenBuffers(1, &EBO);
+
+
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 			length = indices.size();
@@ -278,4 +283,11 @@ std::string Mesh::tostring() {
     }
 
     return buf.str();
+}
+
+void Mesh::destroy() {
+    clear();
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 }

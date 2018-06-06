@@ -38,8 +38,6 @@ void DebugRenderer::renderDebugAABB(AABB aabb, vec3 color) {
 }
 
 void DebugRenderer::flush(Camera cam) {
-    Mesh debugRendererMesh;
-
     debugRendererFactory.toMesh(debugRendererMesh);
     debugShader.bind();
     debugShader.uniformMat4("view", cam.getView());
