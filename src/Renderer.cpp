@@ -56,6 +56,7 @@ static Framebuffer HDRbuffer;
 static Framebuffer HDRbuffer2;
 static Framebuffer gBuffer;
 static Framebuffer ssaoBuffer;
+static Framebuffer ssaoBufferBlur;
 static Framebuffer bloomBuffer0;
 static Framebuffer bloomBuffer1;
 static Framebuffer bloomBuffer2;
@@ -71,6 +72,7 @@ static Shader tonemapShader;
 static Shader fxaaShader;
 static Shader gaussianBlurShader;
 static Shader ssaoShader;
+static Shader ssaoBlurShader;
 
 static Mesh skyboxMesh;
 static Mesh crosshairMesh;
@@ -323,6 +325,7 @@ namespace Renderer {
 		deferredShader.loadPostProcessing(InternalShaders::deferred_glsl);
 		gaussianBlurShader.loadPostProcessing(InternalShaders::gaussianBlur_glsl);
 		ssaoShader.loadPostProcessing(InternalShaders::ssao_glsl);
+		ssaoBlurShader.loadPostProcessing(InternalShaders::ssaoBlur_glsl);
 
 		skyboxShader = cubemapShader;
 
@@ -358,6 +361,9 @@ namespace Renderer {
 
 		ssaoBuffer.setup(resolution.x, resolution.y);
 		ssaoBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
+
+        ssaoBufferBlur.setup(resolution.x, resolution.y);
+        ssaoBufferBlur.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
 
 		//bloom framebuffers
 		bloomBuffer0.setup(resolution.x/2, resolution.y/2);
@@ -632,6 +638,11 @@ namespace Renderer {
                 ssaoShader.uniformVec3(std::string("samples[") + std::to_string(i) + std::string("]"), ssaoKernel[i]);
             }
             framebufferMesh.render();
+
+            ssaoBufferBlur.bind();
+            ssaoBlurShader.bind();
+            ssaoBuffer.getAttachment(0).bind();
+            framebufferMesh.render();
 		}
 
 
@@ -657,7 +668,7 @@ namespace Renderer {
 		gBuffer.getAttachment(3).bind(3);
 
         deferredShader.uniformInt("ssaoTex", 4);
-        ssaoBuffer.getAttachment(0).bind(4);
+        ssaoBufferBlur.getAttachment(0).bind(4);
 
 		deferredShader.uniformInt("irradiance", 5);
 		irradiance.bind(5);
