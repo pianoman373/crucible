@@ -533,7 +533,6 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
         // add to outgoing radiance Lo
         float NdotL = max(dot(N, L), 0.0);
         Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;
-        //Lo += kD;
 	}
 
 	vec3 F        = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
@@ -559,13 +558,8 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
     }
 
     vec3 color = (ambientColor + Lo) * ao;
-    //color = ambient * ao;
 
-
-    //color = color / (color + vec3(1.0));
-    //color = pow(color, vec3(1.0/2.2));
-
-    return Lo;
+    return color;
 }
 
 vec3 postProcess(vec2 texCoord) {
