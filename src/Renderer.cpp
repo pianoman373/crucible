@@ -105,7 +105,7 @@ static Frustum shadowFrustum(float radius, Camera &cam, float depth) {
 	return shadowFrustum;
 }
 // ------------------------------------------------------------------------
-static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f) {
+static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f, bool doFrustumCulling) {
 	glViewport(0, 0, fbuffer.getWidth(), fbuffer.getHeight());
 	fbuffer.bind();
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -113,15 +113,19 @@ static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f)
 
 	for (RenderCall c : renderQueue) {
 
-		if (f.isBoxInside(c.aabb) || true) {
-
-			ShadowShader.bind();
-			ShadowShader.uniformMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-			ShadowShader.uniformMat4("model", c.transform.getMatrix());
-
-			c.mesh->render();
+		if (doFrustumCulling) {
+			if (!f.isBoxInside(c.aabb)) {
+				continue;
+			}
 		}
+
+
+		ShadowShader.bind();
+		ShadowShader.uniformMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		ShadowShader.uniformMat4("model", c.transform.getMatrix());
+
+		c.mesh->render();
 	}
 }
 // ------------------------------------------------------------------------
@@ -477,8 +481,13 @@ namespace Renderer {
 		outlineEnabled = false;
 	}
 
-	// ------------------------------------------------------------------------
 	void flush(Camera cam) {
+		Frustum f;
+		flush(cam, f, false);
+	}
+
+	// ------------------------------------------------------------------------
+	void flush(Camera cam, Frustum f, bool doFrustumCulling) {
 	    Profiler::begin("flush time");
 
 
@@ -497,10 +506,12 @@ namespace Renderer {
 
 		// render scene multiple times to shadow buffers
 		if (shadows) {
-			renderShadow(shadowBuffer0, lightSpaceMatrix0, shadowFrustum0);
-			renderShadow(shadowBuffer1, lightSpaceMatrix1, shadowFrustum1);
-			renderShadow(shadowBuffer2, lightSpaceMatrix2, shadowFrustum2);
-			renderShadow(shadowBuffer3, lightSpaceMatrix3, shadowFrustum3);
+			glDisable(GL_CULL_FACE);
+			renderShadow(shadowBuffer0, lightSpaceMatrix0, shadowFrustum0, doFrustumCulling);
+			renderShadow(shadowBuffer1, lightSpaceMatrix1, shadowFrustum1, doFrustumCulling);
+			renderShadow(shadowBuffer2, lightSpaceMatrix2, shadowFrustum2, doFrustumCulling);
+			renderShadow(shadowBuffer3, lightSpaceMatrix3, shadowFrustum3, doFrustumCulling);
+			glEnable(GL_CULL_FACE);
 		}
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -521,6 +532,11 @@ namespace Renderer {
 		glStencilMask(0x00);
 
 		for (RenderCall call : renderQueue) {
+			if (doFrustumCulling) {
+				if (!f.isBoxInside(call.aabb)) {
+					continue;
+				}
+			}
 
 			Shader s = call.material->getShader();
 

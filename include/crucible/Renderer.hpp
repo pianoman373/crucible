@@ -5,6 +5,7 @@
 #include <crucible/AABB.hpp>
 #include <crucible/Camera.hpp>
 #include <crucible/DebugRenderer.hpp>
+#include <crucible/Frustum.hpp>
 
 #include <vector>
 
@@ -89,12 +90,15 @@ namespace Renderer {
       */
      void disableOutline();
 
-    /**
+	void flush(Camera cam);
+
+
+	/**
      * In order to allow render to be called from anywhere at any time, render calls
      * are put in a buffer to be drawn later. Calling flush renders them all at once and
      * clears the buffer for the next time.
      */
-    void flush(Camera cam);
+    void flush(Camera cam, Frustum f, bool doFrustumCulling=true);
 
     void setSkyboxShader(Shader s);
 
