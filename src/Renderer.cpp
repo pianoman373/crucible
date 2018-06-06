@@ -23,7 +23,7 @@
 #include <random>
 
 struct RenderCall {
-	Mesh *mesh;
+	IRenderable *mesh;
 	Material *material;
 	Transform transform;
 	AABB aabb;
@@ -446,7 +446,7 @@ namespace Renderer {
 	}
 
 	// ------------------------------------------------------------------------
-	void render(Mesh *mesh, Material *material, Transform transform, AABB aabb) {
+	void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb) {
 		RenderCall call;
 		call.mesh = mesh;
 		call.material = material;

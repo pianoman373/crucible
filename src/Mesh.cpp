@@ -123,23 +123,19 @@ void Mesh::clear() {
     indices.clear();
 }
 
-void Mesh::render(int mode) {
+void Mesh::render() {
     glBindVertexArray(VAO);
 
     if (EBO) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-        glDrawElements(mode, length, GL_UNSIGNED_INT, 0);
+        glDrawElements(renderMode, length, GL_UNSIGNED_INT, 0);
     }
     else {
-        glDrawArrays(mode, 0, length);
+        glDrawArrays(renderMode, 0, length);
     }
 
     glBindVertexArray(0);
-}
-
-void Mesh::render() {
-    render(renderMode);
 }
 
 // https://stackoverflow.com/questions/236129/the-most-elegant-way-to-iterate-the-words-of-a-string

@@ -4,9 +4,10 @@
 #include <string>
 
 #include <crucible/Math.hpp>
+#include <crucible/IRenderable.hpp>
 
 
-class Mesh {
+class Mesh : public IRenderable {
 private:
     unsigned int VAO = 0;
     unsigned int VBO = 0;
@@ -39,8 +40,6 @@ public:
     void generate();
 
     void clear();
-
-    void render(int mode);
 
     void render();
 

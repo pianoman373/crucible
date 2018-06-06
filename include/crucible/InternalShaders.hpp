@@ -430,7 +430,7 @@ uniform float bloomStrength;
 
 uniform DirectionalLight sun;
 
-const float PI = 3.141592;
+const float PI = 3.14159265359;
 
 float inShadow(vec4 shadowspace) {
     float bias = 0.001;
@@ -520,7 +520,7 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
         // cook-torrance brdf
         float NDF = DistributionGGX(N, H, roughness);
         float G   = GeometrySmith(N, V, L, roughness);
-        vec3 F    = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, roughness);
+        vec3 F    = fresnelSchlickRoughness(clamp(dot(H, V), 0.0, 1.0), F0, roughness);
 
         vec3 kS = F;
         vec3 kD = vec3(1.0) - kS;
@@ -533,6 +533,7 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
         // add to outgoing radiance Lo
         float NdotL = max(dot(N, L), 0.0);
         Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;
+        //Lo += kD;
 	}
 
 	vec3 F        = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
@@ -564,7 +565,7 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
     //color = color / (color + vec3(1.0));
     //color = pow(color, vec3(1.0/2.2));
 
-    return color;
+    return Lo;
 }
 
 vec3 postProcess(vec2 texCoord) {

@@ -42,6 +42,7 @@ void DebugRenderer::flush(Camera cam) {
     debugShader.bind();
     debugShader.uniformMat4("view", cam.getView());
     debugShader.uniformMat4("projection", cam.getProjection());
-    debugRendererMesh.render(GL_LINES);
+    debugRendererMesh.renderMode = GL_LINES;
+    debugRendererMesh.render();
     debugRendererFactory.clear();
 }

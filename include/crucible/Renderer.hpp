@@ -6,6 +6,7 @@
 #include <crucible/Camera.hpp>
 #include <crucible/DebugRenderer.hpp>
 #include <crucible/Frustum.hpp>
+#include <crucible/IRenderable.hpp>
 
 #include <vector>
 
@@ -74,7 +75,7 @@ namespace Renderer {
     /**
      * General purpose abstraction of all render calls to an internal renderer.
      */
-    void render(Mesh *mesh, Material *material, Transform transform, AABB aabb);
+    void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb);
 
     void render(Model *model, Transform transform, AABB aabb);
 
