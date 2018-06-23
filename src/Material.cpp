@@ -15,6 +15,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, float metallic) {
     setUniformBool("metallicTextured", false);
     setUniformFloat("metallicColor", metallic);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, float roughness, float metallic) {
@@ -25,6 +26,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, float metallic) {
     setUniformBool("metallicTextured", false);
     setUniformFloat("metallicColor", metallic);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic) {
@@ -35,6 +37,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic)
     setUniformBool("metallicTextured", false);
     setUniformFloat("metallicColor", metallic);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic) {
@@ -45,6 +48,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic)
     setUniformBool("metallicTextured", true);
     setUniformTexture("metallicTex", metallic, 2);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metallic) {
@@ -55,6 +59,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metalli
     setUniformBool("metallicTextured", true);
     setUniformTexture("metallicTex", metallic, 2);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic) {
@@ -65,6 +70,7 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic) {
     setUniformBool("metallicTextured", false);
     setUniformFloat("metallicColor", metallic);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic) {
@@ -75,6 +81,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic) {
     setUniformBool("metallicTextured", true);
     setUniformTexture("metallicTex", metallic, 2);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic) {
@@ -85,6 +92,7 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic) 
     setUniformBool("metallicTextured", true);
     setUniformTexture("metallicTex", metallic, 2);
     setUniformBool("normalTextured", false);
+    setUniformFloat("emission", 0.0f);
 }
 
 //<-----===== normal =====----->//
@@ -98,6 +106,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, float metallic, Text
 	setUniformFloat("metallicColor", metallic);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, float roughness, float metallic, Texture normal) {
@@ -109,6 +118,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, float metallic, T
 	setUniformFloat("metallicColor", metallic);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic, Texture normal) {
@@ -120,6 +130,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic,
 	setUniformFloat("metallicColor", metallic);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic, Texture normal) {
@@ -131,6 +142,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic,
 	setUniformTexture("metallicTex", metallic, 2);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metallic, Texture normal) {
@@ -142,6 +154,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metalli
 	setUniformTexture("metallicTex", metallic, 2);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic, Texture normal) {
@@ -153,6 +166,7 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic, Te
 	setUniformFloat("metallicColor", metallic);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic, Texture normal) {
@@ -164,6 +178,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic, Te
 	setUniformTexture("metallicTex", metallic, 2);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic, Texture normal) {
@@ -175,6 +190,7 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic, 
 	setUniformTexture("metallicTex", metallic, 2);
 	setUniformTexture("normalTex", normal, 3);
 	setUniformBool("normalTextured", true);
+    setUniformFloat("emission", 0.0f);
 }
 
 void Material::setUniformTexture(std::string name, Texture value, unsigned int unit) {

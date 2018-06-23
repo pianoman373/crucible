@@ -1,5 +1,4 @@
 #include <crucible/crucible.hpp>
-#include <SFML/Audio.hpp>
 
 int main(int argc, char *argv[]) {
     Window::create({1000, 800}, "test", false);

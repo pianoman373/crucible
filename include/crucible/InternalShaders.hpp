@@ -2,7 +2,7 @@
 
 namespace InternalShaders {
 
-static const std::string debug_vsh = R"(
+    static const std::string debug_vsh = R"(
 #version 330 core
 
 layout (location = 0) in vec3 vPosition;
@@ -21,7 +21,7 @@ void main() {
 }
 )";
 
-static const std::string debug_fsh = R"(
+    static const std::string debug_fsh = R"(
 #version 330 core
 
 uniform mat4 view;
@@ -36,7 +36,7 @@ void main() {
 }
 )";
 
-static const std::string outline_vsh = R"(
+    static const std::string outline_vsh = R"(
 #version 330 core
 
 layout (location = 0) in vec3 vPosition;
@@ -57,7 +57,7 @@ void main() {
 }
 )";
 
-static const std::string outline_fsh = R"(
+    static const std::string outline_fsh = R"(
 #version 330 core
 
 uniform mat4 view;
@@ -73,7 +73,7 @@ void main() {
 }
 )";
 
-static const std::string shadow_vsh = R"(
+    static const std::string shadow_vsh = R"(
 #version 330 core
 
 layout (location = 0) in vec3 vPosition;
@@ -90,7 +90,7 @@ void main()
 }
 )";
 
-static const std::string shadow_fsh = R"(
+    static const std::string shadow_fsh = R"(
 #version 330 core
 
 void main()
@@ -99,7 +99,7 @@ void main()
 }
 )";
 
-static const std::string sprite_vsh = R"(
+    static const std::string sprite_vsh = R"(
 #version 330 core
 
 layout (location = 0) in vec3 vPosition;
@@ -122,7 +122,7 @@ void main() {
 }
 )";
 
-static const std::string sprite_fsh = R"(
+    static const std::string sprite_fsh = R"(
 #version 330 core
 
 uniform sampler2D sprite;
@@ -143,7 +143,7 @@ void main() {
 }
 )";
 
-static const std::string standard_vsh = R"(
+    static const std::string standard_vsh = R"(
 #version 330 core
 
 layout (location = 0) in vec3 vPosition;
@@ -183,7 +183,7 @@ void main()
 }
 )";
 
-static const std::string standard_fsh = R"(
+    static const std::string standard_fsh = R"(
 #version 330 core
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
@@ -215,6 +215,7 @@ uniform bool aoTextured;
 
 uniform sampler2D emissionTex;
 uniform bool emissionTextured;
+uniform float emission;
 
 uniform bool invertRoughness;
 uniform bool roughnessMetallicAlpha;
@@ -229,7 +230,7 @@ void main()
     float metallic;
     vec3 normal;
     float ao;
-    float emission;
+    float emis;
 
     if (albedoTextured) {
     	vec4 texel = texture(albedoTex, fTexCoord);
@@ -274,10 +275,10 @@ void main()
     }
 
     if (emissionTextured) {
-        emission = length(texture(emissionTex, fTexCoord).rgb) * 5;
+        emis = length(texture(emissionTex, fTexCoord).rgb) * 5;
     }
     else {
-        emission = 0.0;
+        emis = emission;
     }
 
     if (invertRoughness) {
@@ -287,7 +288,7 @@ void main()
     if (albedo.a > 0.5) {
         gNormal = normalize(normal);
         gAlbedo = albedo;
-        gRoughnessMetallic = vec4(roughness, metallic, ao, emission);
+        gRoughnessMetallic = vec4(roughness, metallic, ao, emis);
     }
     else {
         discard;
@@ -295,7 +296,7 @@ void main()
 }
 )";
 
-static const std::string postProcessing_vsh = R"(
+    static const std::string postProcessing_vsh = R"(
 #version 330 core
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 vNormal;
@@ -311,7 +312,7 @@ void main()
 }
 )";
 
-static const std::string ssaoBlur_glsl = R"(
+    static const std::string ssaoBlur_glsl = R"(
 uniform sampler2D ssaoInput;
 
 vec3 postProcess(vec2 texCoord) {
@@ -329,7 +330,7 @@ vec3 postProcess(vec2 texCoord) {
 }
 )";
 
-static const std::string ssao_glsl = R"(
+    static const std::string ssao_glsl = R"(
 #include <lighting>
 
 uniform sampler2D gPosition;
@@ -392,12 +393,12 @@ vec3 postProcess(vec2 texCoord) {
         return vec3(occlusion);
 	}
 	else {
-		discard;
+		return vec3(1.0);
 	}
 }
 )";
 
-static const std::string deferred_glsl = R"(
+    static const std::string deferred_glsl = R"(
 #include <lighting>
 
 #define MAX_POINT_LIGHTS 100
@@ -409,10 +410,7 @@ uniform sampler2D gRoughnessMetallic;
 uniform samplerCube irradiance;
 uniform samplerCube prefilter;
 uniform sampler2D brdf;
-uniform sampler2D ssaoTex;
 
-
-uniform bool ssaoEnabled;
 uniform bool doIBL;
 
 uniform sampler2DShadow shadowTextures[4];
@@ -426,14 +424,12 @@ uniform PointLight[MAX_POINT_LIGHTS] pointLights;
 uniform mat4 lightSpaceMatrix[4];
 uniform mat4 view;
 
-uniform float bloomStrength;
-
 uniform DirectionalLight sun;
 
 const float PI = 3.14159265359;
 
 float inShadow(vec4 shadowspace) {
-    float bias = 0.001;
+    float bias = 0.01;
     if (shadowspace.x > 0.0+bias && shadowspace.x < 1.0-bias) {
         if (shadowspace.y > 0.0+bias && shadowspace.y < 1.0-bias) {
             if (shadowspace.z > 0.0+bias && shadowspace.z < 1.0-bias) {
@@ -462,8 +458,6 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
     vec4 fragLightSpace2 = biasMatrix * lightSpaceMatrix[2] * inverse(view) * vec4(fragPos, 1.0);
     vec4 fragLightSpace3 = biasMatrix * lightSpaceMatrix[3] * inverse(view) * vec4(fragPos, 1.0);
 
-    vec3 ls0 = vec3(fragLightSpace0.xy, (fragLightSpace0.z)/fragLightSpace0.w);
-
     float distance = length(cameraPos - fragPos);
 	float shadow0 = mix(1.0, ShadowCalculationPCF(0.0005, fragLightSpace0, shadowTextures[0]), inShadow(fragLightSpace0));
     float shadow1 = mix(1.0, ShadowCalculation(0.0005, fragLightSpace1, shadowTextures[1]), inShadow(fragLightSpace1) * (1-inShadow(fragLightSpace0)));
@@ -483,14 +477,14 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
             vec3 H = normalize(V + L);
 
             float distance    = length(light.position - fragPos);
-            float attenuation = 1.0 / (distance * distance);
+            float attenuation = pow(clamp(1.0 - pow(distance / light.radius, 1.0), 0.0, 1.0), 2.0) / (distance * distance + 1.0);
 
-            vec3 radiance     = light.color * attenuation;
+            vec3 radiance     = light.color * 100.0 * attenuation;
 
             // cook-torrance brdf
             float NDF = DistributionGGX(N, H, roughness);
             float G   = GeometrySmith(N, V, L, roughness);
-            vec3 F    = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, roughness);
+            vec3 F    = fresnelSchlickRoughness(clamp(dot(H, V), 0.0, 1.0), F0, roughness);
 
             vec3 kS = F;
             vec3 kD = vec3(1.0) - kS;
@@ -502,7 +496,7 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
 
             // add to outgoing radiance Lo
             float NdotL = max(dot(N, L), 0.0);
-            if (attenuation > 0.0001) {
+            if (distance < light.radius) {
                 Lo += (kD * albedo / PI + specular) * radiance * NdotL;
             }
 		}
@@ -535,7 +529,7 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
         Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;
 	}
 
-	vec3 F        = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+	vec3 F        = fresnelSchlickRoughness(clamp(dot(N, V), 0.0, 1.0), F0, roughness);
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
@@ -557,9 +551,9 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
         ambientColor = ambient * albedo;
     }
 
-    vec3 color = (ambientColor + Lo) * ao;
+    vec3 color = (ambientColor + Lo);
 
-    return color;
+    return max(color, vec3(0));
 }
 
 vec3 postProcess(vec2 texCoord) {
@@ -570,28 +564,11 @@ vec3 postProcess(vec2 texCoord) {
     vec3 Albedo = texture(gAlbedo, texCoord).rgb;
 	vec4 RoughnessMetallic = texture(gRoughnessMetallic, texCoord);
 	float Roughness = RoughnessMetallic.r;
-	float Metallic = RoughnessMetallic.g;
+	float Metallic = clamp(RoughnessMetallic.g, 0.0, 1.0);
     float emission = RoughnessMetallic.a;
     float ao = RoughnessMetallic.b;
 
-    float ssao = 1.0;
-    if (ssaoEnabled) {
-        ssao = texture(ssaoTex, texCoord).r;
-    }
-
-    vec3 light = lighting(FragPos, Albedo, Normal, Roughness, Metallic, ssao);
-
-
-    vec4 BrightColor;
-    float brightness = dot(light, vec3(0.2126, 0.7152, 0.0722));
-    if(brightness > 0.9)
-        BrightColor = vec4(light, 1.0);
-    else
-        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
-
-    BrightColor = vec4((bloomStrength * light) + (emission * Albedo), 1.0);
-
-    outColor1 = BrightColor; // TODO: very hacky
+    vec3 light = lighting(FragPos, Albedo, Normal, Roughness, Metallic, 1.0);
 
 	if (length(FragPos) > 0.0) {
 		return light + (emission * Albedo);
@@ -603,15 +580,19 @@ vec3 postProcess(vec2 texCoord) {
 }
 )";
 
-static const std::string tonemap_glsl = R"(
+    static const std::string tonemap_glsl = R"(
 uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
+uniform sampler2D ssaoTexture;
 
 uniform bool vignette;
 uniform bool tonemap;
 uniform bool bloom;
+uniform bool ssao;
+
+uniform float bloomStrength;
 
 vec3 aces(vec3 col, float exposure)
 {
@@ -630,10 +611,14 @@ vec3 reinhard(vec3 col, float exposure) {
 vec3 postProcess(vec2 texCoord) {
     vec3 color;
     if (bloom) {
-        color = (texture(texture0, texCoord).rgb) + (texture(texture1, texCoord).rgb) + (texture(texture2, texCoord).rgb) + texture(texture3, texCoord).rgb;
+        color = (texture(texture0, texCoord).rgb*bloomStrength) + (texture(texture1, texCoord).rgb*bloomStrength) + (texture(texture2, texCoord).rgb*bloomStrength) + texture(texture3, texCoord).rgb;
     }
     else {
         color = texture(texture3, texCoord).rgb;
+    }
+
+    if (ssao) {
+        color *= texture(ssaoTexture, texCoord).rgb;
     }
 
     vec3 grayscale = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
@@ -663,7 +648,161 @@ vec3 postProcess(vec2 texCoord) {
 }
 )";
 
-static const std::string fxaa_glsl = R"(
+    static const std::string SSR_glsl = R"(
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedo;
+uniform sampler2D gRoughnessMetallic;
+uniform sampler2D deferredPass;
+uniform samplerCube prefilter;
+uniform sampler2D brdf;
+uniform sampler2D deferredBlur;
+
+
+
+uniform mat4 projection;
+uniform mat4 view;
+
+const float step = 0.01;
+const float minRayStep = 0.01;
+const float maxSteps = 200;
+const int numBinarySearchSteps = 30;
+
+#include <lighting>
+
+vec3 binarySearch(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
+{
+    float depth;
+
+    vec4 projectedCoord;
+
+    for(int i = 0; i < numBinarySearchSteps; i++)
+    {
+
+        projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+        depth = (view * vec4(texture(gPosition, projectedCoord.xy).xyz, 1.0)).z;
+        dDepth = hitCoord.z - depth;
+
+        dir *= 0.5;
+        if(dDepth > 0.0)
+            hitCoord += dir;
+        else
+            hitCoord -= dir;
+    }
+
+        projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+    return vec3(projectedCoord.xy, depth);
+}
+
+vec4 rayMarch(vec3 dir, inout vec3 hitCoord, out float dDepth)
+{
+    dir *= step;
+
+    float error = 1.0;
+    float depth;
+    int steps;
+    vec4 projectedCoord;
+
+    for(int i = 0; i < maxSteps; i++)
+    {
+        hitCoord += dir;
+
+        projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+        depth = (view * vec4(texture(gPosition, projectedCoord.xy).xyz, 1.0)).z;
+        if(depth > 1000.0)
+            continue;
+
+        dDepth = hitCoord.z - depth;
+
+        if((dir.z - dDepth) < 1.2)
+        {
+            if(dDepth <= 0.0)
+            {
+                error = 0.0;
+                vec4 Result;
+                Result = vec4(binarySearch(dir, hitCoord, dDepth), 1.0);
+                return Result;
+            }
+
+        }
+
+        steps++;
+    }
+
+    return vec4(projectedCoord.xy, depth, error);
+}
+
+vec3 postProcess(vec2 texCoord) {
+    vec3 viewPos = texture(gPosition, texCoord).rgb;
+    vec3 normal = normalize(texture(gNormal, texCoord).rgb);
+    float roughness = texture(gRoughnessMetallic, texCoord).r;
+    float metallic = texture(gRoughnessMetallic, texCoord).g;
+    vec3 albedo = texture(gAlbedo, texCoord).rgb;
+
+    // lighting input
+    vec3 N = normalize(normal);
+    vec3 V = normalize(-viewPos);
+    vec3 R = reflect(-V, N);
+
+    vec3 hitPos = viewPos;
+    float dDepth;
+
+    vec4 coords = rayMarch(R, hitPos, dDepth);
+    float error = coords.w;
+
+    vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
+    float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
+
+    float ReflectionMultiplier = screenEdgefactor * -R.z;
+
+    if (coords.z - viewPos.z > 1.0) {
+        ReflectionMultiplier = 0.0;
+    }
+
+    if (length(texture(gPosition, coords.xy).rgb) > 0.0) {
+
+    }
+    else {
+        ReflectionMultiplier = 0.0;
+    }
+
+
+    vec3 SSR = texture(deferredPass, coords.xy).rgb * clamp(ReflectionMultiplier, 0.0, 1.0);
+
+
+
+
+    //specular-----------------------------------
+    vec3 F0 = vec3(0.04);
+    F0 = mix(F0, albedo, metallic);
+    vec3 F = fresnelSchlickRoughness(clamp(dot(N, V), 0.0, 1.0), F0, roughness);
+
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilter, normalize(mat3(inverse(view)) * R),  roughness * MAX_REFLECTION_LOD).rgb;
+	vec2 brdfColor = texture(brdf, vec2(max(dot(N, V), 0.0), roughness)).rg;
+
+	vec3 specular = prefilteredColor * (F * brdfColor.x + brdfColor.y);
+    //-------------------------------------------
+
+    if (length(texture(gPosition, texCoord).rgb) > 0.0) {
+        return texture(deferredPass, texCoord).rgb + (SSR*F);
+    }
+    else {
+        return texture(deferredPass, texCoord).rgb;
+    }
+}
+)";
+
+    static const std::string fxaa_glsl = R"(
 uniform sampler2D texture0;
 
 vec3 postProcess(vec2 texCoord) {
@@ -720,7 +859,7 @@ vec3 postProcess(vec2 texCoord) {
 }
 )";
 
-static const std::string gaussianBlur_glsl = R"(
+    static const std::string gaussianBlur_glsl = R"(
 uniform sampler2D texture0;
 
 uniform bool horizontal;
@@ -752,7 +891,7 @@ vec3 postProcess(vec2 texCoord) {
 }
 )";
 
-static const std::string passthrough_glsl = R"(
+    static const std::string passthrough_glsl = R"(
 uniform sampler2D texture0;
 
 vec3 postProcess(vec2 texCoord) {
@@ -760,7 +899,7 @@ vec3 postProcess(vec2 texCoord) {
 }
 )";
 
-static const std::string eq2cube_fsh = R"(
+    static const std::string eq2cube_fsh = R"(
 #version 330 core
 
 out vec4 outColor;
@@ -788,7 +927,7 @@ void main()
 
 )";
 
-static const std::string cubemap_vsh = R"(
+    static const std::string cubemap_vsh = R"(
 #version 330 core
 
 layout (location = 0) in vec3 vPosition;
@@ -812,18 +951,16 @@ void main()
 }
 )";
 
-static const std::string cubemap_fsh = R"(
+    static const std::string cubemap_fsh = R"(
 #version 330 core
 
 layout (location = 0) out vec4 outColor;
-layout (location = 1) out vec4 outColor1;
 
 in vec3 fPosition;
 
 uniform samplerCube environmentMap;
 uniform vec3 ambient;
 uniform bool isTextured;
-uniform float bloomStrength;
 
 void main()
 {
@@ -834,11 +971,10 @@ void main()
         envColor = ambient;
 
     outColor = vec4(envColor, 1.0);
-    outColor1 = vec4(envColor * bloomStrength, 1.0);
 }
 )";
 
-static const std::string irradiance_fsh = R"(
+    static const std::string irradiance_fsh = R"(
 #version 330 core
 
 out vec4 outColor;
@@ -881,7 +1017,7 @@ void main()
 }
 )";
 
-static const std::string prefilter_fsh = R"(
+    static const std::string prefilter_fsh = R"(
 #version 330 core
 
 out vec4 outColor;
@@ -922,7 +1058,7 @@ void main()
 
 )";
 
-static const std::string brdf_glsl = R"(
+    static const std::string brdf_glsl = R"(
 uniform sampler2D texture0;
 
 #include <lighting>
@@ -935,7 +1071,7 @@ vec3 postProcess(vec2 texCoord) {
 
 
 //library shaders
-static const std::string lighting_glsl = R"(
+    static const std::string lighting_glsl = R"(
 
 #ifndef LIGHTING_GLSL
 #define LIGHTING_GLSL
@@ -943,6 +1079,7 @@ static const std::string lighting_glsl = R"(
 struct PointLight {
 vec3 position;
 vec3 color;
+float radius;
 };
 
 struct DirectionalLight {

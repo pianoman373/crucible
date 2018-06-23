@@ -60,6 +60,10 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     add_executable(NBodyDemo examples/NBodyDemo.cpp)
     target_link_libraries(NBodyDemo crucible)
     set_target_properties(NBodyDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
+    add_executable(terrainDemo examples/terrainDemo.cpp)
+    target_link_libraries(terrainDemo crucible)
+    set_target_properties(terrainDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 add_executable(editor editor/main.cpp editor/WorkspaceObject.cpp editor/GuiMain.cpp editor/GuiMain.hpp)

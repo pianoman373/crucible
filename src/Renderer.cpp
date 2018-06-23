@@ -20,7 +20,6 @@
 #include <imgui.h>
 #include <stack>
 #include <string>
-#include <random>
 
 struct RenderCall {
 	IRenderable *mesh;
@@ -36,6 +35,12 @@ struct RenderCallSprite {
 	vec4 uv;
 };
 
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float radius;
+};
+
 // private variables
 // -----------------
 static const float cascadeDistances[4] = { 10.0f, 40.0f, 100.0f, 500.0f };
@@ -43,39 +48,23 @@ static const float cascadeDepths[4] = { 500.0f, 500.0f, 500.0f, 500.0f };
 static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f, 1.3f, 1.0f) * 5.0f };
 
 static std::vector<RenderCall> renderQueue;
+static std::vector<PointLight> pointLights;
 static std::stack<RenderCallSprite> renderQueueSprite;
 static std::vector<RenderCall> renderQueueOutline;
-
-static std::map<unsigned int, Texture> m_Textures;
 
 static Framebuffer shadowBuffer0;
 static Framebuffer shadowBuffer1;
 static Framebuffer shadowBuffer2;
 static Framebuffer shadowBuffer3;
 static Framebuffer HDRbuffer;
-static Framebuffer HDRbuffer2;
 static Framebuffer gBuffer;
-static Framebuffer ssaoBuffer;
-static Framebuffer ssaoBufferBlur;
-static Framebuffer bloomBuffer0;
-static Framebuffer bloomBuffer1;
-static Framebuffer bloomBuffer2;
-static Framebuffer bloomBuffer3;
-static Framebuffer bloomBuffer4;
-static Framebuffer bloomBuffer5;
 
 static Shader skyboxShader;
 static Shader spriteShader;
 static Shader ShadowShader;
 static Shader deferredShader;
-static Shader tonemapShader;
-static Shader fxaaShader;
-static Shader gaussianBlurShader;
-static Shader ssaoShader;
-static Shader ssaoBlurShader;
 
 static Mesh skyboxMesh;
-static Mesh crosshairMesh;
 static Mesh spriteMesh;
 
 static bool shadows;
@@ -83,9 +72,6 @@ static int shadow_resolution;
 static bool outlineEnabled = false;
 
 static vec2i resolution;
-
-static std::vector<vec3> ssaoKernel;
-static Texture noiseTex;
 
 // private functions
 // -----------------
@@ -135,8 +121,8 @@ static void renderDebugGui() {
     float aspect = (float)resolution.x / (float)resolution.y;
 
     ImGui::Begin("frame buffers");
-	ImGui::Image(ImTextureID((long long) ssaoBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//	ImGui::Image(ImTextureID((long long) ssaoBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
     ImGui::SameLine(300);
 	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
@@ -155,8 +141,8 @@ static void renderDebugGui() {
 	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
     ImGui::SameLine(300);
-	ImGui::Image(ImTextureID((long long) HDRbuffer2.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//	ImGui::Image(ImTextureID((long long) Renderer::postProcessor.HDRbuffer2.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
 	ImGui::End();
 
 	bool p_open = false;
@@ -184,66 +170,6 @@ static void renderDebugGui() {
         ImGui::End();
     }
 }
-// ------------------------------------------------------------------------
-static void doBloom() {
-	glViewport(0, 0, bloomBuffer0.getWidth(), bloomBuffer0.getHeight());
-	bloomBuffer1.bind();
-	Renderer::passthroughShader.bind();
-	HDRbuffer.getAttachment(1).bind();
-	Renderer::framebufferMesh.render();
-
-	bloomBuffer0.bind();
-	gaussianBlurShader.bind();
-	gaussianBlurShader.uniformBool("horizontal", true);
-	bloomBuffer1.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-
-	bloomBuffer1.bind();
-	gaussianBlurShader.bind();
-	gaussianBlurShader.uniformBool("horizontal", false);
-	bloomBuffer0.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-
-	// -------------------------------------------------------------------------
-
-	glViewport(0, 0, bloomBuffer3.getWidth(), bloomBuffer3.getHeight());
-	bloomBuffer3.bind();
-	Renderer::passthroughShader.bind();
-	bloomBuffer1.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-
-	bloomBuffer2.bind();
-	gaussianBlurShader.bind();
-	gaussianBlurShader.uniformBool("horizontal", true);
-	bloomBuffer3.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-
-	bloomBuffer3.bind();
-	gaussianBlurShader.bind();
-	gaussianBlurShader.uniformBool("horizontal", false);
-	bloomBuffer2.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-
-	// -------------------------------------------------------------------------
-
-	glViewport(0, 0, bloomBuffer5.getWidth(), bloomBuffer5.getHeight());
-	bloomBuffer5.bind();
-	Renderer::passthroughShader.bind();
-	bloomBuffer3.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-
-	bloomBuffer4.bind();
-	gaussianBlurShader.bind();
-	gaussianBlurShader.uniformBool("horizontal", true);
-	bloomBuffer5.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-
-	bloomBuffer5.bind();
-	gaussianBlurShader.bind();
-	gaussianBlurShader.uniformBool("horizontal", false);
-	bloomBuffer4.getAttachment(0).bind();
-	Renderer::framebufferMesh.render();
-}
 
 // public functions
 // ---------------
@@ -270,27 +196,10 @@ namespace Renderer {
 	Cubemap environment;
 	Cubemap irradiance;
 	Cubemap specular;
-	unsigned int brdf;
 
-	std::vector<PointLight> pointLights;
-	std::vector<DirectionalLight> directionalLights;
+	Texture brdf;
 
-	Texture getTexture(std::string path) {
-		unsigned int id = SID(path);
-
-		// if texture already exists, return that handle
-		if (m_Textures.find(id) != m_Textures.end())
-			return m_Textures[id];
-
-
-		Texture texture;
-		texture.load(path.c_str());
-
-		std::cout << "loading texture: " << path << std::endl;
-		m_Textures[id] = texture;
-
-		return texture;
-	}
+	PostProcessor postProcessor;
 
 	// ------------------------------------------------------------------------
 	void init(bool doShadows, int shadowResolution, int resolutionX, int resolutionY) {
@@ -319,13 +228,9 @@ namespace Renderer {
 		outlineShader.load(InternalShaders::outline_vsh, InternalShaders::outline_fsh);
 		passthroughShader.loadPostProcessing(InternalShaders::passthrough_glsl);
 
-		tonemapShader.loadPostProcessing(InternalShaders::tonemap_glsl);
-		fxaaShader.loadPostProcessing(InternalShaders::fxaa_glsl);
+
 		brdfShader.loadPostProcessing(InternalShaders::brdf_glsl);
 		deferredShader.loadPostProcessing(InternalShaders::deferred_glsl);
-		gaussianBlurShader.loadPostProcessing(InternalShaders::gaussianBlur_glsl);
-		ssaoShader.loadPostProcessing(InternalShaders::ssao_glsl);
-		ssaoBlurShader.loadPostProcessing(InternalShaders::ssaoBlur_glsl);
 
 		skyboxShader = cubemapShader;
 
@@ -343,14 +248,8 @@ namespace Renderer {
 
 		// HDR framebuffer
 		HDRbuffer.setup(resolution.x, resolution.y);
-		HDRbuffer.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
-		HDRbuffer.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT); // bright pixels
+		HDRbuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
 		HDRbuffer.attachRBO();
-
-		// HDR framebuffer 2
-		HDRbuffer2.setup(resolution.x, resolution.y);
-		HDRbuffer2.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
-		//HDRbuffer2.attachRBO();
 
 		gBuffer.setup(resolution.x, resolution.y);
 		gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //position
@@ -359,67 +258,45 @@ namespace Renderer {
 		gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
 		gBuffer.attachRBO();
 
-		ssaoBuffer.setup(resolution.x, resolution.y);
-		ssaoBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
-
-        ssaoBufferBlur.setup(resolution.x, resolution.y);
-        ssaoBufferBlur.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
-
-		//bloom framebuffers
-		bloomBuffer0.setup(resolution.x/2, resolution.y/2);
-		bloomBuffer0.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
-		bloomBuffer1.setup(resolution.x/2, resolution.y/2);
-		bloomBuffer1.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
-
-		bloomBuffer2.setup(resolution.x/8, resolution.y/8);
-		bloomBuffer2.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
-		bloomBuffer3.setup(resolution.x/8, resolution.y/8);
-		bloomBuffer3.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
-
-		bloomBuffer4.setup(resolution.x/32, resolution.y/32);
-		bloomBuffer4.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
-		bloomBuffer5.setup(resolution.x/32, resolution.y/32);
-		bloomBuffer5.attachTexture(GL_RGBA16F, GL_RGBA, GL_FLOAT);
+		postProcessor.init();
 
 
-		//setup SSAO
-		std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between 0.0 - 1.0
-		std::default_random_engine generator;
-		for (unsigned int i = 0; i < 256; ++i)
-		{
-			vec3 sample(
-					randomFloats(generator) * 2.0 - 1.0,
-					randomFloats(generator) * 2.0 - 1.0,
-					randomFloats(generator)
-			);
-			sample  = normalize(sample);
-			sample = sample * randomFloats(generator);
-			float scale = (float)i / 256.0;
+        // create brdf texture
+        unsigned int brdfLUTTexture;
+        glGenTextures(1, &brdfLUTTexture);
 
-			scale   = lerp(0.1f, 1.0f, scale * scale);
-			sample = sample * scale;
-			ssaoKernel.push_back(sample);
-		}
+        // pre-allocate enough memory for the LUT texture.
+        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		std::vector<vec3> ssaoNoise;
-		for (unsigned int i = 0; i < 16; i++)
-		{
-			vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
-			ssaoNoise.push_back(noise);
-		}
-		unsigned int noiseTexture;
-		glGenTextures(1, &noiseTexture);
-		glBindTexture(GL_TEXTURE_2D, noiseTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		noiseTex.setID(noiseTexture);
+        unsigned int captureFBO, captureRBO;
+        glGenFramebuffers(1, &captureFBO);
+        glGenRenderbuffers(1, &captureRBO);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+
+        glViewport(0, 0, 512, 512);
+        Renderer::brdfShader.bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        Renderer::framebufferMesh.render();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glDeleteFramebuffers(1, &captureFBO);
+        glDeleteRenderbuffers(1, &captureRBO);
+
+        brdf.setID(brdfLUTTexture);
 	}
 
 	// ------------------------------------------------------------------------
-	void renderSkybox(mat4 view, mat4 projection) {
+	void renderSkybox(mat4 view, mat4 projection, vec3 cameraPos) {
 		glDepthMask(GL_TRUE);
 		skyboxShader.bind();
 
@@ -428,7 +305,7 @@ namespace Renderer {
 		skyboxShader.uniformVec3("sun.direction", sun.direction);
 		skyboxShader.uniformVec3("sun.color", sun.color);
 		skyboxShader.uniformVec3("ambient", ambient);
-		deferredShader.uniformFloat("bloomStrength", settings.bloomStrength);
+        skyboxShader.uniformVec3("cameraPos", cameraPos);
 
 		if (environment.getID() != 0) {
 			environment.bind(0);
@@ -443,6 +320,16 @@ namespace Renderer {
 
 		cubemapMesh.render();
 		glDepthMask(GL_TRUE);
+	}
+
+    // ------------------------------------------------------------------------
+    void renderPointLight(vec3 position, vec3 color, float radius) {
+        PointLight p;
+        p.position = position;
+        p.color = color;
+        p.radius = radius;
+
+        pointLights.push_back(p);
 	}
 
 	// ------------------------------------------------------------------------
@@ -494,10 +381,6 @@ namespace Renderer {
 
 	// ------------------------------------------------------------------------
 	void flush(Camera cam, Frustum f, bool doFrustumCulling) {
-	    Profiler::begin("flush time");
-
-
-	    Profiler::begin("shadow pass");
 		glStencilMask(0x00);
 
 		mat4 lightSpaceMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
@@ -522,10 +405,7 @@ namespace Renderer {
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
-		Profiler::end();
 
-
-		Profiler::begin("object rendering");
 		// render objects in scene into g-buffer
 		// -------------------------------------
 		gBuffer.bind();
@@ -614,42 +494,6 @@ namespace Renderer {
 		}
 		glDepthMask(GL_TRUE);
 
-		if (settings.ssao) {
-            // render the g-buffers for SSAO
-            // ---------------------------------------------
-            ssaoBuffer.bind();
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            ssaoShader.bind();
-
-            ssaoShader.uniformInt("gPosition", 0);
-            gBuffer.getAttachment(0).bind(0);
-
-            ssaoShader.uniformInt("gNormal", 1);
-            gBuffer.getAttachment(1).bind(1);
-
-            ssaoShader.uniformInt("texNoise", 2);
-            noiseTex.bind(2);
-
-            ssaoShader.uniformMat4("projection", cam.getProjection());
-            ssaoShader.uniformFloat("radius", settings.ssaoRadius);
-            ssaoShader.uniformInt("kernelSize", settings.ssaoKernelSize);
-
-            for (int i = 0; i < settings.ssaoKernelSize; i++) {
-                ssaoShader.uniformVec3(std::string("samples[") + std::to_string(i) + std::string("]"), ssaoKernel[i]);
-            }
-            framebufferMesh.render();
-
-            ssaoBufferBlur.bind();
-            ssaoBlurShader.bind();
-            ssaoBuffer.getAttachment(0).bind();
-            framebufferMesh.render();
-		}
-
-
-		Profiler::end();
-
-
-		Profiler::begin("deferred pass");
 		HDRbuffer.bind();
 		// render the g-buffers with the deferred shader
 		// ---------------------------------------------
@@ -667,51 +511,34 @@ namespace Renderer {
 		deferredShader.uniformInt("gRoughnessMetallic", 3);
 		gBuffer.getAttachment(3).bind(3);
 
-        deferredShader.uniformInt("ssaoTex", 4);
-        ssaoBufferBlur.getAttachment(0).bind(4);
+		deferredShader.uniformInt("irradiance", 4);
+		irradiance.bind(4);
+		deferredShader.uniformInt("prefilter", 5);
+		specular.bind(5);
+		deferredShader.uniformInt("brdf", 6);
+		brdf.bind(6);
 
-		deferredShader.uniformInt("irradiance", 5);
-		irradiance.bind(5);
-		deferredShader.uniformInt("prefilter", 6);
-		specular.bind(6);
-		deferredShader.uniformInt("brdf", 7);
-		glActiveTexture(GL_TEXTURE7);
-		glBindTexture(GL_TEXTURE_2D, brdf);
-
-        if (irradiance.getID() != 0 && specular.getID() != 0 && brdf != 0) {
+        if (irradiance.getID() != 0 && specular.getID() != 0 && brdf.getID() != 0) {
             deferredShader.uniformBool("doIBL", true);
         }
         else {
             deferredShader.uniformBool("doIBL", false);
         }
 
-
 		deferredShader.uniformVec3("cameraPos", vec3());
 		deferredShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
 		deferredShader.uniformVec3("sun.color", sun.color);
 		deferredShader.uniformVec3("ambient", ambient);
 		deferredShader.uniformMat4("view", cam.getView());
-		deferredShader.uniformBool("ssaoEnabled", settings.ssao);
-		deferredShader.uniformFloat("bloomStrength", settings.bloomStrength);
 
 		deferredShader.uniformInt("pointLightCount", (int) pointLights.size());
 		for (unsigned int i = 0; i < pointLights.size(); i++) {
 			deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
 									   vec3(vec4(pointLights[i].position, 1.0f) * cam.getView()));
 			deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i].color);
+
+            deferredShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
 		}
-
-		deferredShader.uniformInt("directionalLightCount", (int) directionalLights.size());
-		for (unsigned int i = 0; i < directionalLights.size(); i++) {
-			deferredShader.uniformVec3("directionalLights[" + std::to_string(i) + "].direction",
-									   vec3(vec4(directionalLights[i].direction, 0.0f) * cam.getView()));
-			deferredShader.uniformVec3("directionalLights[" + std::to_string(i) + "].color",
-									   directionalLights[i].color);
-		}
-
-
-
-
 
 		if (shadows) {
 			shadowBuffer0.bindTexture(8);
@@ -736,64 +563,17 @@ namespace Renderer {
 		}
 		framebufferMesh.render();
 
-		Profiler::end();
-
 		// render the skybox
 		// -----------------
-		renderSkybox(cam.getView(), cam.getProjection());
+		renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
 
+		Texture final = postProcessor.postRender(cam, HDRbuffer.getAttachment(0), gBuffer.getAttachment(0), gBuffer.getAttachment(1), gBuffer.getAttachment(2), gBuffer.getAttachment(3));
 
-
-
-		Profiler::begin("post processing");
-		/// bloom
-		// ---------------
-
-		if (settings.bloom) {
-			doBloom();
-
-			glViewport(0, 0, resolution.x, resolution.y);
-		}
-
-
-
-		// post processing
-		// ---------------
-		if (settings.fxaa) {
-			HDRbuffer2.bind();
-		} else {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
-		}
-
-
-		bloomBuffer1.getAttachment(0).bind(0);
-		bloomBuffer3.getAttachment(0).bind(1);
-		bloomBuffer5.getAttachment(0).bind(2);
-		HDRbuffer.getAttachment(0).bind(3);
-
-		tonemapShader.bind();
-		tonemapShader.uniformBool("vignette", settings.vignette);
-		tonemapShader.uniformBool("tonemap", settings.tonemap);
-		tonemapShader.uniformBool("bloom", settings.bloom);
-		tonemapShader.uniformInt("texture0", 0);
-		tonemapShader.uniformInt("texture1", 1);
-		tonemapShader.uniformInt("texture2", 2);
-		tonemapShader.uniformInt("texture3", 3);
-
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
+		passthroughShader.bind();
+		final.bind();
 		framebufferMesh.render();
-
-
-		// fxaa
-		// -------------------------------
-		if (settings.fxaa) {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
-			fxaaShader.bind();
-			HDRbuffer2.getAttachment(0).bind();
-			framebufferMesh.render();
-		}
-
 
 		// copy depth and stencil buffer
 		// -------------------------------
@@ -801,8 +581,6 @@ namespace Renderer {
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-
-		Profiler::end();
 
 
 		// render object outlines
@@ -843,10 +621,9 @@ namespace Renderer {
 			renderDebugGui();
 		}
 
+		pointLights.clear();
 		renderQueue.clear();
 		renderQueueOutline.clear();
-
-		Profiler::end();
 	}
 
 	// ------------------------------------------------------------------------
@@ -859,8 +636,7 @@ namespace Renderer {
 		sun = light;
 	}
 
-	// ------------------------------------------------------------------------
-	void generateIBLmaps() {
-		IBL::generateIBLmaps();
+	vec2i getResolution() {
+		return resolution;
 	}
 }

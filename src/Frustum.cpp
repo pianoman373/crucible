@@ -26,7 +26,7 @@ void Frustum::setupInternals(float fov, float aspect, float near, float far) {
     this->near = near;
     this->far = far;
 
-    float tang = (float)tan(Deg2Rad(fov) * 0.5) ;
+    float tang = (float)tan(radians(fov) * 0.5) ;
     this->nh = near * tang;
     this->nw = nh * aspect;
     this->fh = far  * tang;

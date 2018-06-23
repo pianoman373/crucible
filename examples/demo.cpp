@@ -1,49 +1,32 @@
 #include <crucible/crucible.hpp>
 
-int main(int argc, char *argv[]) {
+int main() {
 	Window::create({ 1280, 720 }, "test", false);
-	Camera cam(vec3(1.0f, 1.0f, 6.0f));
+	Camera cam(vec3(0.0f, 5.0f, 10.0f));
 
 	Renderer::init(true, 2048, 1280, 720);
-	Renderer::settings.tonemap = true;
-	Renderer::settings.vignette = true;
-	Renderer::settings.bloom = true;
-	Renderer::settings.ssao = true;
-	Renderer::settings.fxaa = true;
-	Shader s;
-	s.loadFile("resources/skybox.vsh", "resources/skybox.fsh");
-	//Renderer::setSkyboxShader(s);
 
 	Cubemap cubemap;
 	cubemap.loadEquirectangular("resources/canyon.hdr");
 
-	Renderer::ambient = vec3(1.2f, 0.2f, 0.3f);
-
-	Renderer::environment = cubemap;
-	Renderer::generateIBLmaps();
-
-    //Renderer::ambient = vec3();
-
-	//cubemap.setID(0);
-  	//Renderer::environment = cubemap;
-
+    Renderer::environment = cubemap;
+    IBL::generateIBLmaps(Renderer::irradiance, Renderer::specular);
 
 	Material ground;
-	ground.setShader(Renderer::standardShader);
-	ground.setPBRUniforms(vec3(0.1f), 0.5f, 0.0f);
-    ground.setUniformFloat("emission", 0.0f);
+    ground.setShader(Renderer::standardShader);
+    ground.setPBRUniforms(vec3(0.1f), 0.01f, 0.0f);
 
 	Material ball;
 	ball.setShader(Renderer::standardShader);
 	ball.setPBRUniforms(vec3(1.0f, 1.0f, 1.0f), 0.0f, 0.0f);
-	ball.setUniformBool("aoTextured", false);
 
-	Renderer::setSun({ vec3(1.05f, -7.8f, -1.3f), vec3(10.0f, 10.0f, 10.0f) });
+	Material glowy;
+	glowy.setShader(Renderer::standardShader);
+	glowy.setPBRUniforms(vec3(2.0f, 1.5f, 1.0f) * 0.5f, 0.0f, 0.0f);
+	glowy.setUniformFloat("emission", 1.0f);
 
-    //Renderer::pointLights.push_back({vec3(0.0f, 8.0f, 0.0f), vec3(200.0f, 200.0f, 200.0f)});
 
-    Model model;
-    model.loadFile("resources/shaderball.fbx");
+	Renderer::setSun({ vec3(1.05f, -1.2f, -1.3f), vec3(10.0f, 10.0f, 10.0f) });
 
 	Mesh cube;
 	Primitives::cube(cube);
@@ -51,27 +34,116 @@ int main(int argc, char *argv[]) {
 	Mesh sphere;
 	Primitives::sphere(sphere, 32, 32);
 
+	Mesh torus0;
+	Primitives::torus(torus0, 2.0f, 0.5f, 64, 64);
+
+    Mesh torus1;
+    Primitives::torus(torus1, 3.0f, 0.5f, 64, 64);
+
+    Mesh torus2;
+    Primitives::torus(torus2, 4.0f, 0.5f, 64, 64);
+
+
+	Model shaderBall;
+	shaderBall.loadFile("resources/shaderball.fbx", false);
+
+	Model sponza;
+	sponza.loadFile("../crucible-resources-stuff/sponza/sponza.fbx", true);
+
+
+	Material wood;
+    wood.setShader(Renderer::standardShader);
+	wood.setPBRUniforms(
+	        Resources::getTexture("resources/wood/albedo.png"),
+            Resources::getTexture("resources/wood/roughness.png"),
+            Resources::getTexture("resources/wood/metallic.png"),
+            Resources::getTexture("resources/wood/normal.png")
+	        );
+
+    Material plastic;
+    plastic.setShader(Renderer::standardShader);
+    plastic.setPBRUniforms(
+            Resources::getTexture("resources/plastic/albedo.png"),
+            Resources::getTexture("resources/plastic/roughness.png"),
+            Resources::getTexture("resources/plastic/metallic.png"),
+            Resources::getTexture("resources/plastic/normal.png")
+    );
+
+    Material rustediron;
+    rustediron.setShader(Renderer::standardShader);
+    rustediron.setPBRUniforms(
+            Resources::getTexture("resources/rustediron/albedo.png"),
+            Resources::getTexture("resources/rustediron/roughness.png"),
+            Resources::getTexture("resources/rustediron/metallic.png"),
+            Resources::getTexture("resources/rustediron/normal.png")
+    );
+
+    Material gold;
+    gold.setShader(Renderer::standardShader);
+    gold.setPBRUniforms(
+            vec3(1.0f, 0.8f, 0.3f),
+            0.3f,
+            1.0f
+    );
+
+    Material ceramic;
+    ceramic.setShader(Renderer::standardShader);
+    ceramic.setPBRUniforms(
+            vec3(0.05f, 0.05f, 1.0f),
+            0.1f,
+            0.0f
+    );
+
+	bool keyDown = false;
+
+	std::vector<vec3> lightPositions;
+
     while (Window::isOpen()) {
         Window::begin();
         cam.dimensions = {(float)Window::getWindowSize().x, (float)Window::getWindowSize().y};
         Util::updateSpaceCamera(cam);
 
+        if (keyDown) {
+			if (!Input::isMouseButtonDown(0)) {
+				keyDown = false;
+			}
+        }
+        else {
+			if (Input::isMouseButtonDown(0)) {
+				keyDown = true;
 
-        Renderer::render(&model, Transform(vec3(0.0f, 5.0f, 0.0f), vec3(), vec3(1.0f)), AABB());
-        Renderer::render(&cube, &ground, Transform(vec3(), vec3(), vec3(20.0f, 1.0f, 20.0f)), AABB()); //ground
+				lightPositions.push_back(cam.getPosition());
+			}
+        }
 
-        Renderer::render(&cube, &ground, Transform(vec3(0.0f, -20.0f, 0.0f), vec3(), vec3(2000.0f, 1.0f, 2000.0f)), AABB());
+        for (int i = 0; i < lightPositions.size(); i++) {
+        	Renderer::renderPointLight(lightPositions[i], vec3(2.0f, 1.5f, 1.0f), 50.0f);
+        	Renderer::render(&sphere, &glowy, Transform(lightPositions[i], quaternion(), vec3(0.3f)), AABB());
+        }
 
-        Renderer::render(&sphere, &model.materials[0], Transform(vec3(0.0f, 1.5f, 0.0f), vec3(), vec3(1.0f)), AABB());
+        quaternion q0 = quaternion(vec3(1.0f, 0.0f, 0.0f), Window::getTime());
+        quaternion q1 = normalize(q0 * quaternion(vec3(0.0f, 1.0f, 0.0f), Window::getTime())  );
+        quaternion q2 = normalize(q1 * quaternion(vec3(1.0f, 0.0f, 0.0f), Window::getTime()) );
 
-        //walls
-        Renderer::render(&cube, &ground, Transform(vec3(0.0f, 1.0f, 9.5f), vec3(), vec3(20.0f, 1.0f, 1.0f)), AABB());
-        Renderer::render(&cube, &ground, Transform(vec3(0.0f, 1.0f, -9.5f), vec3(), vec3(20.0f, 1.0f, 1.0f)), AABB());
+        Renderer::render(&torus0, &gold, Transform(vec3(0.0f, 10.0f, 0.0f), q2, vec3(1.0f)), AABB());
+        Renderer::render(&torus1, &gold, Transform(vec3(0.0f, 10.0f, 0.0f), q1, vec3(1.0f)), AABB());
+        Renderer::render(&torus2, &gold, Transform(vec3(0.0f, 10.0f, 0.0f), q0, vec3(1.0f)), AABB());
 
-        Renderer::render(&cube, &ground, Transform(vec3(9.5f, 1.0f, 0.0f), vec3(), vec3(1.0f, 1.0f, 18.0f)), AABB());
-        Renderer::render(&cube, &ground, Transform(vec3(-9.5f, 1.0f, 0.0f), vec3(), vec3(1.0f, 1.0f, 18.0f)), AABB());
+        Renderer::render(&shaderBall.meshes[0], &plastic, Transform(vec3(0.0f, 0.0f, 0.0f), quaternion(), vec3(0.5f)), AABB());
+        Renderer::render(&shaderBall.meshes[0], &wood, Transform(vec3(7.0f, 0.0f, 0.0f), quaternion(), vec3(0.5f)), AABB());
+        Renderer::render(&shaderBall.meshes[0], &rustediron, Transform(vec3(-7.0f, 0.0f, 0.0f), quaternion(), vec3(0.5f)), AABB());
+        Renderer::render(&shaderBall.meshes[0], &gold, Transform(vec3(14.0f, 0.0f, 0.0f), quaternion(), vec3(0.5f)), AABB());
+        Renderer::render(&shaderBall.meshes[0], &ceramic, Transform(vec3(-14.0f, 0.0f, 0.0f), quaternion(), vec3(0.5f)), AABB());
 
-        Renderer::debug.renderDebugAABB(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f));
+        Renderer::render(&cube, &gold, Transform(vec3(0.0f, 10.0f, 0.0f) + (q2 * vec3(0.0f, 0.0f, 5.0f)), quaternion(), vec3(1.0f)), AABB());
+
+        //Renderer::render(&sponza, Transform(vec3(-14.0f, 0.0f, 0.0f), vec3(), vec3(1.0f)), AABB());
+
+        Renderer::render(&cube, &gold, Transform(vec3(0.0f, -4.3f, 0.0f), quaternion(), vec3(100.0f, 1.0f, 100.0f)), AABB()); //ground
+
+        Renderer::render(&cube, &ceramic, Transform(vec3(0.0f, 0.0f, -50.0f), quaternion(), vec3(100.0f, 100.0f, 1.0f)), AABB());
+
+        //Renderer::render(&sphere, &ball, Transform(vec3(0.0f, 1.5f, 0.0f), vec3(), vec3(1.0f)), AABB());
 
         Renderer::flush(cam);
 

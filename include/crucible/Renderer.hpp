@@ -7,6 +7,7 @@
 #include <crucible/DebugRenderer.hpp>
 #include <crucible/Frustum.hpp>
 #include <crucible/IRenderable.hpp>
+#include <crucible/PostProcessor.hpp>
 
 #include <vector>
 
@@ -18,11 +19,6 @@ class Model;
 struct DirectionalLight {
     vec3 direction;
     vec3 color;
-};
-
-struct PointLight {
-	vec3 position;
-	vec3 color;
 };
 
 struct RendererSettings {
@@ -58,25 +54,35 @@ namespace Renderer {
 	extern Cubemap environment;
 	extern Cubemap irradiance;
 	extern Cubemap specular;
-	extern unsigned int brdf;
 
-	extern std::vector<PointLight> pointLights;
-    extern std::vector<DirectionalLight> directionalLights;
+	extern Texture brdf;
 
-	Texture getTexture(std::string path);
+	extern PostProcessor postProcessor;
 
     /**
      * Sets up vital shaders and variables only once at startup.
      */
     void init(bool shadows, int shadowResolution, int resolutionX, int resolutionY);
 
-	void renderSkybox(mat4 view, mat4 projection);
+    /**
+     * Mostly internal function that will only render the skybox and nothing else. This doesn't need to be called under
+     * normal rendering circumstances.
+     */
+	void renderSkybox(mat4 view, mat4 projection, vec3 cameraPos={0, 0, 0});
+
+	/**
+	 * Pushes a point light to the render buffer for the next flush event.
+	 */
+	void renderPointLight(vec3 position, vec3 color, float radius);
 
     /**
      * General purpose abstraction of all render calls to an internal renderer.
      */
     void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb);
 
+    /**
+     * Same as the general purpose render command, but accepts Models.
+     */
     void render(Model *model, Transform transform, AABB aabb);
 
     void renderSprite(Texture tex, vec2 pos, vec2 dimensions, vec4 uv);
@@ -91,6 +97,9 @@ namespace Renderer {
       */
      void disableOutline();
 
+     /**
+      * Flush command with frustum culling disabled.
+      */
 	void flush(Camera cam);
 
 
@@ -105,5 +114,5 @@ namespace Renderer {
 
     void setSun(DirectionalLight light);
 
-	void generateIBLmaps();
-};
+    vec2i getResolution();
+}

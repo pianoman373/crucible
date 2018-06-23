@@ -29,5 +29,7 @@ public:
      */
     void renderDebugAABB(AABB aabb, vec3 color);
 
+    void renderDebugSphere(vec3 pos, float radius, vec3 color);
+
     void flush(Camera cam);
 };

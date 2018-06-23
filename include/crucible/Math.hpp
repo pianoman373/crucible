@@ -11,7 +11,7 @@ const float PI = 3.141592f;
 /**
  * Convert degrees to radians.
  */
-inline float Deg2Rad(float degrees)
+inline float radians(float degrees)
 {
     return degrees / 180.0f * PI;
 }
@@ -19,7 +19,7 @@ inline float Deg2Rad(float degrees)
 /**
  * Convert Radians to degrees.
  */
-inline float Rad2Deg(float radians)
+inline float degrees(float radians)
 {
     return radians / PI * 180.0f;
 }
@@ -543,8 +543,8 @@ template <typename T>
 inline matrix4<T> rotate(const matrix4<T> &mat, const vector3<T>& axis, const T& angle) {
     matrix4<T> result;
 
-    const float c = cos(Deg2Rad(angle));
-    const float s = sin(Deg2Rad(angle));
+    const float c = cos(radians(angle));
+    const float s = sin(radians(angle));
     const float t = 1.0f - c;
 
     result.m00 = t*axis.x*axis.x + c;
@@ -614,7 +614,7 @@ inline matrix4<T> transpose(matrix4<T> mat) {
 inline mat4 perspective(float fov, float aspect, float near, float far) {
     mat4 result;
 
-    float top    =  near * tan(Deg2Rad(fov) / 2.0);
+    float top    =  near * tan(radians(fov) / 2.0);
     float bottom = -top;
     float right  =  top * aspect;
     float left   = -top * aspect;
@@ -689,33 +689,6 @@ inline mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
     return translate(mat, vec3(-eye.x, -eye.y, -eye.z));
 }
 
-//TODO: use quaternions instead of vector for rotation.
-struct Transform {
-    Transform() {
-        this->position = vec3();
-        this->rotation = vec3();
-        this->scale = vec3(1.0f, 1.0f, 1.0f);
-    }
-
-    Transform(vec3 position, vec3 rotation, vec3 scale) {
-        this->position = position;
-        this->rotation = rotation;
-        this->scale = scale;
-    }
-
-    mat4 getMatrix() {
-        mat4 mat;
-        mat = translate(mat, position);
-        mat = ::scale(mat, this->scale);
-
-        return mat;
-    }
-
-    vec3 position;
-    vec3 rotation;
-    vec3 scale;
-};
-
 
 //---------less than----------//
 
@@ -726,3 +699,139 @@ inline bool operator<(vector3<T> lhs, vector3<T> rhs) {
 
     return l1 < l2;
 }
+
+
+//---------quaternions----------//
+
+struct quaternion {
+    float w;
+    float x;
+    float y;
+    float z;
+
+    quaternion() {
+        w = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+    }
+
+
+    quaternion(float w, float x, float y, float z) {
+        this->w = w;
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
+
+    quaternion(vec3 axis, float radians) {
+        const float halfAngle = 0.5f * radians;
+        w = cos(halfAngle);
+        x = axis.x * sin(halfAngle);
+        y = axis.y * sin(halfAngle);
+        z = axis.z * sin(halfAngle);
+    }
+};
+
+inline mat4 toMatrix(const quaternion &q)
+{
+    mat4 mat;
+
+    mat.m00 = 1.0f - 2.0f*q.y*q.y - 2.0f*q.z*q.z;
+    mat.m10 = 2.0f*q.x*q.y + 2.0f*q.w*q.z;
+    mat.m20 = 2.0f*q.x*q.z - 2.0f*q.w*q.y;
+
+    mat.m01 = 2.0f*q.x*q.y - 2.0f*q.w*q.z;
+    mat.m11 = 1.0f - 2.0f*q.x*q.x - 2.0f*q.z*q.z;
+    mat.m21 = 2.0f*q.y*q.z + 2.0f*q.w*q.x;
+
+    mat.m02 = 2.0f*q.x*q.z + 2.0f*q.w*q.y;
+    mat.m12 = 2.0f*q.y*q.z - 2.0f*q.w*q.x;
+    mat.m22 = 1.0f - 2.0f*q.x*q.x - 2.0f*q.y*q.y;
+
+    return mat;
+}
+
+inline float dot(const quaternion& lhs, const quaternion& rhs)
+{
+    return lhs.w*rhs.w + lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
+}
+
+inline quaternion operator*(const quaternion& lhs, const float scalar)
+{
+    return quaternion(scalar*lhs.w, scalar*lhs.x, scalar*lhs.y, scalar*lhs.z);
+}
+inline quaternion operator*(const float scalar, const quaternion& rhs)
+{
+    return quaternion(scalar*rhs.w, scalar*rhs.x, scalar*rhs.y, scalar*rhs.z);
+}
+
+inline quaternion operator*(const quaternion& q1, const quaternion& q2)
+{
+    float x =  q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x;
+    float y = -q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y;
+    float z =  q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z;
+    float w = -q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w;
+
+    return quaternion(w, x, y, z);
+}
+
+inline vec3 operator*(const quaternion& quat, const vec3& vec) {
+    float num = quat.x * 2.0f;
+    float num2 = quat.y * 2.0f;
+    float num3 = quat.z * 2.0f;
+    float num4 = quat.x * num;
+    float num5 = quat.y * num2;
+    float num6 = quat.z * num3;
+    float num7 = quat.x * num2;
+    float num8 = quat.x * num3;
+    float num9 = quat.y * num3;
+    float num10 = quat.w * num;
+    float num11 = quat.w * num2;
+    float num12 = quat.w * num3;
+    vec3 result;
+    result.x = (1.0f - (num5 + num6)) * vec.x + (num7 - num12) * vec.y + (num8 + num11) * vec.z;
+    result.y = (num7 + num12) * vec.x + (1.0f - (num4 + num6)) * vec.y + (num9 - num10) * vec.z;
+    result.z = (num8 - num11) * vec.x + (num9 + num10) * vec.y + (1.0f - (num4 + num5)) * vec.z;
+    return result;
+}
+
+
+inline float length(const quaternion& quat)
+{
+    return sqrt(quat.w*quat.w + quat.x*quat.x + quat.y*quat.y + quat.z*quat.z);
+}
+
+inline quaternion normalize(const quaternion& quat)
+{
+    const float l = length(quat);
+    return quat * (1.0f / l);
+
+}
+
+struct Transform {
+    Transform() {
+        this->position = vec3();
+        this->rotation = quaternion();
+        this->scale = vec3(1.0f, 1.0f, 1.0f);
+    }
+
+    Transform(vec3 position, quaternion rotation, vec3 scale) {
+        this->position = position;
+        this->rotation = rotation;
+        this->scale = scale;
+    }
+
+    mat4 getMatrix() {
+        mat4 mat;
+        mat = translate(mat, position);
+        mat = ::scale(mat, this->scale);
+        mat = mat * toMatrix(rotation);
+
+        return mat;
+    }
+
+    vec3 position;
+    quaternion rotation;
+    vec3 scale;
+};

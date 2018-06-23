@@ -7,6 +7,7 @@
 
 #include <crucible/Renderer.hpp>
 #include <crucible/Path.hpp>
+#include <crucible/Resources.hpp>
 #include <json.hpp>
 #include <fstream>
 
@@ -37,7 +38,7 @@ void WorkspaceObject::import(std::string filename) {
         aMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &albedoFile);
         std::string albedoPath = workingDirectory + std::string(albedoFile.C_Str());
         std::replace(albedoPath.begin(), albedoPath.end(), '\\', '/');
-        albedo = Renderer::getTexture(albedoPath);
+        albedo = Resources::getTexture(albedoPath);
 
         aiString normalFile;
         Texture normal;
@@ -51,14 +52,14 @@ void WorkspaceObject::import(std::string filename) {
         aMaterial->GetTexture(aiTextureType_SPECULAR, 0, &metallicFile);
         std::string metallicPath = workingDirectory + std::string(metallicFile.C_Str());
         std::replace(metallicPath.begin(), metallicPath.end(), '\\', '/');
-        metallic = Renderer::getTexture(metallicPath);
+        metallic = Resources::getTexture(metallicPath);
 
         aiString roughnessFile;
         Texture roughness;
         aMaterial->GetTexture(aiTextureType_SHININESS, 0, &roughnessFile);
         std::string roughnessPath = workingDirectory + std::string(roughnessFile.C_Str());
         std::replace(roughnessPath.begin(), roughnessPath.end(), '\\', '/');
-        roughness = Renderer::getTexture(roughnessPath);
+        roughness = Resources::getTexture(roughnessPath);
 
         material.setPBRUniforms(albedo, roughness, metallic, normal);
 
@@ -69,7 +70,6 @@ void WorkspaceObject::import(std::string filename) {
 
     for (int i = 0; i < scene->mNumMeshes; i++) {
         aiMesh *aMesh = scene->mMeshes[i];
-
 
         Mesh mesh = Mesh();
 
@@ -130,7 +130,7 @@ void WorkspaceObject::open(std::string filename) {
         mat.setShader(Renderer::standardShader);
         mat.setUniformBool("albedoTextured", jMaterial["albedoTextured"]);
         if (jMaterial["albedoTextured"]) {
-            Texture tex = Renderer::getTexture(Path::getFullPath(workingDirectory, jMaterial["albedoTex"]));
+            Texture tex = Resources::getTexture(Path::getFullPath(workingDirectory, jMaterial["albedoTex"]));
             std::cout << tex.getFilepath() << std::endl;
             mat.setUniformTexture("albedoTex", tex, 0);
         }
@@ -142,7 +142,7 @@ void WorkspaceObject::open(std::string filename) {
         mat.setUniformBool("invertRoughness", jMaterial["invertRoughness"]);
         mat.setUniformBool("roughnessMetallicAlpha", jMaterial["roughnessMetallicAlpha"]);
         if (jMaterial["roughnessTextured"]) {
-            Texture tex = Renderer::getTexture(Path::getFullPath(workingDirectory, jMaterial["roughnessTex"]));
+            Texture tex = Resources::getTexture(Path::getFullPath(workingDirectory, jMaterial["roughnessTex"]));
             mat.setUniformTexture("roughnessTex", tex, 1);
         }
         else {
@@ -151,7 +151,7 @@ void WorkspaceObject::open(std::string filename) {
 
         mat.setUniformBool("metallicTextured", jMaterial["metallicTextured"]);
         if (jMaterial["metallicTextured"]) {
-            Texture tex = Renderer::getTexture(Path::getFullPath(workingDirectory, jMaterial["metallicTex"]));
+            Texture tex = Resources::getTexture(Path::getFullPath(workingDirectory, jMaterial["metallicTex"]));
             mat.setUniformTexture("metallicTex", tex, 2);
         }
         else {
@@ -160,7 +160,7 @@ void WorkspaceObject::open(std::string filename) {
 
         mat.setUniformBool("normalTextured", jMaterial["normalTextured"]);
         if (jMaterial["normalTextured"]) {
-            Texture tex = Renderer::getTexture(Path::getFullPath(workingDirectory, jMaterial["normalTex"]));
+            Texture tex = Resources::getTexture(Path::getFullPath(workingDirectory, jMaterial["normalTex"]));
             mat.setUniformTexture("normalTex", tex, 3);
         }
 
@@ -188,7 +188,7 @@ void WorkspaceObject::render(int selection) {
             Renderer::enableOutline();
         }
 
-        Renderer::render(&meshes[i].mesh, &materials[meshes[i].materialIndex].material, Transform(vec3(), vec3(), vec3(1.0f)), AABB());
+        Renderer::render(&meshes[i].mesh, &materials[meshes[i].materialIndex].material, Transform(vec3(), quaternion(), vec3(1.0f)), AABB());
 
         if (i == selection) {
             Renderer::disableOutline();
@@ -200,8 +200,6 @@ void WorkspaceObject::render(int selection) {
 void WorkspaceObject::save(std::string path) {
     std::string originalPath = path;
     Path::format(path);
-
-    std::cout << Path::getRelativePath(path, "/Users/Joseph/Desktop/joseph-data-backup/git/crucible/resources/test/hi.png") << std::endl;
 
     using json = nlohmann::json;
 

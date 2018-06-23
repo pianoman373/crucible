@@ -1,5 +1,6 @@
 #include <crucible/Model.hpp>
 #include <crucible/Renderer.hpp>
+#include <crucible/Resources.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -38,7 +39,7 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             aMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &albedoFile);
             std::string albedoPath = workingDirectory + std::string(albedoFile.C_Str());
             std::replace(albedoPath.begin(), albedoPath.end(), '\\', '/');
-            albedo = Renderer::getTexture(albedoPath);
+            albedo = Resources::getTexture(albedoPath);
 
             aiString normalFile;
             Texture normal;
@@ -52,14 +53,14 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             aMaterial->GetTexture(aiTextureType_SPECULAR, 0, &metallicFile);
             std::string metallicPath = workingDirectory + std::string(metallicFile.C_Str());
             std::replace(metallicPath.begin(), metallicPath.end(), '\\', '/');
-            metallic = Renderer::getTexture(metallicPath);
+            metallic = Resources::getTexture(metallicPath);
 
             aiString roughnessFile;
             Texture roughness;
             aMaterial->GetTexture(aiTextureType_SHININESS, 0, &roughnessFile);
             std::string roughnessPath = workingDirectory + std::string(roughnessFile.C_Str());
             std::replace(roughnessPath.begin(), roughnessPath.end(), '\\', '/');
-            roughness = Renderer::getTexture(roughnessPath);
+            roughness = Resources::getTexture(roughnessPath);
 
 
             //std::cout << "metallic: " << metallicFile.C_Str() << std::endl;

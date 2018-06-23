@@ -1,6 +1,7 @@
 #include "GuiMain.hpp"
 
 #include <imgui.h>
+#include <imgui_dock.h>
 #include <tinyfiledialogs.h>
 
 #include <crucible/Window.hpp>
@@ -142,7 +143,10 @@ void GuiMain::render() {
 
     ImGui::GetStyle().WindowRounding = 0;
 
-    // left sidebar
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImVec2(Window::getWindowSize().x, Window::getWindowSize().y));
+
+    //left sidebar
     ImGui::SetNextWindowSize(ImVec2(230, Window::getWindowSize().y - 18));
     ImGui::SetNextWindowPos(ImVec2(0, 18));
     ImGui::SetNextWindowBgAlpha(1.0f);

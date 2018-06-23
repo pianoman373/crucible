@@ -4,6 +4,7 @@
 
 #include <glad/glad.h>
 #include <imgui.h>
+#include <imgui_dock.h>
 #include <crucible/imgui_impl_glfw_gl3.h>
 
 GLFWwindow *Window::window;
@@ -46,6 +47,7 @@ void Window::create(vec2i resolution, std::string title, bool fullscreen) {
     ImGui::CreateContext();
     ImGui_ImplGlfwGL3_Init(window, true);
     ImGui::StyleColorsDark();
+    ImGui::InitDock();
 
     glfwSetKeyCallback(window, Input::key_callback);
     glfwSetMouseButtonCallback(window, Input::mouse_button_callback);
