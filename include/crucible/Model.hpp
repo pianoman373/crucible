@@ -6,15 +6,24 @@
 #include <vector>
 #include <string>
 
+struct ModelNode {
+    Mesh mesh;
+    int materialIndex;
+    std::string name;
+};
+
 class Model {
 public:
-    std::vector<Mesh> meshes;
     std::vector<Material> materials;
-    std::vector<std::string> names;
+    std::vector<ModelNode> nodes;
 
     void addSubmesh(Mesh mesh, Material material, std::string names="Untitled Submesh");
 
-    void loadFile(std::string filename, bool loadTextures=true);
+    void importFile(std::string filename, bool loadTextures=true);
+
+    void fromJson(json j, std::string workingDirectory);
+
+    json toJson(std::string workingDirectory);
 
     void clear();
 };

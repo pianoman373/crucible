@@ -1,0 +1,19 @@
+{
+	"name": "Plastic",
+	"uniforms": {
+		"albedoTextured": true,
+		"albedoColor": [0.0, 0.0, 1.0],
+		"albedoTex": "plastic/albedo.png",
+
+		"roughnessTextured": true,
+		"roughnessColor": 0.0,
+		"roughnessTex": "plastic/roughness.png",
+
+		"metallicTextured": true,
+		"metallicColor": 0.0,
+		"metallicTex": "plastic/metallic.png",
+
+		"normalTextured": true,
+		"normalTex": "plastic/normal.png"
+	}
+}

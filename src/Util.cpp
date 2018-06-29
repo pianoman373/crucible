@@ -5,31 +5,31 @@
 #include <math.h>
 
 namespace Util {
-    void updateSpaceCamera(Camera &cam) {
+    void updateSpaceCamera(Camera &cam, float speed) {
         static vec2 lastMousePos;
         Window::setMouseGrabbed(Input::isMouseButtonDown(1));
 
         if (Input::isMouseButtonDown(1)) {
             vec3 right = cam.getRight();
-            float speed = 8.0f * Window::deltaTime();
+            float deltaSpeed = speed * Window::deltaTime();
 
             if (Input::isKeyDown(Input::KEY_A))
-                cam.position = cam.position - right * speed;
+                cam.position = cam.position - right * deltaSpeed;
 
             if (Input::isKeyDown(Input::KEY_D))
-                cam.position = cam.position + right * speed;
+                cam.position = cam.position + right * deltaSpeed;
 
             if (Input::isKeyDown(Input::KEY_W))
-                cam.position = cam.position + cam.direction * speed;
+                cam.position = cam.position + cam.direction * deltaSpeed;
 
             if (Input::isKeyDown(Input::KEY_S))
-                cam.position = cam.position - cam.direction * speed;
+                cam.position = cam.position - cam.direction * deltaSpeed;
 
             if (Input::isKeyDown(Input::KEY_R))
-                cam.position = cam.position + cam.up * speed;
+                cam.position = cam.position + cam.up * deltaSpeed;
 
             if (Input::isKeyDown(Input::KEY_F))
-                cam.position = cam.position - cam.up * speed;
+                cam.position = cam.position - cam.up * deltaSpeed;
 
 
             //rotation

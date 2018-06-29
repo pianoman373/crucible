@@ -61,7 +61,7 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     target_link_libraries(NBodyDemo crucible)
     set_target_properties(NBodyDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-    add_executable(terrainDemo examples/terrainDemo.cpp)
+    add_executable(terrainDemo examples/terrainDemo.cpp examples/SimplexNoise.cpp examples/SimplexNoise.hpp)
     target_link_libraries(terrainDemo crucible)
     set_target_properties(terrainDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()

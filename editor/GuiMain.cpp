@@ -76,7 +76,7 @@ void ImGuiMaterialEditTexture(std::string label, std::string id, Material *mat, 
     }
 }
 
-void GuiMain::renderMaterial(WorkspaceMaterial *mat) {
+void GuiMain::renderMaterial(Material *mat) {
     ImGui::Text("Material Editor");
     ImGui::Separator();
 
@@ -88,45 +88,45 @@ void GuiMain::renderMaterial(WorkspaceMaterial *mat) {
 
     ImGui::Separator();
 
-    if (ImGuiMaterialEditBool("Albedo Textured", "albedoTextured", &mat->material)) {
-        ImGuiMaterialEditTexture("Albedo", "albedoTex", &mat->material, 0);
+    if (ImGuiMaterialEditBool("Albedo Textured", "albedoTextured", mat)) {
+        ImGuiMaterialEditTexture("Albedo", "albedoTex", mat, 0);
     }
     else {
-        ImGuiMaterialEditVec3("Albedo", "albedoColor", &mat->material);
+        ImGuiMaterialEditVec3("Albedo", "albedoColor", mat);
     }
 
     ImGui::Separator();
 
-    ImGuiMaterialEditBool("Invert Roughness", "invertRoughness", &mat->material);
+    ImGuiMaterialEditBool("Invert Roughness", "invertRoughness", mat);
 
-    if (*mat->material.getUniformBool("metallicTextured")) {
-        ImGuiMaterialEditBool("Use Metallic Alpha", "roughnessMetallicAlpha", &mat->material);
+    if (*mat->getUniformBool("metallicTextured")) {
+        ImGuiMaterialEditBool("Use Metallic Alpha", "roughnessMetallicAlpha", mat);
     }
     else {
-        mat->material.setUniformBool("roughnessMetallicAlpha", false); // if metallicTextured gets turned off we need to turn this off as well
+        mat->setUniformBool("roughnessMetallicAlpha", false); // if metallicTextured gets turned off we need to turn this off as well
     }
 
-    if (!*mat->material.getUniformBool("roughnessMetallicAlpha")) { //if "use metallic alpha" is enabled we don't need these options
-        if (ImGuiMaterialEditBool("Roughness Textured", "roughnessTextured", &mat->material)) {
-            ImGuiMaterialEditTexture("Roughness", "roughnessTex", &mat->material, 1);
+    if (!*mat->getUniformBool("roughnessMetallicAlpha")) { //if "use metallic alpha" is enabled we don't need these options
+        if (ImGuiMaterialEditBool("Roughness Textured", "roughnessTextured", mat)) {
+            ImGuiMaterialEditTexture("Roughness", "roughnessTex", mat, 1);
         }
         else {
-            ImGuiMaterialEditFloat("Roughness", "roughnessColor", &mat->material, 0.0f, 1.0f);
+            ImGuiMaterialEditFloat("Roughness", "roughnessColor", mat, 0.0f, 1.0f);
         }
     }
 
 
     ImGui::Separator();
 
-    if (ImGuiMaterialEditBool("Metallic Textured", "metallicTextured", &mat->material)) {
-        ImGuiMaterialEditTexture("Metallic", "metallicTex", &mat->material, 2);
+    if (ImGuiMaterialEditBool("Metallic Textured", "metallicTextured", mat)) {
+        ImGuiMaterialEditTexture("Metallic", "metallicTex", mat, 2);
     }
     else {
-        ImGuiMaterialEditFloat("Metallic", "metallicColor", &mat->material, 0.0f, 1.0f);
+        ImGuiMaterialEditFloat("Metallic", "metallicColor", mat, 0.0f, 1.0f);
     }
 
-    if (ImGuiMaterialEditBool("Normal Textured", "normalTextured", &mat->material)) {
-        ImGuiMaterialEditTexture("Normals", "normalTex", &mat->material, 3);
+    if (ImGuiMaterialEditBool("Normal Textured", "normalTextured", mat)) {
+        ImGuiMaterialEditTexture("Normals", "normalTex", mat, 3);
     }
 }
 
@@ -156,9 +156,9 @@ void GuiMain::render() {
         ImGui::Text("Meshes");
         ImGui::Separator();
 
-        for (int n = 0; n < workspace->meshes.size(); n++)
+        for (int n = 0; n < workspace->model.nodes.size(); n++)
         {
-            if (ImGui::Selectable(workspace->meshes[n].name.c_str(), selected == n))
+            if (ImGui::Selectable(workspace->model.nodes[n].name.c_str(), selected == n))
                 selected = n;
         }
 
@@ -166,10 +166,10 @@ void GuiMain::render() {
         ImGui::Text("Materials");
         ImGui::Separator();
 
-        for (int n = 0; n < workspace->materials.size(); n++)
+        for (int n = 0; n < workspace->model.materials.size(); n++)
         {
-            if (ImGui::Selectable(workspace->materials[n].name.c_str(), selected == n+workspace->meshes.size()))
-                selected = n+workspace->meshes.size();
+            if (ImGui::Selectable(workspace->model.materials[n].name.c_str(), selected == n+workspace->model.nodes.size()))
+                selected = n+workspace->model.nodes.size();
         }
 
 
@@ -184,9 +184,9 @@ void GuiMain::render() {
     if (ImGui::Begin("right sidebar", &p_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
     {
         if (selected >= 0) {
-            if (selected > workspace->meshes.size()-1) {
+            if (selected > workspace->model.nodes.size()-1) {
                 // material is selected
-                renderMaterial(&workspace->materials[selected - workspace->meshes.size()]);
+                renderMaterial(&workspace->model.materials[selected - workspace->model.nodes.size()]);
 
             }
             else {

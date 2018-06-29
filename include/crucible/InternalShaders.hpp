@@ -278,7 +278,7 @@ void main()
         emis = length(texture(emissionTex, fTexCoord).rgb) * 5;
     }
     else {
-        emis = emission;
+        emis = emission * 10;
     }
 
     if (invertRoughness) {
@@ -572,7 +572,6 @@ vec3 postProcess(vec2 texCoord) {
 
 	if (length(FragPos) > 0.0) {
 		return light + (emission * Albedo);
-        //return vec3(ssao);
 	}
 	else {
 		discard;
@@ -609,17 +608,21 @@ vec3 reinhard(vec3 col, float exposure) {
 }
 
 vec3 postProcess(vec2 texCoord) {
+    vec3 deferred = texture(texture3, texCoord).rgb;
+
+    if (ssao) {
+        deferred *= texture(ssaoTexture, texCoord).rgb;
+    }
+
     vec3 color;
     if (bloom) {
-        color = (texture(texture0, texCoord).rgb*bloomStrength) + (texture(texture1, texCoord).rgb*bloomStrength) + (texture(texture2, texCoord).rgb*bloomStrength) + texture(texture3, texCoord).rgb;
+        color = (texture(texture0, texCoord).rgb*bloomStrength) + (texture(texture1, texCoord).rgb*bloomStrength) + (texture(texture2, texCoord).rgb*bloomStrength) + deferred;
     }
     else {
         color = texture(texture3, texCoord).rgb;
     }
 
-    if (ssao) {
-        color *= texture(ssaoTexture, texCoord).rgb;
-    }
+
 
     vec3 grayscale = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
     vec2 texelSize = 1.0 / textureSize(texture0, 0).xy;
@@ -656,108 +659,37 @@ uniform sampler2D gRoughnessMetallic;
 uniform sampler2D deferredPass;
 uniform samplerCube prefilter;
 uniform sampler2D brdf;
-uniform sampler2D deferredBlur;
 
 
 
 uniform mat4 projection;
 uniform mat4 view;
 
-const float step = 0.01;
-const float minRayStep = 0.01;
-const float maxSteps = 200;
-const int numBinarySearchSteps = 30;
-
 #include <lighting>
 
-vec3 binarySearch(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
-{
-    float depth;
 
-    vec4 projectedCoord;
-
-    for(int i = 0; i < numBinarySearchSteps; i++)
-    {
-
-        projectedCoord = projection * vec4(hitCoord, 1.0);
-        projectedCoord.xy /= projectedCoord.w;
-        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
-
-        depth = (view * vec4(texture(gPosition, projectedCoord.xy).xyz, 1.0)).z;
-        dDepth = hitCoord.z - depth;
-
-        dir *= 0.5;
-        if(dDepth > 0.0)
-            hitCoord += dir;
-        else
-            hitCoord -= dir;
-    }
-
-        projectedCoord = projection * vec4(hitCoord, 1.0);
-        projectedCoord.xy /= projectedCoord.w;
-        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
-
-    return vec3(projectedCoord.xy, depth);
-}
-
-vec4 rayMarch(vec3 dir, inout vec3 hitCoord, out float dDepth)
-{
-    dir *= step;
-
-    float error = 1.0;
-    float depth;
-    int steps;
-    vec4 projectedCoord;
-
-    for(int i = 0; i < maxSteps; i++)
-    {
-        hitCoord += dir;
-
-        projectedCoord = projection * vec4(hitCoord, 1.0);
-        projectedCoord.xy /= projectedCoord.w;
-        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
-
-        depth = (view * vec4(texture(gPosition, projectedCoord.xy).xyz, 1.0)).z;
-        if(depth > 1000.0)
-            continue;
-
-        dDepth = hitCoord.z - depth;
-
-        if((dir.z - dDepth) < 1.2)
-        {
-            if(dDepth <= 0.0)
-            {
-                error = 0.0;
-                vec4 Result;
-                Result = vec4(binarySearch(dir, hitCoord, dDepth), 1.0);
-                return Result;
-            }
-
-        }
-
-        steps++;
-    }
-
-    return vec4(projectedCoord.xy, depth, error);
-}
 
 vec3 postProcess(vec2 texCoord) {
+    mat4 inverseView = inverse(view);
+
     vec3 viewPos = texture(gPosition, texCoord).rgb;
     vec3 normal = normalize(texture(gNormal, texCoord).rgb);
     float roughness = texture(gRoughnessMetallic, texCoord).r;
     float metallic = texture(gRoughnessMetallic, texCoord).g;
     vec3 albedo = texture(gAlbedo, texCoord).rgb;
 
+
+
     // lighting input
     vec3 N = normalize(normal);
-    vec3 V = normalize(-viewPos);
-    vec3 R = reflect(-V, N);
+    vec3 V = normalize(viewPos);
+    vec3 R = reflect(V, N);
 
     vec3 hitPos = viewPos;
     float dDepth;
 
-    vec4 coords = rayMarch(R, hitPos, dDepth);
-    float error = coords.w;
+    vec4 coords = rayMarch(R * max(minRayStep, -viewPos.z), hitPos, dDepth);
+    //float error = coords.w;
 
     vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
@@ -792,6 +724,9 @@ vec3 postProcess(vec2 texCoord) {
 
 	vec3 specular = prefilteredColor * (F * brdfColor.x + brdfColor.y);
     //-------------------------------------------
+
+    //return texture(deferredPass, coords.xy).rgb;
+
 
     if (length(texture(gPosition, texCoord).rgb) > 0.0) {
         return texture(deferredPass, texCoord).rgb + (SSR*F);

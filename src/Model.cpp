@@ -1,39 +1,50 @@
 #include <crucible/Model.hpp>
 #include <crucible/Renderer.hpp>
 #include <crucible/Resources.hpp>
+#include <crucible/Path.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <string>
 #include <algorithm>
+#include <fstream>
 
 void Model::addSubmesh(Mesh mesh, Material material, std::string name) {
-    meshes.push_back(mesh);
     materials.push_back(material);
-    names.push_back(name);
+
+    ModelNode node;
+    node.mesh = mesh;
+    node.materialIndex = materials.size();
+    node.name = name;
+
+    nodes.push_back(node);
 }
 
-void Model::loadFile(std::string filename, bool loadTextures) {
+void Model::importFile(std::string filename, bool loadTextures) {
+    clear();
+
     Assimp::Importer importer;
+
     std::replace(filename.begin(), filename.end(), '\\', '/');
-	std::string workingDirectory = filename.substr(0, filename.find_last_of("/")) + "/";
-    const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals);
+    std::string workingDirectory = filename.substr(0, filename.find_last_of("/")) + "/";
+    const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices);
+
 
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
     }
 
-    for (int i = 0; i < scene->mNumMeshes; i++) {
-        aiMesh *aMesh = scene->mMeshes[i];
-		aiMaterial *aMaterial = scene->mMaterials[aMesh->mMaterialIndex];
+    for (int i = 0; i < scene->mNumMaterials; i++) {
+        aiMaterial *aMaterial = scene->mMaterials[i];
 
-		Material material;
+        Material material;
 
-		material.setShader(Renderer::standardShader);
+        material.setShader(Renderer::standardShader);
+        material.setDefaultPBRUniforms();
 
-		if (loadTextures) {
+        if (aMaterial->GetTextureCount(aiTextureType_DIFFUSE)) {
             aiString albedoFile;
             Texture albedo;
             aMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &albedoFile);
@@ -41,6 +52,11 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             std::replace(albedoPath.begin(), albedoPath.end(), '\\', '/');
             albedo = Resources::getTexture(albedoPath);
 
+            material.setUniformBool("albedoTextured", true);
+            material.setUniformTexture("albedoTex", albedo, 0);
+        }
+
+        if (aMaterial->GetTextureCount(aiTextureType_NORMALS)) {
             aiString normalFile;
             Texture normal;
             aMaterial->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
@@ -48,6 +64,11 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             std::replace(normalPath.begin(), normalPath.end(), '\\', '/');
             normal.load(normalPath.c_str());
 
+            material.setUniformBool("normalTextured", true);
+            material.setUniformTexture("normalTex", normal, 1);
+        }
+
+        if (aMaterial->GetTextureCount(aiTextureType_SPECULAR)) {
             aiString metallicFile;
             Texture metallic;
             aMaterial->GetTexture(aiTextureType_SPECULAR, 0, &metallicFile);
@@ -55,6 +76,11 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             std::replace(metallicPath.begin(), metallicPath.end(), '\\', '/');
             metallic = Resources::getTexture(metallicPath);
 
+            material.setUniformBool("metallicTextured", true);
+            material.setUniformTexture("metallicTex", metallic, 2);
+        }
+
+        if (aMaterial->GetTextureCount(aiTextureType_SHININESS)) {
             aiString roughnessFile;
             Texture roughness;
             aMaterial->GetTexture(aiTextureType_SHININESS, 0, &roughnessFile);
@@ -62,16 +88,18 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             std::replace(roughnessPath.begin(), roughnessPath.end(), '\\', '/');
             roughness = Resources::getTexture(roughnessPath);
 
-
-            //std::cout << "metallic: " << metallicFile.C_Str() << std::endl;
-            //std::cout << "roughness: " << roughnessFile.C_Str() << std::endl;
-
-
-            material.setPBRUniforms(albedo, roughness, metallic, normal);
+            material.setUniformBool("roughnessTextured", true);
+            material.setUniformTexture("roughnessTex", roughness, 3);
         }
-        else {
-            material.setPBRUniforms(vec3(0.8f), 0.5f, 0.0f);
-		}
+
+
+        aiString materialName;
+        aMaterial->Get(AI_MATKEY_NAME, materialName);
+        materials.push_back(material);
+    }
+
+    for (int i = 0; i < scene->mNumMeshes; i++) {
+        aiMesh *aMesh = scene->mMeshes[i];
 
         Mesh mesh = Mesh();
 
@@ -89,6 +117,10 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             mesh.normals[i] = vec3(aMesh->mNormals[i].x, aMesh->mNormals[i].y, aMesh->mNormals[i].z);
             mesh.tangents[i] = vec3(aMesh->mTangents[i].x, aMesh->mTangents[i].y, aMesh->mTangents[i].z);
 
+            if (isnan(mesh.tangents[i].x) || isnan(mesh.tangents[i].z == NAN) ||  isnan(mesh.tangents[i].z)) {
+                mesh.tangents[i] = {0.0f, 0.0f, 0.0f};
+            }
+
             if (aMesh->mTextureCoords[0]) {
                 mesh.uvs[i] = vec2(aMesh->mTextureCoords[0][i].x, aMesh->mTextureCoords[0][i].y);
             }
@@ -100,13 +132,73 @@ void Model::loadFile(std::string filename, bool loadTextures) {
             }
         }
 
-        mesh.generate();
+        ModelNode node;
+        node.mesh = mesh;
+        node.mesh.generate();
+        node.materialIndex = aMesh->mMaterialIndex;
+        node.name = aMesh->mName.C_Str();
 
-        addSubmesh(mesh, material, std::string(aMesh->mName.C_Str()));
+        nodes.push_back(node);
     }
 }
 
+void Model::fromJson(json j, std::string workingDirectory) {
+
+    json jMaterials = j["materials"];
+
+    for (int i = 0; i < jMaterials.size(); i++) {
+        json jMaterial = jMaterials[i];
+
+        Material mat;
+
+        mat.setShader(Renderer::standardShader);
+        mat.setDefaultPBRUniforms();
+        mat.fromJson(jMaterial, workingDirectory);
+
+        materials.push_back(mat);
+    }
+
+
+    json jMeshes = j["meshes"];
+
+    for (int i = 0; i < jMeshes.size(); i++) {
+        json jMesh = jMeshes[i];
+
+
+        ModelNode node;
+        node.mesh.fromJson(jMesh["data"]);
+        node.mesh.generate();
+
+        node.materialIndex = jMesh["materialIndex"];
+        node.name = jMesh["name"];
+
+        nodes.push_back(node);
+    }
+}
+
+json Model::toJson(std::string workingDirectory) {
+   json j;
+
+    for (int i = 0; i < nodes.size(); i++) {
+        ModelNode node = nodes[i];
+        json jMesh;
+        jMesh["name"] = node.name;
+        jMesh["data"] = node.mesh.toJson();
+        jMesh["materialIndex"] = node.materialIndex;
+
+        j["meshes"][i] = jMesh;
+    }
+
+    for (int i = 0; i < materials.size(); i++) {
+        Material mat = materials[i];
+
+        j["materials"][i]  = mat.toJson(workingDirectory);
+    }
+
+    return j;
+}
+
 void Model::clear() {
-    meshes.clear();
+    nodes.clear();
     materials.clear();
 }

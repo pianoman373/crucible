@@ -7,7 +7,7 @@ class GuiMain {
 private:
     WorkspaceObject *workspace;
 
-    void renderMaterial(WorkspaceMaterial *mat);
+    void renderMaterial(Material *mat);
 
 public:
     int selected = -1;

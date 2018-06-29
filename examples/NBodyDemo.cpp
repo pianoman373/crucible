@@ -19,7 +19,7 @@ void updateMesh() {
 };
 
 int main(int argc, char *argv[]) {
-    Window::create({1000, 800}, "test");
+    Window::create({1000, 800}, "test", false);
     Camera cam(vec3(1.0f, 1.0f, 6.0f));
 
     Shader s;
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     debugRendererMesh.generate();
 
-    Renderer::init(false, 0);
+    Renderer::init(false, 0, 1000, 800);
 
     Material mat;
     mat.setShader(s);

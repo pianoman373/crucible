@@ -74,7 +74,7 @@ int main() {
 
     Renderer::setSun({ vec3(1.05f, -6.8f, -1.3f), vec3(10.0f, 9.5f, 9.0f) });
 
-    workspace.open(Path::getFullPath("resources/Rifle/rifle.asset"));
+    //workspace.open(Path::getFullPath("resources/Rifle/rifle.crmodel"));
 
     GuiMain gui(&workspace);
 

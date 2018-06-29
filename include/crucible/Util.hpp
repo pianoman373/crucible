@@ -5,7 +5,7 @@
 #define SID(string) Util::custom_simple_hash(string)
 
 namespace Util {
-    void updateSpaceCamera(Camera &cam);
+    void updateSpaceCamera(Camera &cam, float speed=8.0f);
 
     float rand();
 

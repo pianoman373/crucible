@@ -1,0 +1,19 @@
+{
+	"name": "Wood",
+	"uniforms": {
+		"albedoTextured": true,
+		"albedoColor": [0.0, 0.0, 1.0],
+		"albedoTex": "wood/albedo.png",
+
+		"roughnessTextured": true,
+		"roughnessColor": 0.0,
+		"roughnessTex": "wood/roughness.png",
+
+		"metallicTextured": true,
+		"metallicColor": 0.0,
+		"metallicTex": "wood/metallic.png",
+
+		"normalTextured": true,
+		"normalTex": "wood/normal.png"
+	}
+}

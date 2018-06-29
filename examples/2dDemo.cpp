@@ -62,7 +62,6 @@ int main(int argc, char *argv[]) {
         else {
             playerVelocity.y -= 9.8f * Window::deltaTime();
             onGround = false;
-
         }
         if (Input::isKeyDown(Input::KEY_SPACE) && playerPos.y < 0.01f) {
             playerVelocity.y = 5.0f;
@@ -79,13 +78,13 @@ int main(int argc, char *argv[]) {
 
         if (onGround) {
             if (Input::isKeyDown(Input::KEY_A) || Input::isKeyDown(Input::KEY_D)) {
-                Renderer::renderSprite(run, playerPos, vec2(playerDirection, 1.0f),
-                                       vec4((float) i / 6.0f, 0.0f, 1.0f / 6.0f, 1.0f));
-            } else {
-                Renderer::renderSprite(idle, playerPos, vec2(playerDirection, 1.0f),
-                                       vec4((float) i / 4.0f, 0.0f, 1.0f / 4.0f, 1.0f));
-            }
+            Renderer::renderSprite(run, playerPos, vec2(playerDirection, 1.0f),
+                                   vec4((float) i / 6.0f, 0.0f, 1.0f / 6.0f, 1.0f));
+        } else {
+            Renderer::renderSprite(idle, playerPos, vec2(playerDirection, 1.0f),
+                                   vec4((float) i / 4.0f, 0.0f, 1.0f / 4.0f, 1.0f));
         }
+    }
         else {
             if (playerVelocity.y > 0.0f)
                 Renderer::renderSprite(jump, playerPos, vec2(playerDirection, 1.0f),

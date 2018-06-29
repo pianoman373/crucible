@@ -1,0 +1,8 @@
+{
+	"name": "Ceramic",
+	"uniforms": {
+		"albedoColor": [0.05, 0.05, 1.0],
+		"roughnessColor": 0.1,
+		"metallicColor": 0.0
+	}
+}

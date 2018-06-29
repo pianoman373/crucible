@@ -348,8 +348,9 @@ namespace Renderer {
 
 	// ------------------------------------------------------------------------
 	void render(Model *model, Transform transform, AABB aabb) {
-		for (unsigned int i = 0; i < model->meshes.size(); i++) {
-			render(&model->meshes[i], &model->materials[i], transform, aabb);
+		for (unsigned int i = 0; i < model->nodes.size(); i++) {
+			ModelNode *node = &model->nodes[i];
+			render(&node->mesh, &model->materials[node->materialIndex], transform, aabb);
 		}
 	}
 
@@ -467,33 +468,6 @@ namespace Renderer {
 		HDRbuffer.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// render any sprites
-		// ------------------
-		glDepthMask(GL_FALSE);
-		for (unsigned int i = 0; i < renderQueueSprite.size(); i++) {
-			RenderCallSprite call = renderQueueSprite.top();
-			renderQueueSprite.pop();
-
-			spriteShader.bind();
-
-			call.tex.bind(0);
-
-			spriteShader.uniformVec4("uvOffsets", call.uv);
-
-			mat4 model;
-			model = translate(model, vec3(call.pos.x, call.pos.y, 0.0f));
-			model = scale(model, vec3(call.dimensions.x, call.dimensions.y, 0.0f));
-
-
-			spriteShader.uniformMat4("model", model);
-			spriteShader.uniformMat4("view", cam.getView());
-			spriteShader.uniformMat4("projection", cam.getProjection());
-			spriteShader.uniformVec3("cameraPos", cam.getPosition());
-
-			spriteMesh.render();
-		}
-		glDepthMask(GL_TRUE);
-
 		HDRbuffer.bind();
 		// render the g-buffers with the deferred shader
 		// ---------------------------------------------
@@ -574,6 +548,33 @@ namespace Renderer {
 		passthroughShader.bind();
 		final.bind();
 		framebufferMesh.render();
+
+		// render any sprites
+		// ------------------
+		glDepthMask(GL_FALSE);
+		for (unsigned int i = 0; i < renderQueueSprite.size(); i++) {
+			RenderCallSprite call = renderQueueSprite.top();
+			renderQueueSprite.pop();
+
+			spriteShader.bind();
+
+			call.tex.bind(0);
+
+			spriteShader.uniformVec4("uvOffsets", call.uv);
+
+			mat4 model;
+			model = translate(model, vec3(call.pos.x, call.pos.y, 0.0f));
+			model = scale(model, vec3(call.dimensions.x, call.dimensions.y, 0.0f));
+
+
+			spriteShader.uniformMat4("model", model);
+			spriteShader.uniformMat4("view", cam.getView());
+			spriteShader.uniformMat4("projection", cam.getProjection());
+			spriteShader.uniformVec3("cameraPos", cam.getPosition());
+
+			spriteMesh.render();
+		}
+		glDepthMask(GL_TRUE);
 
 		// copy depth and stencil buffer
 		// -------------------------------

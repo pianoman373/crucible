@@ -1,0 +1,19 @@
+{
+	"name": "Rusted Iron",
+	"uniforms": {
+		"albedoTextured": true,
+		"albedoColor": [0.0, 0.0, 1.0],
+		"albedoTex": "rustediron/albedo.png",
+
+		"roughnessTextured": true,
+		"roughnessColor": 0.0,
+		"roughnessTex": "rustediron/roughness.png",
+
+		"metallicTextured": true,
+		"metallicColor": 0.0,
+		"metallicTex": "rustediron/metallic.png",
+
+		"normalTextured": true,
+		"normalTex": "rustediron/normal.png"
+	}
+}

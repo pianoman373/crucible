@@ -5,24 +5,13 @@
 
 #include <crucible/Mesh.hpp>
 #include <crucible/Material.hpp>
-
-struct WorkspaceMesh {
-    Mesh mesh;
-    std::string name;
-    int materialIndex;
-};
-
-struct WorkspaceMaterial {
-    Material material;
-    std::string name;
-};
+#include <crucible/Model.hpp>
 
 class WorkspaceObject {
 private:
 
 public:
-    std::vector<WorkspaceMesh> meshes;
-    std::vector<WorkspaceMaterial> materials;
+    Model model;
 
     void import(std::string filename);
 

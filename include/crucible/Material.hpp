@@ -7,6 +7,9 @@
 #include <crucible/Shader.hpp>
 #include <crucible/Texture.hpp>
 
+#include <json.hpp>
+using nlohmann::json;
+
 struct UniformTexture {
     Texture tex;
     unsigned int unit;
@@ -19,6 +22,8 @@ class Material {
 private:
     Shader shader;
 
+
+
     std::map<std::string, UniformTexture> textures;
 
     std::map<std::string, vec3> vec3Uniforms;
@@ -28,7 +33,19 @@ private:
     std::map<std::string, bool> boolUniforms;
 
 public:
+	std::string name;
+
     Material();
+
+    void fromJson(json j, std::string workingDirectory);
+
+    json toJson(std::string workingDirectory);
+
+    void loadFile(std::string file);
+
+    void saveFile(std::string file);
+
+	void setDefaultPBRUniforms();
 
     //all combinations of textures vs floats etc
     void setPBRUniforms(vec3 albedo, float roughness, float metallic);

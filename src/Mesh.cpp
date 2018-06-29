@@ -156,129 +156,114 @@ static std::vector<std::string> split(const std::string &s, char delim) {
 }
 // ------------------------------------------------------------------------------------------------
 
+json Mesh::toJson() {
+    json j;
 
-void Mesh::fromstring(std::string data) {
-    clear();
+    std::string sPositions;
+    for (int i = 0; i < positions.size(); i++) {
+        sPositions += std::to_string(positions[i].x);
+        sPositions += ",";
+        sPositions += std::to_string(positions[i].y);
+        sPositions += ",";
+        sPositions += std::to_string(positions[i].z);
+        sPositions += ",";
+    }
+    j["positions"] = sPositions;
 
-    std::vector<std::string> components = split(data, '/');
-
-    for (int i = 0; i < components.size(); i++) {
-        //std::cout << components[i] << std::endl;
-
-        std::vector<std::string> rawContents = split(components[i], ',');
-
-        std::string stype = rawContents[0];
-        int type = -1; // store type as integer for faster looping
-
-        std::vector<std::string> contents(rawContents.begin() + 1, rawContents.end()); // since the first element is the identifier, let's get rid of it to avoid off-by-one-errors
-
-
-        if (!stype.compare("p")) {
-            //std::cout << "positions" << std::endl;
-            type = 0;
-        }
-        if (!stype.compare("n")) {
-            //std::cout << "normals" << std::endl;
-            type = 1;
-        }
-        if (!stype.compare("u")) {
-            //std::cout << "uvs" << std::endl;
-            type = 2;
-        }
-        if (!stype.compare("t")) {
-            //std::cout << "tangents" << std::endl;
-            type = 3;
-        }
-        if (!stype.compare("i")) {
-            //std::cout << "indices" << std::endl;
-            type = 4;
-        }
-
-
-        for (int j = 0; j < contents.size(); j++) {
-            std::vector<std::string> dimensions = split(contents[j], '_');
-
-            if (type == 0) {
-                //positions
-                positions.push_back({stof(dimensions[0]), stof(dimensions[1]), stof(dimensions[2])});
-                //std::cout << "inserting " << stof(dimensions[0]) << ", " << stof(dimensions[1]) << ", " << stof(dimensions[2]) << std::endl;
-            }
-
-            if (type == 1) {
-                //normals
-                normals.push_back({stof(dimensions[0]), stof(dimensions[1]), stof(dimensions[2])});
-            }
-
-            if (type == 2) {
-                //uvs
-                uvs.push_back({stof(dimensions[0]), stof(dimensions[1])});
-            }
-
-            if (type == 3) {
-                //tangents
-                tangents.push_back({stof(dimensions[0]), stof(dimensions[1]), stof(dimensions[2])});
-            }
-
-            if (type == 4) {
-                //indices
-                indices.push_back(stoi(contents[j]));
-            }
+    std::string sNormals;
+    if (normals.size() > 0) {
+        for (int i = 0; i < normals.size(); i++) {
+            sNormals += std::to_string(normals[i].x);
+            sNormals += ",";
+            sNormals += std::to_string(normals[i].y);
+            sNormals += ",";
+            sNormals += std::to_string(normals[i].z);
+            sNormals += ",";
         }
     }
+    j["normals"] = sNormals;
+
+    std::string sUvs;
+    if (uvs.size() > 0) {
+        for (int i = 0; i < uvs.size(); i++) {
+            sUvs += std::to_string(uvs[i].x);
+            sUvs += ",";
+            sUvs += std::to_string(uvs[i].y);
+            sUvs += ",";
+        }
+    }
+    j["uvs"] = sUvs;
+
+    std::string sTangents;
+    if (tangents.size() > 0) {
+        for (int i = 0; i < tangents.size(); i++) {
+            sTangents += std::to_string(tangents[i].x);
+            sTangents += ",";
+            sTangents += std::to_string(tangents[i].y);
+            sTangents += ",";
+            sTangents += std::to_string(tangents[i].z);
+            sTangents += ",";
+        }
+    }
+    j["tangents"] = sTangents;
+
+
+    std::string sIndices;
+    if (indices.size() > 0) {
+        for (int i = 0; i < indices.size(); i++) {
+            sIndices += std::to_string(indices[i]);
+            sIndices += ",";
+        }
+    }
+    j["indices"] = sIndices;
+
+    return j;
 }
 
-std::string Mesh::tostring() {
-    std::stringstream buf;
-
-    buf << "p";
-    for (int i = 0; i < positions.size(); i++) {
-
-        vec3 pos = positions[i];
-        buf << "," << pos.x << "_" << pos.y << "_" << pos.z;
-    }
-    buf << "/";
+void Mesh::fromJson(json j) {
+    clear();
+    json jPositions = j["positions"];
+    json jNormals = j["normals"];
+    json jUvs = j["uvs"];
+    json jTangents = j["tangents"];
+    json jIndices = j["indices"];
 
 
-    if (normals.size() > 0) {
-        buf << "n";
-        for (int i = 0; i < normals.size(); i++) {
+    if (jPositions.is_string()) {
+        std::vector<std::string> sPositions = split(jPositions, ',');
 
-            vec3 normal = normals[i];
-            buf << "," << normal.x << "_" << normal.y << "_" << normal.z;
-        }
-        buf << "/";
-    }
-
-    if (uvs.size() > 0) {
-        buf << "u";
-        for (int i = 0; i < uvs.size(); i++) {
-
-            vec2 uv = uvs[i];
-            buf << "," << uv.x << "_" << uv.y;
-        }
-        buf << "/";
-    }
-
-    if (tangents.size() > 0) {
-        buf << "t";
-        for (int i = 0; i < tangents.size(); i++) {
-
-            vec3 tangent = tangents[i];
-            buf << "," << tangent.x << "_" << tangent.y << "_" << tangent.z;
-        }
-        buf << "/";
-    }
-
-
-    if (indices.size() > 0) {
-        buf << "i";
-        for (int i = 0; i  < indices.size(); i++) {
-
-            buf << "," << indices[i];
+        for (int i = 0; i < sPositions.size(); i += 3) {
+            positions.push_back(vec3(stof(sPositions[i]), stof(sPositions[i+1]), stof(sPositions[i+2])));
         }
     }
+    if (jNormals.is_string()) {
+        std::vector<std::string> sNormals = split(jNormals, ',');
 
-    return buf.str();
+        for (int i = 0; i < sNormals.size(); i += 3) {
+            normals.push_back(vec3(stof(sNormals[i]), stof(sNormals[i+1]), stof(sNormals[i+2])));
+        }
+    }
+    if (jUvs.is_string()) {
+        std::vector<std::string> sUvs = split(jUvs, ',');
+
+        for (int i = 0; i < sUvs.size(); i += 2) {
+            uvs.push_back(vec2(stof(sUvs[i]), stof(sUvs[i+1])));
+        }
+    }
+    if (jTangents.is_string()) {
+        std::vector<std::string> sTangents = split(jTangents, ',');
+
+        for (int i = 0; i < sTangents.size(); i += 3) {
+            tangents.push_back(vec3(stof(sTangents[i]), stof(sTangents[i+1]), stof(sTangents[i+2])));
+        }
+    }
+    if (jIndices.is_string()) {
+        std::vector<std::string> sIndices = split(jIndices, ',');
+
+        for (int i = 0; i < sIndices.size(); i++) {
+            indices.push_back(stoi(sIndices[i]));
+        }
+    }
 }
 
 void Mesh::destroy() {

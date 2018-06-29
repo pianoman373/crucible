@@ -228,9 +228,6 @@ Texture PostProcessor::postRender(Camera cam, Texture deferred, Texture gPositio
 //        ssrShader.uniformInt("deferredPass", 4);
 //        deferred.bind(4);
 //
-//        ssrShader.uniformInt("deferredBlur", 5);
-//        ssrBlurBuffer0.getAttachment(0).bind(5);
-//
 //        ssrShader.uniformInt("prefilter", 5);
 //        Renderer::specular.bind(5);
 //        ssrShader.uniformInt("brdf", 6);

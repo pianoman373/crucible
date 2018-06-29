@@ -6,6 +6,9 @@
 #include <crucible/Math.hpp>
 #include <crucible/IRenderable.hpp>
 
+#include <json.hpp>
+using nlohmann::json;
+
 
 class Mesh : public IRenderable {
 private:
@@ -32,11 +35,9 @@ public:
     Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<unsigned int> indices);
 
     Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<vec3> colors, std::vector<unsigned int> indices);
+    json toJson();
 
-    std::string tostring();
-
-    void fromstring(std::string data);
-
+    void fromJson(json j);
     void generate();
 
     void clear();

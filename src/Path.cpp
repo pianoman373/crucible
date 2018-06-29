@@ -73,12 +73,12 @@ namespace Path {
 
         int childIndex = 0;
 
-        for (int i = 0; i < parentList.size() - 1; i++) {
+        for (int i = 0; i < parentList.size(); i++) {
             //std::cout << parentList[i] << std::endl;
             //std::cout << childList[i] << std::endl;
             if (!parentList[i].compare(childList[i])) {
                 //std::cout << "equal" << std::endl;
-                childIndex += childList[i].size() + 1;
+                childIndex++;
             }
             else {
                 //std::cout << "not equal" << std::endl;
@@ -86,7 +86,14 @@ namespace Path {
             }
         }
 
-        finalPath += child.substr(childIndex + 1, child.size());
+        for (int i = childIndex; i < childList.size(); i++) {
+            finalPath += childList[i];
+
+            if (i + 1 < childList.size())
+                finalPath += "/";
+        }
+
+        //finalPath += child.substr(childIndex, child.size());
 
         return finalPath;
     }
@@ -117,6 +124,10 @@ namespace Path {
         }
 
         finalString += pathString;
+
+        if (workingDirectory[0] != '/') {
+            finalString= finalString.substr(1, finalString.size());
+        }
 
         return finalString;
     }
