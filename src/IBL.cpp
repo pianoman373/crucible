@@ -154,7 +154,7 @@ namespace IBL {
        irradiance.setID(irradianceMap);
        specular.setID(prefilterMap);
 
-        glDeleteFramebuffers(1, &captureFBO);
-        glDeleteRenderbuffers(1, &captureRBO);
+       glDeleteFramebuffers(1, &captureFBO);
+       glDeleteRenderbuffers(1, &captureRBO);
     }
 }

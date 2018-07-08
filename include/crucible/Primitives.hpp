@@ -12,7 +12,7 @@ public:
 
 	static void framebuffer(Mesh &m);
 
-    static void cube(Mesh &m);
+    static void cube(Mesh &m, float scale=1.0f, float width=1.0f, float height=1.0f, float depth=1.0f);
 
     static void skybox(Mesh &m);
 };

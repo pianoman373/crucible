@@ -172,6 +172,7 @@ Texture PostProcessor::postRender(Camera cam, Texture deferred, Texture gPositio
         ssaoShader.uniformMat4("projection", cam.getProjection());
         ssaoShader.uniformFloat("radius", Renderer::settings.ssaoRadius);
         ssaoShader.uniformInt("kernelSize", Renderer::settings.ssaoKernelSize);
+        ssaoShader.uniformVec3("noiseScale",  vec3(resolution.x/4.0f, resolution.y/4.0f, 0.0f));
 
         for (int i = 0; i < Renderer::settings.ssaoKernelSize; i++) {
             ssaoShader.uniformVec3(std::string("samples[") + std::to_string(i) + std::string("]"), ssaoKernel[i]);
@@ -185,56 +186,59 @@ Texture PostProcessor::postRender(Camera cam, Texture deferred, Texture gPositio
     }
 
     // SSR
-//    {
-//        glViewport(0, 0, ssrBlurBuffer0.getWidth(), ssrBlurBuffer0.getHeight());
-//        ssrBlurBuffer0.bind();
-//        Renderer::passthroughShader.bind();
-//        deferred.bind();
-//        Renderer::framebufferMesh.render();
-//
-//        ssrBlurBuffer1.bind();
-//        gaussianBlurShader.bind();
-//        gaussianBlurShader.uniformBool("horizontal", true);
-//        ssrBlurBuffer0.getAttachment(0).bind();
-//        Renderer::framebufferMesh.render();
-//
-//        ssrBlurBuffer0.bind();
-//        gaussianBlurShader.bind();
-//        gaussianBlurShader.uniformBool("horizontal", false);
-//        ssrBlurBuffer1.getAttachment(0).bind();
-//        Renderer::framebufferMesh.render();
-//
-//        glViewport(0, 0, resolution.x, resolution.y);
-//
-//        HDRbuffer0.bind();
-//        ssrShader.bind();
-//
-//        ssrShader.uniformMat4("view", cam.getView());
-//        ssrShader.uniformMat4("projection", cam.getProjection());
-//
-//
-//        ssrShader.uniformInt("gPosition", 0);
-//        gPosition.bind(0);
-//
-//        ssrShader.uniformInt("gNormal", 1);
-//        gNormal.bind(1);
-//
-//        ssrShader.uniformInt("gAlbedo", 2);
-//        gAlbedo.bind(2);
-//
-//        ssrShader.uniformInt("gRoughnessMetallic", 3);
-//        gRoughnessMetallic.bind(3);
-//
-//        ssrShader.uniformInt("deferredPass", 4);
-//        deferred.bind(4);
-//
-//        ssrShader.uniformInt("prefilter", 5);
-//        Renderer::specular.bind(5);
-//        ssrShader.uniformInt("brdf", 6);
-//        Renderer::brdf.bind(6);
-//
-//        Renderer::framebufferMesh.render();
-//    }
+    if (Renderer::settings.SSR){
+        glViewport(0, 0, ssrBlurBuffer0.getWidth(), ssrBlurBuffer0.getHeight());
+        ssrBlurBuffer0.bind();
+        Renderer::passthroughShader.bind();
+        deferred.bind();
+        Renderer::framebufferMesh.render();
+
+        ssrBlurBuffer1.bind();
+        gaussianBlurShader.bind();
+        gaussianBlurShader.uniformBool("horizontal", true);
+        ssrBlurBuffer0.getAttachment(0).bind();
+        Renderer::framebufferMesh.render();
+
+        ssrBlurBuffer0.bind();
+        gaussianBlurShader.bind();
+        gaussianBlurShader.uniformBool("horizontal", false);
+        ssrBlurBuffer1.getAttachment(0).bind();
+        Renderer::framebufferMesh.render();
+
+        glViewport(0, 0, resolution.x, resolution.y);
+
+        HDRbuffer0.bind();
+        ssrShader.bind();
+
+        ssrShader.uniformMat4("view", cam.getView());
+        ssrShader.uniformMat4("projection", cam.getProjection());
+
+
+        ssrShader.uniformInt("gPosition", 0);
+        gPosition.bind(0);
+
+        ssrShader.uniformInt("gNormal", 1);
+        gNormal.bind(1);
+
+        ssrShader.uniformInt("gAlbedo", 2);
+        gAlbedo.bind(2);
+
+        ssrShader.uniformInt("gRoughnessMetallic", 3);
+        gRoughnessMetallic.bind(3);
+
+        ssrShader.uniformInt("deferred", 4);
+        deferred.bind(4);
+
+        ssrShader.uniformInt("deferredBlur", 5);
+        ssrBlurBuffer0.getAttachment(0).bind(5);
+
+        ssrShader.uniformInt("prefilter", 6);
+        Renderer::specular.bind(6);
+        ssrShader.uniformInt("brdf", 7);
+        Renderer::brdf.bind(7);
+
+        Renderer::framebufferMesh.render();
+    }
 
     // bloom
     // ---------------
@@ -252,7 +256,14 @@ Texture PostProcessor::postRender(Camera cam, Texture deferred, Texture gPositio
     bloomBuffer1.getAttachment(0).bind(0);
     bloomBuffer3.getAttachment(0).bind(1);
     bloomBuffer5.getAttachment(0).bind(2);
-    deferred.bind(3);
+
+    if (Renderer::settings.SSR) {
+        HDRbuffer0.getAttachment(0).bind(3);
+    }
+    else {
+        deferred.bind(3);
+    }
+
     ssaoBufferBlur.getAttachment(0).bind(4);
 
     tonemapShader.bind();
@@ -261,10 +272,10 @@ Texture PostProcessor::postRender(Camera cam, Texture deferred, Texture gPositio
     tonemapShader.uniformBool("bloom", Renderer::settings.bloom);
     tonemapShader.uniformBool("ssao", Renderer::settings.ssao);
     tonemapShader.uniformFloat("bloomStrength", Renderer::settings.bloomStrength);
-    tonemapShader.uniformInt("texture0", 0);
-    tonemapShader.uniformInt("texture1", 1);
-    tonemapShader.uniformInt("texture2", 2);
-    tonemapShader.uniformInt("texture3", 3);
+    tonemapShader.uniformInt("bloom0", 0);
+    tonemapShader.uniformInt("bloom1", 1);
+    tonemapShader.uniformInt("bloom2", 2);
+    tonemapShader.uniformInt("deferred", 3);
     tonemapShader.uniformInt("ssaoTexture", 4);
 
     Renderer::framebufferMesh.render();

@@ -623,12 +623,10 @@ inline mat4 perspective(float fov, float aspect, float near, float far) {
 
     result.m11 = (2.0f*near) / (top - bottom);
 
-    //result[2][0] = (right + left) / (right - left);
-    //result[2][1] = (top + bottom) / (top - bottom);
-    result.m22 = -(far + near) / (far - near); // NOTE(Joey): same as: (n + f) / (n - f)
+    result.m22 = -(far + near) / (far - near);
     result.m32 = -1.0f;
 
-    result.m23 = -(2.0f*near*far) / (far - near); // NOTE(Joey): same as 2nf / (n-f)
+    result.m23 = -(2.0f*near*far) / (far - near);
     result.m33 = 0.0f;
 
 
@@ -810,13 +808,7 @@ inline quaternion normalize(const quaternion& quat)
 }
 
 struct Transform {
-    Transform() {
-        this->position = vec3();
-        this->rotation = quaternion();
-        this->scale = vec3(1.0f, 1.0f, 1.0f);
-    }
-
-    Transform(vec3 position, quaternion rotation, vec3 scale) {
+    Transform(vec3 position=vec3(), quaternion rotation=quaternion(), vec3 scale=vec3(1.0f)) {
         this->position = position;
         this->rotation = rotation;
         this->scale = scale;

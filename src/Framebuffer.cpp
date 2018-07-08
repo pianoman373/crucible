@@ -40,7 +40,6 @@ void Framebuffer::attachTexture(unsigned int internalFormat, unsigned int format
 	tex.setID(texture);
 
 	attachments.push_back(tex);
-	attachments[numAttachments].setID(texture);
 
 	numAttachments++;
 
@@ -58,7 +57,7 @@ void Framebuffer::attachRBO() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Framebuffer::setupShadow(int width, int height) {
+void Framebuffer::attachShadow(int width, int height) {
     unsigned int fbo;
     glGenFramebuffers(1, &fbo);
 
@@ -93,7 +92,13 @@ void Framebuffer::setupShadow(int width, int height) {
     this->height = height;
     this->fbo = fbo;
     this->rbo = 0;
-    this->texture = depthMap;
+
+	Texture tex;
+	tex.setID(depthMap);
+
+	attachments.push_back(tex);
+
+	numAttachments++;
 }
 
 int Framebuffer::getWidth() {
@@ -110,13 +115,4 @@ void Framebuffer::bind() {
 
 Texture Framebuffer::getAttachment(int num) {
 	return attachments[num];
-}
-
-void Framebuffer::bindTexture(int unit) {
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, texture);
-}
-
-int Framebuffer::getTextureID() {
-    return texture;
 }

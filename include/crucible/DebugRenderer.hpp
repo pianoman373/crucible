@@ -1,15 +1,19 @@
 #pragma once
 
-#include <crucible/MeshFactory.hpp>
+#include <crucible/Mesh.hpp>
 #include <crucible/AABB.hpp>
 #include <crucible/Camera.hpp>
 #include <crucible/Shader.hpp>
 
+#include <vector>
+
 class DebugRenderer {
 private:
-    MeshFactory debugRendererFactory;
     Shader debugShader;
     Mesh debugRendererMesh;
+
+    std::vector<vec3> positions;
+    std::vector<vec3> colors;
 
 public:
     void init();
@@ -24,12 +28,12 @@ public:
      */
     void renderDebugAABB(vec3 v1, vec3 v2, vec3 color);
 
-    /**
-     * Draw a cube with specified color and AABB.
-     */
     void renderDebugAABB(AABB aabb, vec3 color);
 
     void renderDebugSphere(vec3 pos, float radius, vec3 color);
 
+    /**
+     * Renders the accumulated debug calls into one big mesh. Generally the renderer will call this on it's own.
+     */
     void flush(Camera cam);
 };

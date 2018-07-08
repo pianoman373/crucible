@@ -8,44 +8,29 @@
 #include <crucible/Renderer.hpp>
 #include <crucible/Path.hpp>
 
+#include <fstream>
+
 bool ImGuiMaterialEditBool(std::string label, std::string id, Material *mat) {
+    bool *val = mat->getUniformBool(id);
 
-    ImGui::Checkbox(label.c_str(), mat->getUniformBool(id));
+    ImGui::Checkbox(label.c_str(), val);
 
-    return *mat->getUniformBool(id);
+    return *val;
 }
 
 float ImGuiMaterialEditFloat(std::string label, std::string id, Material *mat, float min, float max) {
-    float value = 0.0f;
-    auto search = mat->getFloatUniforms()->find(id);
-    if(search != mat->getFloatUniforms()->end()) {
-        value = search->second;
-    }
-    else {
-        mat->setUniformFloat(id, 0.0f);
-    }
-    ImGui::SliderFloat(label.c_str(), &value, min, max);
-    mat->setUniformFloat(id, value);
-    return value;
+    float *val = mat->getUniformFloat(id);
+    ImGui::SliderFloat(label.c_str(), val, min, max);
+
+    return *val;
 }
 
 vec3 ImGuiMaterialEditVec3(std::string label, std::string id, Material *mat) {
-    float value[3] = { 0.0f,0.0f,0.0f };
+    vec3 *val = mat->getUniformVec3(id);
 
-    auto search = mat->getVec3Uniforms()->find(id);
-    if(search != mat->getVec3Uniforms()->end()) {
-        vec3 v = search->second;
-        value[0] = v.x;
-        value[1] = v.y;
-        value[2] = v.z;
-    }
-    else {
-        mat->setUniformVec3(id, false);
-    }
-    ImGui::ColorEdit3(label.c_str(), value);
-    mat->setUniformVec3(id, {value[0], value[1], value[2]});
+    ImGui::ColorEdit3(label.c_str(), (float*)val);
 
-    return {value[0], value[1], value[2]};
+    return *val;
 }
 
 void ImGuiMaterialEditTexture(std::string label, std::string id, Material *mat, unsigned int unit) {
@@ -62,9 +47,8 @@ void ImGuiMaterialEditTexture(std::string label, std::string id, Material *mat, 
     ImGui::TextWrapped(value.getFilepath().c_str());
     ImGui::Image(ImTextureID((long long) value.getID()), ImVec2(210, 210), ImVec2(0, 0), ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
     if (ImGui::Button(std::string("Browse " + label).c_str(), ImVec2(212, 20))) {
-        std::cout << "click!" << std::endl;
 
-        char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);
+        char const *file = tinyfd_openFileDialog("Open Texture", "", 0, NULL, "Texture file", 0);
 
         if (file != NULL) {
             std::string sfile = std::string(file);
@@ -131,8 +115,8 @@ void GuiMain::renderMaterial(Material *mat) {
 }
 
 
-GuiMain::GuiMain(WorkspaceObject *workspace) {
-    this->workspace = workspace;
+GuiMain::GuiMain(Model *model) {
+    this->model = model;
 }
 
 void GuiMain::render() {
@@ -156,9 +140,9 @@ void GuiMain::render() {
         ImGui::Text("Meshes");
         ImGui::Separator();
 
-        for (int n = 0; n < workspace->model.nodes.size(); n++)
+        for (int n = 0; n < model->nodes.size(); n++)
         {
-            if (ImGui::Selectable(workspace->model.nodes[n].name.c_str(), selected == n))
+            if (ImGui::Selectable(model->nodes[n].name.c_str(), selected == n))
                 selected = n;
         }
 
@@ -166,10 +150,10 @@ void GuiMain::render() {
         ImGui::Text("Materials");
         ImGui::Separator();
 
-        for (int n = 0; n < workspace->model.materials.size(); n++)
+        for (int n = 0; n < model->materials.size(); n++)
         {
-            if (ImGui::Selectable(workspace->model.materials[n].name.c_str(), selected == n+workspace->model.nodes.size()))
-                selected = n+workspace->model.nodes.size();
+            if (ImGui::Selectable(model->materials[n].name.c_str(), selected == n+model->nodes.size()))
+                selected = n+model->nodes.size();
         }
 
 
@@ -184,9 +168,9 @@ void GuiMain::render() {
     if (ImGui::Begin("right sidebar", &p_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
     {
         if (selected >= 0) {
-            if (selected > workspace->model.nodes.size()-1) {
+            if (selected > model->nodes.size()-1) {
                 // material is selected
-                renderMaterial(&workspace->model.materials[selected - workspace->model.nodes.size()]);
+                renderMaterial(&model->materials[selected - model->nodes.size()]);
 
             }
             else {
@@ -205,22 +189,35 @@ void GuiMain::render() {
                 char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);
 
                 if (file != NULL) {
-                    workspace->open(file);
+                    std::string filename = file;
+                    Path::format(filename);
+
+                    json j;
+                    std::ifstream o(filename);
+                    o >> j;
+
+                    model->fromJson(j, Path::getWorkingDirectory(filename));
                 }
             }
             if (ImGui::MenuItem("Import", "Ctrl+I")) {
                 char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);
 
                 if (file != NULL) {
-                    workspace->import(file);
+                    model->importFile(file, true);
                 }
             }
             if (ImGui::MenuItem("Save", "Ctrl+S")) {
-                char const * filterPatterns[1] = { "*.asset"};
+                char const * filterPatterns[1] = { "*.crmodel"};
                 char const *file = tinyfd_saveFileDialog("Open model file", "", 1, filterPatterns, "3d model file");
 
                 if (file != NULL) {
-                    workspace->save(std::string(file));
+                    std::string path = file;
+                    Path::format(path);
+
+                    json j = model->toJson(Path::getWorkingDirectory(path));
+
+                    std::ofstream o(file);
+                    o << std::setw(4) << j << std::endl;
                 }
             }
 

@@ -50,10 +50,8 @@ uniform mat4 projection;
 
 uniform float thickness;
 
-
 void main() {
-	gl_Position = (projection * view * model * vec4(vPosition, 1.0));
-    gl_Position = gl_Position + vec4(vNormal * gl_Position.z * thickness, 0.0);
+	gl_Position = gl_Position + vec4(vNormal * gl_Position.z * thickness, 0.0);
 }
 )";
 
@@ -64,7 +62,6 @@ uniform mat4 view;
 uniform mat4 projection;
 
 uniform vec3 color;
-
 
 out vec4 outColor;
 
@@ -343,19 +340,17 @@ uniform vec3 samples[256];
 
 uniform mat4 projection;
 
-// parameters (you'd probably want to use them as uniforms to more easily tweak the effect)
-
 uniform float radius = 10.5;
 float bias = 0.025;
 
 // tile noise texture over screen based on screen dimensions divided by noise size
-const vec2 noiseScale = vec2(1280.0/4.0, 720.0/4.0);
+uniform vec3 noiseScale;
 
 vec3 postProcess(vec2 texCoord) {
 // get input for SSAO algorithm
     vec3 fragPos = texture(gPosition, texCoord).xyz;
     vec3 normal = normalize(texture(gNormal, texCoord).rgb);
-    vec3 randomVec = normalize(texture(texNoise, texCoord * noiseScale).xyz);
+    vec3 randomVec = normalize(texture(texNoise, texCoord * noiseScale.xy).xyz);
     // create TBN change-of-basis matrix: from tangent-space to view-space
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);
@@ -414,14 +409,15 @@ uniform sampler2D brdf;
 uniform bool doIBL;
 
 uniform sampler2DShadow shadowTextures[4];
+uniform float cascadeDistances[4];
+uniform mat4 lightSpaceMatrix[4];
+
 uniform vec3 ambient;
 uniform vec3 cameraPos;
-uniform float cascadeDistances[4];
 
 uniform int pointLightCount;
 uniform PointLight[MAX_POINT_LIGHTS] pointLights;
 
-uniform mat4 lightSpaceMatrix[4];
 uniform mat4 view;
 
 uniform DirectionalLight sun;
@@ -441,7 +437,7 @@ float inShadow(vec4 shadowspace) {
 }
 
 vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float metallic, float ao) {
-	vec3 N = normalize(normal);
+	vec3 N = normal;
 	vec3 V = normalize(cameraPos - fragPos);
 
 	vec3 R = reflect(-V, N);
@@ -560,7 +556,7 @@ vec3 postProcess(vec2 texCoord) {
 
     // retrieve data from gbuffer
     vec3 FragPos = texture(gPosition, texCoord).rgb;
-    vec3 Normal = texture(gNormal, texCoord).rgb;
+    vec3 Normal = normalize(texture(gNormal, texCoord).rgb);
     vec3 Albedo = texture(gAlbedo, texCoord).rgb;
 	vec4 RoughnessMetallic = texture(gRoughnessMetallic, texCoord);
 	float Roughness = RoughnessMetallic.r;
@@ -580,10 +576,10 @@ vec3 postProcess(vec2 texCoord) {
 )";
 
     static const std::string tonemap_glsl = R"(
-uniform sampler2D texture0;
-uniform sampler2D texture1;
-uniform sampler2D texture2;
-uniform sampler2D texture3;
+uniform sampler2D bloom0;
+uniform sampler2D bloom1;
+uniform sampler2D bloom2;
+uniform sampler2D deferred;
 uniform sampler2D ssaoTexture;
 
 uniform bool vignette;
@@ -608,25 +604,15 @@ vec3 reinhard(vec3 col, float exposure) {
 }
 
 vec3 postProcess(vec2 texCoord) {
-    vec3 deferred = texture(texture3, texCoord).rgb;
+    vec3 color = texture(deferred, texCoord).rgb;
 
     if (ssao) {
-        deferred *= texture(ssaoTexture, texCoord).rgb;
+        color *= texture(ssaoTexture, texCoord).rgb;
     }
 
-    vec3 color;
     if (bloom) {
-        color = (texture(texture0, texCoord).rgb*bloomStrength) + (texture(texture1, texCoord).rgb*bloomStrength) + (texture(texture2, texCoord).rgb*bloomStrength) + deferred;
+        color += (texture(bloom0, texCoord).rgb*bloomStrength) + (texture(bloom1, texCoord).rgb*bloomStrength) + (texture(bloom2, texCoord).rgb*bloomStrength);
     }
-    else {
-        color = texture(texture3, texCoord).rgb;
-    }
-
-
-
-    vec3 grayscale = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
-    vec2 texelSize = 1.0 / textureSize(texture0, 0).xy;
-
 
     // HDR tonemapping
     if (tonemap) {
@@ -640,7 +626,7 @@ vec3 postProcess(vec2 texCoord) {
     if (vignette)
     {
         const float strength = 10.0;
-        const float power = 0.1;
+        const float power = 0.2;
         vec2 tuv = fTexCoord * (vec2(1.0) - texCoord.yx);
         float vign = tuv.x*tuv.y * strength;
         vign = pow(vign, power);
@@ -656,7 +642,8 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gRoughnessMetallic;
-uniform sampler2D deferredPass;
+uniform sampler2D deferred;
+uniform sampler2D deferredBlur;
 uniform samplerCube prefilter;
 uniform sampler2D brdf;
 
@@ -667,6 +654,81 @@ uniform mat4 view;
 
 #include <lighting>
 
+const float step = 0.1;
+const float minRayStep = 0.1;
+const float maxSteps = 60;
+const int numBinarySearchSteps = 10;
+
+vec3 binarySearch(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
+{
+    float depth;
+
+    vec4 projectedCoord;
+
+    for(int i = 0; i < numBinarySearchSteps; i++)
+    {
+
+        projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+        depth = (vec4(texture(gPosition, projectedCoord.xy).xyz, 1.0)).z;
+        dDepth = hitCoord.z - depth;
+
+        dir *= 0.5;
+        if(dDepth > 0.0)
+            hitCoord += dir;
+        else
+            hitCoord -= dir;
+    }
+
+        projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+    return vec3(projectedCoord.xy, depth);
+}
+
+vec4 rayMarch(vec3 dir, inout vec3 hitCoord, out float dDepth)
+{
+    dir *= step;
+
+    float error = 1.0;
+    float depth;
+    int steps;
+    vec4 projectedCoord;
+
+    for(int i = 0; i < maxSteps; i++)
+    {
+        hitCoord += dir;
+
+        projectedCoord = projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+        depth = (vec4(texture(gPosition, projectedCoord.xy).xyz, 1.0)).z;
+        if(depth > 1000.0)
+            continue;
+
+        dDepth = hitCoord.z - depth;
+
+        if((dir.z - dDepth) < 1.2)
+        {
+            if(dDepth <= 0.0)
+            {
+                error = 0.0;
+                vec4 Result;
+                Result = vec4(binarySearch(dir, hitCoord, dDepth), 1.0);
+                return Result;
+            }
+
+        }
+
+        steps++;
+    }
+
+    return vec4(projectedCoord.xy, depth, error);
+}
 
 
 vec3 postProcess(vec2 texCoord) {
@@ -685,6 +747,8 @@ vec3 postProcess(vec2 texCoord) {
     vec3 V = normalize(viewPos);
     vec3 R = reflect(V, N);
 
+    float frontFacingFactor = smoothstep(0.5, 0.7, dot(V, R));
+
     vec3 hitPos = viewPos;
     float dDepth;
 
@@ -694,7 +758,7 @@ vec3 postProcess(vec2 texCoord) {
     vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 
-    float ReflectionMultiplier = screenEdgefactor * -R.z;
+    float ReflectionMultiplier = screenEdgefactor * frontFacingFactor;
 
     if (coords.z - viewPos.z > 1.0) {
         ReflectionMultiplier = 0.0;
@@ -704,13 +768,11 @@ vec3 postProcess(vec2 texCoord) {
 
     }
     else {
-        ReflectionMultiplier = 0.0;
+        //ReflectionMultiplier = 0.0;
     }
 
 
-    vec3 SSR = texture(deferredPass, coords.xy).rgb * clamp(ReflectionMultiplier, 0.0, 1.0);
-
-
+    vec3 SSR = mix(texture(deferred, coords.xy).rgb, texture(deferredBlur, coords.xy).rgb, roughness) * clamp(ReflectionMultiplier, 0.0, 1.0);
 
 
     //specular-----------------------------------
@@ -725,14 +787,14 @@ vec3 postProcess(vec2 texCoord) {
 	vec3 specular = prefilteredColor * (F * brdfColor.x + brdfColor.y);
     //-------------------------------------------
 
-    //return texture(deferredPass, coords.xy).rgb;
+    //return texture(deferred, coords.xy).rgb;
 
 
     if (length(texture(gPosition, texCoord).rgb) > 0.0) {
-        return texture(deferredPass, texCoord).rgb + (SSR*F);
+        return texture(deferred, texCoord).rgb + (SSR*F);
     }
     else {
-        return texture(deferredPass, texCoord).rgb;
+        return texture(deferred, texCoord).rgb;
     }
 }
 )";

@@ -2,7 +2,7 @@
 	"name": "Ceramic",
 	"uniforms": {
 		"albedoColor": [0.05, 0.05, 1.0],
-		"roughnessColor": 0.1,
+		"roughnessColor": 1.0,
 		"metallicColor": 0.0
 	}
 }

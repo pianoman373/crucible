@@ -27,12 +27,7 @@ int main(int argc, char *argv[]) {
     Texture crate;
     crate.load("resources/crate.png", true);
 
-    Renderer::init(false, 0, 1000, 800);
-    Renderer::settings.fxaa = false;
-    Renderer::settings.tonemap = false;
-    Renderer::settings.vignette = false;
-    Renderer::settings.bloom = false;
-    Renderer::settings.ssao = false;
+    Renderer2D::init();
 
     float acc = 0.0f;
     int i = 0;
@@ -45,6 +40,15 @@ int main(int argc, char *argv[]) {
     while (Window::isOpen()) {
         Window::begin();
         cam2d.dimensions = {10.0f, 10.0f/Window::getAspectRatio()};
+
+        Renderer2D::renderSprite(background, vec2(0.0f, 0.0f), vec2(14.0f, cam2d.dimensions.y), vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+        Renderer2D::renderSprite(ground, vec2(0.0f, -2.5f), vec2(16.0f, 4.0f), vec4(0.0f, 0.0f, 16.0f, 1.0f));
+
+        Renderer2D::renderSprite(crate, vec2(4.0f, 0.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
+        Renderer2D::renderSprite(crate, vec2(-3.0f, 0.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
+        Renderer2D::renderSprite(crate, vec2(-4.0f, 0.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
+        Renderer2D::renderSprite(crate, vec2(-3.6f, 1.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
         bool onGround = true;
 
@@ -78,33 +82,23 @@ int main(int argc, char *argv[]) {
 
         if (onGround) {
             if (Input::isKeyDown(Input::KEY_A) || Input::isKeyDown(Input::KEY_D)) {
-            Renderer::renderSprite(run, playerPos, vec2(playerDirection, 1.0f),
+            Renderer2D::renderSprite(run, playerPos, vec2(playerDirection, 1.0f),
                                    vec4((float) i / 6.0f, 0.0f, 1.0f / 6.0f, 1.0f));
         } else {
-            Renderer::renderSprite(idle, playerPos, vec2(playerDirection, 1.0f),
+            Renderer2D::renderSprite(idle, playerPos, vec2(playerDirection, 1.0f),
                                    vec4((float) i / 4.0f, 0.0f, 1.0f / 4.0f, 1.0f));
         }
     }
         else {
             if (playerVelocity.y > 0.0f)
-                Renderer::renderSprite(jump, playerPos, vec2(playerDirection, 1.0f),
+                Renderer2D::renderSprite(jump, playerPos, vec2(playerDirection, 1.0f),
                                    vec4(0.0f / 2.0f, 0.0f, 1.0f / 2.0f, 1.0f));
             else
-                Renderer::renderSprite(jump, playerPos, vec2(playerDirection, 1.0f),
+                Renderer2D::renderSprite(jump, playerPos, vec2(playerDirection, 1.0f),
                                        vec4(1.0f / 2.0f, 0.0f, 1.0f / 2.0f, 1.0f));
         }
 
-        Renderer::renderSprite(ground, vec2(0.0f, -2.5f), vec2(16.0f, 4.0f), vec4(0.0f, 0.0f, 16.0f, 1.0f));
-
-
-        Renderer::renderSprite(crate, vec2(4.0f, 0.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
-        Renderer::renderSprite(crate, vec2(-3.0f, 0.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
-        Renderer::renderSprite(crate, vec2(-4.0f, 0.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
-        Renderer::renderSprite(crate, vec2(-3.6f, 1.0f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-
-        Renderer::renderSprite(background, vec2(0.0f, 0.0f), vec2(14.0f, cam2d.dimensions.y), vec4(0.0f, 0.0f, 1.0f, 1.0f));
-        Renderer::flush(cam2d);
+        Renderer2D::flush(cam2d);
 
         Window::end();
     }

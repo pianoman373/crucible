@@ -6,7 +6,6 @@
 #include <crucible/AABB.hpp>
 #include <crucible/Frustum.hpp>
 #include <crucible/Mesh.hpp>
-#include <crucible/MeshFactory.hpp>
 #include <crucible/Primitives.hpp>
 #include <crucible/Math.hpp>
 #include <crucible/Model.hpp>
@@ -28,13 +27,6 @@ struct RenderCall {
 	AABB aabb;
 };
 
-struct RenderCallSprite {
-	Texture tex;
-	vec2 pos;
-	vec2 dimensions;
-	vec4 uv;
-};
-
 struct PointLight {
     vec3 position;
     vec3 color;
@@ -49,7 +41,6 @@ static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f,
 
 static std::vector<RenderCall> renderQueue;
 static std::vector<PointLight> pointLights;
-static std::stack<RenderCallSprite> renderQueueSprite;
 static std::vector<RenderCall> renderQueueOutline;
 
 static Framebuffer shadowBuffer0;
@@ -60,12 +51,10 @@ static Framebuffer HDRbuffer;
 static Framebuffer gBuffer;
 
 static Shader skyboxShader;
-static Shader spriteShader;
 static Shader ShadowShader;
 static Shader deferredShader;
 
 static Mesh skyboxMesh;
-static Mesh spriteMesh;
 
 static bool shadows;
 static int shadow_resolution;
@@ -212,14 +201,13 @@ namespace Renderer {
 
 
 		if (shadows) {
-			shadowBuffer0.setupShadow(shadow_resolution, shadow_resolution);
-			shadowBuffer1.setupShadow(shadow_resolution, shadow_resolution);
-			shadowBuffer2.setupShadow(shadow_resolution, shadow_resolution);
-			shadowBuffer3.setupShadow(shadow_resolution, shadow_resolution);
+			shadowBuffer0.attachShadow(shadow_resolution, shadow_resolution);
+			shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
+			shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
+			shadowBuffer3.attachShadow(shadow_resolution, shadow_resolution);
 			ShadowShader.load(InternalShaders::shadow_vsh, InternalShaders::shadow_fsh);
 		}
 
-		spriteShader.load(InternalShaders::sprite_vsh, InternalShaders::sprite_fsh);
 		standardShader.load(InternalShaders::standard_vsh, InternalShaders::standard_fsh);
 		eq2cubeShader.load(InternalShaders::cubemap_vsh, InternalShaders::eq2cube_fsh);
 		cubemapShader.load(InternalShaders::cubemap_vsh, InternalShaders::cubemap_fsh);
@@ -235,7 +223,6 @@ namespace Renderer {
 		skyboxShader = cubemapShader;
 
 		Primitives::skybox(skyboxMesh);
-		Primitives::sprite(spriteMesh);
 		Primitives::framebuffer(framebufferMesh);
 		Primitives::skybox(cubemapMesh);
 
@@ -352,17 +339,6 @@ namespace Renderer {
 			ModelNode *node = &model->nodes[i];
 			render(&node->mesh, &model->materials[node->materialIndex], transform, aabb);
 		}
-	}
-
-	// ------------------------------------------------------------------------
-	void renderSprite(Texture tex, vec2 pos, vec2 dimensions, vec4 uv) {
-		RenderCallSprite call;
-		call.tex = tex;
-		call.pos = pos;
-		call.dimensions = dimensions;
-		call.uv = uv;
-
-		renderQueueSprite.push(call);
 	}
 
 	// ------------------------------------------------------------------------
@@ -515,10 +491,10 @@ namespace Renderer {
 		}
 
 		if (shadows) {
-			shadowBuffer0.bindTexture(8);
-			shadowBuffer1.bindTexture(9);
-			shadowBuffer2.bindTexture(10);
-			shadowBuffer3.bindTexture(11);
+			shadowBuffer0.getAttachment(0).bind(8);
+			shadowBuffer1.getAttachment(0).bind(9);
+			shadowBuffer2.getAttachment(0).bind(10);
+			shadowBuffer3.getAttachment(0).bind(11);
 
 			deferredShader.uniformInt("shadowTextures[0]", 8);
 			deferredShader.uniformInt("shadowTextures[1]", 9);
@@ -548,33 +524,6 @@ namespace Renderer {
 		passthroughShader.bind();
 		final.bind();
 		framebufferMesh.render();
-
-		// render any sprites
-		// ------------------
-		glDepthMask(GL_FALSE);
-		for (unsigned int i = 0; i < renderQueueSprite.size(); i++) {
-			RenderCallSprite call = renderQueueSprite.top();
-			renderQueueSprite.pop();
-
-			spriteShader.bind();
-
-			call.tex.bind(0);
-
-			spriteShader.uniformVec4("uvOffsets", call.uv);
-
-			mat4 model;
-			model = translate(model, vec3(call.pos.x, call.pos.y, 0.0f));
-			model = scale(model, vec3(call.dimensions.x, call.dimensions.y, 0.0f));
-
-
-			spriteShader.uniformMat4("model", model);
-			spriteShader.uniformMat4("view", cam.getView());
-			spriteShader.uniformMat4("projection", cam.getProjection());
-			spriteShader.uniformVec3("cameraPos", cam.getPosition());
-
-			spriteMesh.render();
-		}
-		glDepthMask(GL_TRUE);
 
 		// copy depth and stencil buffer
 		// -------------------------------

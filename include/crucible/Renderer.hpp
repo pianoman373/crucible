@@ -26,6 +26,7 @@ struct RendererSettings {
 	bool vignette = true;
 	bool tonemap = true;
 	bool bloom = true;
+	bool SSR = false;
 	float bloomStrength = 0.05f;
 	bool ssao = true;
 	float ssaoRadius = 10.0f;
@@ -85,7 +86,6 @@ namespace Renderer {
      */
     void render(Model *model, Transform transform, AABB aabb);
 
-    void renderSprite(Texture tex, vec2 pos, vec2 dimensions, vec4 uv);
 
     /**
      * Make all future render calls render with an outline.
@@ -108,7 +108,7 @@ namespace Renderer {
      * are put in a buffer to be drawn later. Calling flush renders them all at once and
      * clears the buffer for the next time.
      */
-    void flush(Camera cam, Frustum f, bool doFrustumCulling=true);
+	void flush(Camera cam, Frustum f, bool doFrustumCulling=true);
 
     void setSkyboxShader(Shader s);
 

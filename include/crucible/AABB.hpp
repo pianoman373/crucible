@@ -16,14 +16,8 @@ public:
      */
     AABB(vec3 min, vec3 max);
 
-    /**
-     * Returns true if this AABB intersects with another.
-     */
     bool intersectsWith(const AABB &other);
 
-    /**
-     * Returns true if the specified vector is inside this AABB.
-     */
     bool isVecInside(vec3 vec);
 
     /**
@@ -57,7 +51,11 @@ public:
      */
     float calculateZOffset(AABB &other, float offset);
 
-    void move(vec3 dir);
+    void move(vec3 offset);
 
+    /**
+     * Returns a point representing the specified corner of this AABB. Argument ranges from 0 to 7 for each of the
+     * eight corners of a cube.
+     */
     vec3 getCorner(int i);
 };

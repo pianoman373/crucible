@@ -8,7 +8,10 @@ public:
     vec3 direction = vec3(0.0f, 0.0f, -1.0f);
     vec3 up = vec3(0.0f, 1.0f, 0.0f);
 
+    /** If true, no perspective will be used, and the output will be "2D" **/
     bool orthographic = false;
+
+    /** Represents the screen resolution for use in calculating the aspect ratio for projection **/
     vec2 dimensions;
 
 public:
@@ -18,9 +21,6 @@ public:
 
     vec3 getPosition();
 
-    /**
-     * Returns the forward "look" vector of the camera.
-     */
     vec3 getDirection();
 
     /**
@@ -32,9 +32,6 @@ public:
 
     void setPosition(const vec3 &position);
 
-    /**
-     * Sets the forward "look" vector of the camera.
-     */
     void setDirection(const vec3 &direction);
 
     mat4 getView();

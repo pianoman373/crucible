@@ -9,8 +9,11 @@ void DebugRenderer::init() {
 }
 
 void DebugRenderer::renderDebugLine(vec3 v1, vec3 v2, vec3 color) {
-    debugRendererFactory.vertex(v1.x, v1.y, v1.z, color.x, color.y, color.z, 0.0f, 0.0f);
-    debugRendererFactory.vertex(v2.x, v2.y, v2.z, color.x, color.y, color.z, 0.0f, 0.0f);
+    positions.push_back(v1);
+    colors.push_back(color);
+
+    positions.push_back(v2);
+    colors.push_back(color);
 }
 // ------------------------------------------------------------------------
 void DebugRenderer::renderDebugAABB(vec3 v1, vec3 v2, vec3 color) {
@@ -54,11 +57,17 @@ void DebugRenderer::renderDebugSphere(vec3 pos, float radius, vec3 color) {
 }
 
 void DebugRenderer::flush(Camera cam) {
-    debugRendererFactory.toMesh(debugRendererMesh);
+    debugRendererMesh.positions = positions;
+    debugRendererMesh.normals = colors;
+
+    debugRendererMesh.generate();
+
+    positions.clear();
+    colors.clear();
+
     debugShader.bind();
     debugShader.uniformMat4("view", cam.getView());
     debugShader.uniformMat4("projection", cam.getProjection());
     debugRendererMesh.renderMode = GL_LINES;
     debugRendererMesh.render();
-    debugRendererFactory.clear();
 }

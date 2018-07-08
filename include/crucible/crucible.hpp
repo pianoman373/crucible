@@ -11,11 +11,10 @@
 #include <crucible/Framebuffer.hpp>
 #include <crucible/Material.hpp>
 #include <crucible/Mesh.hpp>
-#include <crucible/MeshImporter.hpp>
-#include <crucible/MeshFactory.hpp>
 #include <crucible/Model.hpp>
 #include <crucible/Primitives.hpp>
 #include <crucible/Renderer.hpp>
+#include <crucible/Renderer2D.hpp>
 #include <crucible/Shader.hpp>
 #include <crucible/Texture.hpp>
 #include <crucible/Camera.hpp>

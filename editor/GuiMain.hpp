@@ -1,18 +1,19 @@
 #pragma once
 
-#include "WorkspaceObject.hpp"
+#include <crucible/Model.hpp>
+#include <crucible/Material.hpp>
 
 
 class GuiMain {
 private:
-    WorkspaceObject *workspace;
+    Model *model;
 
     void renderMaterial(Material *mat);
 
 public:
     int selected = -1;
 
-    GuiMain(WorkspaceObject *workspace);
+    GuiMain(Model *model);
 
     void render();
 };

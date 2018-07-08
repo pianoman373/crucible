@@ -199,9 +199,9 @@ float AABB::calculateZOffset(AABB &other, float offset)
     }
 }
 
-void AABB::move(vec3 dir) {
-    min = min + dir;
-    max = max + dir;
+void AABB::move(vec3 offset) {
+    min = min + offset;
+    max = max + offset;
 }
 
 vec3 AABB::getCorner(int i) {

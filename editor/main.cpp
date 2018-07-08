@@ -1,7 +1,6 @@
 #include <crucible/crucible.hpp>
 #include <crucible/Path.hpp>
 
-#include "WorkspaceObject.hpp"
 #include "GuiMain.hpp"
 
 void orbitCamera(Camera &cam) {
@@ -46,7 +45,7 @@ void orbitCamera(Camera &cam) {
     lastMousePos = Input::getCursorPos();
 }
 
-static WorkspaceObject workspace;
+static Model model;
 
 static Cubemap cubemap;
 static Texture cubemapRaw;
@@ -76,14 +75,14 @@ int main() {
 
     //workspace.open(Path::getFullPath("resources/Rifle/rifle.crmodel"));
 
-    GuiMain gui(&workspace);
+    GuiMain gui(&model);
 
     while (Window::isOpen()) {
         Window::begin();
         cam.dimensions = {1920, 1080};
         orbitCamera(cam);
 
-        workspace.render(gui.selected);
+        Renderer::render(&model, Transform(vec3(), quaternion(), vec3(1.0f)), AABB());
 
         Renderer::flush(cam);
         gui.render();

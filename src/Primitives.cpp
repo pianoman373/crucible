@@ -1,5 +1,6 @@
 #include <crucible/Primitives.hpp>
 
+//taken from https://github.com/JoeyDeVries/Cell
 void Primitives::torus(Mesh &m, float r1, float r2, int numSteps1, int numSteps2) {
     // NOTE(Joey): we generate an additional minor ring segment as we can't
     // directly connect to the first minor ring as the last set of vertices
@@ -170,97 +171,97 @@ void Primitives::framebuffer(Mesh &m) {
 	m.generate();
 }
 
-void Primitives::cube(Mesh &m) {
+void Primitives::cube(Mesh &m, float scale, float width, float height, float depth) {
     m.positions = std::vector<vec3> {
-            { 0.5f,  0.5f, -0.5f},
-            { 0.5f, -0.5f, -0.5f},
-            {-0.5f, -0.5f, -0.5f},
-            {-0.5f, -0.5f, -0.5f},
-            {-0.5f,  0.5f, -0.5f},
-            { 0.5f,  0.5f, -0.5f},
+            { 0.5f*width,  0.5f*height, -0.5f*depth},
+            { 0.5f*width, -0.5f*height, -0.5f*depth},
+            {-0.5f*width, -0.5f*height, -0.5f*depth},
+            {-0.5f*width, -0.5f*height, -0.5f*depth},
+            {-0.5f*width,  0.5f*height, -0.5f*depth},
+            { 0.5f*width,  0.5f*height, -0.5f*depth},
 
 
-            {-0.5f, -0.5f,  0.5f},
-            { 0.5f, -0.5f,  0.5f},
-            { 0.5f,  0.5f,  0.5f},
-            { 0.5f,  0.5f,  0.5f},
-            {-0.5f,  0.5f,  0.5f},
-            {-0.5f, -0.5f,  0.5f},
+            {-0.5f*width, -0.5f*height,  0.5f*depth},
+            { 0.5f*width, -0.5f*height,  0.5f*depth},
+            { 0.5f*width,  0.5f*height,  0.5f*depth},
+            { 0.5f*width,  0.5f*height,  0.5f*depth},
+            {-0.5f*width,  0.5f*height,  0.5f*depth},
+            {-0.5f*width, -0.5f*height,  0.5f*depth},
 
-            {-0.5f,  0.5f,  0.5f},
-            {-0.5f,  0.5f, -0.5f},
-            {-0.5f, -0.5f, -0.5f},
-            {-0.5f, -0.5f, -0.5f},
-            {-0.5f, -0.5f,  0.5f},
-            {-0.5f,  0.5f,  0.5f},
-
-
-            { 0.5f, -0.5f, -0.5f},
-            { 0.5f,  0.5f, -0.5f},
-            { 0.5f,  0.5f,  0.5f},
-            { 0.5f,  0.5f,  0.5f},
-            { 0.5f, -0.5f,  0.5f},
-            { 0.5f, -0.5f, -0.5f},
+            {-0.5f*width,  0.5f*height,  0.5f*depth},
+            {-0.5f*width,  0.5f*height, -0.5f*depth},
+            {-0.5f*width, -0.5f*height, -0.5f*depth},
+            {-0.5f*width, -0.5f*height, -0.5f*depth},
+            {-0.5f*width, -0.5f*height,  0.5f*depth},
+            {-0.5f*width,  0.5f*height,  0.5f*depth},
 
 
-            {-0.5f, -0.5f, -0.5f},
-            { 0.5f, -0.5f, -0.5f},
-            { 0.5f, -0.5f,  0.5f},
-            { 0.5f, -0.5f,  0.5f},
-            {-0.5f, -0.5f,  0.5f},
-            {-0.5f, -0.5f, -0.5f},
+            { 0.5f*width, -0.5f*height, -0.5f*depth},
+            { 0.5f*width,  0.5f*height, -0.5f*depth},
+            { 0.5f*width,  0.5f*height,  0.5f*depth},
+            { 0.5f*width,  0.5f*height,  0.5f*depth},
+            { 0.5f*width, -0.5f*height,  0.5f*depth},
+            { 0.5f*width, -0.5f*height, -0.5f*depth},
 
 
-            { 0.5f,  0.5f,  0.5f},
-            { 0.5f,  0.5f, -0.5f},
-            {-0.5f,  0.5f, -0.5f},
-            {-0.5f,  0.5f, -0.5f},
-            {-0.5f,  0.5f,  0.5f},
-            { 0.5f,  0.5f,  0.5f},
+            {-0.5f*width, -0.5f*height, -0.5f*depth},
+            { 0.5f*width, -0.5f*height, -0.5f*depth},
+            { 0.5f*width, -0.5f*height,  0.5f*depth},
+            { 0.5f*width, -0.5f*height,  0.5f*depth},
+            {-0.5f*width, -0.5f*height,  0.5f*depth},
+            {-0.5f*width, -0.5f*height, -0.5f*depth},
+
+
+            { 0.5f*width,  0.5f*height,  0.5f*depth},
+            { 0.5f*width,  0.5f*height, -0.5f*depth},
+            {-0.5f*width,  0.5f*height, -0.5f*depth},
+            {-0.5f*width,  0.5f*height, -0.5f*depth},
+            {-0.5f*width,  0.5f*height,  0.5f*depth},
+            { 0.5f*width,  0.5f*height,  0.5f*depth},
 
     };
     m.uvs = std::vector<vec2> {
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-            {1.0f, 1.0f},
-            {0.0f, 1.0f},
-            {0.0f, 0.0f},
+            {0.0f*height*scale, 0.0f*width*scale},
+            {1.0f*height*scale, 0.0f*width*scale},
+            {1.0f*height*scale, 1.0f*width*scale},
+            {1.0f*height*scale, 1.0f*width*scale},
+            {0.0f*height*scale, 1.0f*width*scale},
+            {0.0f*height*scale, 0.0f*width*scale},
 
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-            {1.0f, 1.0f},
-            {0.0f, 1.0f},
-            {0.0f, 0.0f},
+            {0.0f*width*scale, 0.0f*height*scale},
+            {1.0f*width*scale, 0.0f*height*scale},
+            {1.0f*width*scale, 1.0f*height*scale},
+            {1.0f*width*scale, 1.0f*height*scale},
+            {0.0f*width*scale, 1.0f*height*scale},
+            {0.0f*width*scale, 0.0f*height*scale},
 
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-            {0.0f, 1.0f},
-            {0.0f, 1.0f},
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
+            {1.0f*height*scale, 0.0f*depth*scale},
+            {1.0f*height*scale, 1.0f*depth*scale},
+            {0.0f*height*scale, 1.0f*depth*scale},
+            {0.0f*height*scale, 1.0f*depth*scale},
+            {0.0f*height*scale, 0.0f*depth*scale},
+            {1.0f*height*scale, 0.0f*depth*scale},
 
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-            {0.0f, 1.0f},
-            {0.0f, 1.0f},
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
+            {1.0f*depth*scale, 0.0f*height*scale},
+            {1.0f*depth*scale, 1.0f*height*scale},
+            {0.0f*depth*scale, 1.0f*height*scale},
+            {0.0f*depth*scale, 1.0f*height*scale},
+            {0.0f*depth*scale, 0.0f*height*scale},
+            {1.0f*depth*scale, 0.0f*height*scale},
 
-            {0.0f, 1.0f},
-            {1.0f, 1.0f},
-            {1.0f, 0.0f},
-            {1.0f, 0.0f},
-            {0.0f, 0.0f},
-            {0.0f, 1.0f},
+            {0.0f*width*scale, 1.0f*depth*scale},
+            {1.0f*width*scale, 1.0f*depth*scale},
+            {1.0f*width*scale, 0.0f*depth*scale},
+            {1.0f*width*scale, 0.0f*depth*scale},
+            {0.0f*width*scale, 0.0f*depth*scale},
+            {0.0f*width*scale, 1.0f*depth*scale},
 
-            {0.0f, 1.0f},
-            {1.0f, 1.0f},
-            {1.0f, 0.0f},
-            {1.0f, 0.0f},
-            {0.0f, 0.0f},
-            {0.0f, 1.0f},
+            {0.0f*depth*scale, 1.0f*width*scale},
+            {1.0f*depth*scale, 1.0f*width*scale},
+            {1.0f*depth*scale, 0.0f*width*scale},
+            {1.0f*depth*scale, 0.0f*width*scale},
+            {0.0f*depth*scale, 0.0f*width*scale},
+            {0.0f*depth*scale, 1.0f*width*scale},
     };
     m.normals = std::vector<vec3>{
             { 0.0f,  0.0f, -1.0f},
@@ -305,6 +306,49 @@ void Primitives::cube(Mesh &m) {
             { 0.0f,  1.0f,  0.0f},
             { 0.0f,  1.0f,  0.0f},
     };
+	m.tangents = std::vector<vec3>{
+			{ -1.0f,  0.0f, 0.0f},
+			{ -1.0f,  0.0f, 0.0f},
+			{ -1.0f,  0.0f, 0.0f},
+			{ -1.0f,  0.0f, 0.0f},
+			{ -1.0f,  0.0f, 0.0f},
+			{ -1.0f,  0.0f, 0.0f},
+
+			{ 1.0f,  0.0f,  0.0f},
+			{ 1.0f,  0.0f,  0.0f},
+			{ 1.0f,  0.0f,  0.0f},
+			{ 1.0f,  0.0f,  0.0f},
+			{ 1.0f,  0.0f,  0.0f},
+			{ 1.0f,  0.0f,  0.0f},
+
+			{ 0.0f,  0.0f,  -1.0f},
+			{ 0.0f,  0.0f,  -1.0f},
+			{ 0.0f,  0.0f,  -1.0f},
+			{ 0.0f,  0.0f,  -1.0f},
+			{ 0.0f,  0.0f,  -1.0f},
+			{ 0.0f,  0.0f,  -1.0f},
+
+			{ 0.0f,  0.0f,  1.0f},
+			{ 0.0f,  0.0f,  1.0f},
+			{ 0.0f,  0.0f,  1.0f},
+			{ 0.0f,  0.0f,  1.0f},
+			{ 0.0f,  0.0f,  1.0f},
+			{ 0.0f,  0.0f,  1.0f},
+
+			{ 1.0f, 0.0f,  0.0f},
+			{ 1.0f, 0.0f,  0.0f},
+			{ 1.0f, 0.0f,  0.0f},
+			{ 1.0f, 0.0f,  0.0f},
+			{ 1.0f, 0.0f,  0.0f},
+			{ 1.0f, 0.0f,  0.0f},
+
+			{ -1.0f,  0.0f,  0.0f},
+			{ -1.0f,  0.0f,  0.0f},
+			{ -1.0f,  0.0f,  0.0f},
+			{ -1.0f,  0.0f,  0.0f},
+			{ -1.0f,  0.0f,  0.0f},
+			{ -1.0f,  0.0f,  0.0f},
+	};
 
     m.generate();
 }

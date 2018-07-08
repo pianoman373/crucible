@@ -35,14 +35,25 @@ public:
     Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<unsigned int> indices);
 
     Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<vec3> colors, std::vector<unsigned int> indices);
+
     json toJson();
 
     void fromJson(json j);
+
+    /**
+     * Sends buffered data to OpenGL to make this mesh ready for rendering. (Note this does not clear buffered data as OpenGL still needs it)
+     */
     void generate();
 
+    /**
+     * Clears local buffer data.
+     */
     void clear();
 
     void render();
 
+    /**
+     *  Deletes mesh handles on OpenGL and local buffer data.
+     */
     void destroy();
 };

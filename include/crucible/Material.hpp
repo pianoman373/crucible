@@ -16,13 +16,12 @@ struct UniformTexture {
 };
 
 /**
- * Stores a list of uniforms to pass on to a shader.
+ * Stores a list of uniforms to pass on to a shader. Unlike Textures and Shaders, Materials store all their data in
+ * object memory itself. This makes passing Materials by value expensive compared to Shaders and Textures.
  */
 class Material {
 private:
     Shader shader;
-
-
 
     std::map<std::string, UniformTexture> textures;
 
@@ -37,8 +36,14 @@ public:
 
     Material();
 
+    /**
+     * Json serialization. Working directory is needed in order to output correct texture paths.
+     */
     void fromJson(json j, std::string workingDirectory);
 
+	/**
+     * Json serialization. Working directory is needed in order to output correct texture paths.
+     */
     json toJson(std::string workingDirectory);
 
     void loadFile(std::string file);
@@ -91,12 +96,16 @@ public:
 
     void setUniformBool(std::string name, bool value);
 
+    /** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
     vec3 *getUniformVec3(std::string name);
 
+	/** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
     float *getUniformFloat(std::string name);
 
+	/** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
     bool *getUniformBool(std::string name);
 
+	/** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
     Texture *getUniformTexture(std::string name);
 
     void setShader(Shader shader);

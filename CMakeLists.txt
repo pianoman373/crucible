@@ -13,8 +13,16 @@ option(ASSIMP_BUILD_SAMPLES OFF)
 option(ASSIMP_BUILD_TESTS OFF)
 add_subdirectory(lib/assimp)
 
+option(BUILD_BULLET2_DEMOS OFF)
+option(BUILD_CPU_DEMOS OFF)
+option(BUILD_EXTRAS OFF)
+option(BUILD_OPENGL3_DEMOS OFF)
+option(BUILD_UNIT_TESTS OFF)
+add_subdirectory(lib/bullet)
+
 include_directories(
                     include/
+                    lib/bullet/src/
                     )
 
 file(GLOB PROJECT_SOURCES src/*.cpp
@@ -33,9 +41,9 @@ add_definitions(-DGLFW_INCLUDE_NONE
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp)
+    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp BulletDynamics BulletCollision LinearMath)
 elseif(UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} GL assimp)
+    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} GL assimp BulletDynamics BulletCollision LinearMath)
 endif(WIN32)
 
 if(MSVC)
@@ -66,6 +74,6 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     set_target_properties(terrainDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
-add_executable(editor editor/main.cpp editor/WorkspaceObject.cpp editor/GuiMain.cpp editor/GuiMain.hpp)
+add_executable(editor editor/main.cpp editor/GuiMain.cpp editor/GuiMain.hpp)
 target_link_libraries(editor crucible)
 set_target_properties(editor PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")

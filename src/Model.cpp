@@ -126,6 +126,7 @@ void Model::importFile(std::string filename, bool loadTextures) {
             }
         }
 
+
         for (unsigned int f = 0; f < aMesh->mNumFaces; ++f) {
             for (unsigned int i = 0; i < 3; ++i) {
                 mesh.indices[f * 3 + i] = aMesh->mFaces[f].mIndices[i];

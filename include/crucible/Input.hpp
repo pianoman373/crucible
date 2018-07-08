@@ -152,11 +152,14 @@ namespace Input {
 
     vec2 getLastCursorPos();
 
+    /** Internally used by Window. **/
     void setWindowInstance(GLFWwindow* windowInstance);
 
+    /** Returns time in seconds from program start. **/
     float getTime();
 
     bool isMouseGrabbed();
 
+	/** Internally used by Window. **/
 	void update();
 }

@@ -8,10 +8,12 @@
 
 
 Material::Material() {
-    this->shader = Renderer::standardShader;
+
 }
 
 void Material::setDefaultPBRUniforms() {
+    this->shader = Renderer::standardShader;
+
     setUniformBool("albedoTextured", false);
     setUniformVec3("albedoColor", vec3(0.3f));
 
@@ -105,9 +107,9 @@ json Material::toJson(std::string workingDirectory) {
 
         uniforms[it->first] = Path::getRelativePath(workingDirectory, it->second.tex.getFilepath());
 
-        std::cout << "working directory: " << workingDirectory << std::endl;
-        std::cout << "raw path: " << it->second.tex.getFilepath() << std::endl;
-        std::cout << "final path: " << Path::getRelativePath(workingDirectory, it->second.tex.getFilepath()) << std::endl;
+//        std::cout << "working directory: " << workingDirectory << std::endl;
+//        std::cout << "raw path: " << it->second.tex.getFilepath() << std::endl;
+//        std::cout << "final path: " << Path::getRelativePath(workingDirectory, it->second.tex.getFilepath()) << std::endl;
     }
 
     ret["uniforms"] = uniforms;
@@ -119,8 +121,6 @@ json Material::toJson(std::string workingDirectory) {
 void Material::loadFile(std::string file) {
     Path::format(file);
     std::string wd = Path::getWorkingDirectory(file);
-
-
 
     json j;
     std::ifstream o(file);
