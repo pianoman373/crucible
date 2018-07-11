@@ -68,6 +68,12 @@ std::string Texture::getFilepath() {
 	return filepath;
 }
 
+void Texture::destroy() {
+	glDeleteTextures(1, &id);
+	filepath = "";
+	id = 0;
+}
+
 void Cubemap::load(const char *file1, const char *file2, const char *file3, const char *file4, const char *file5, const char *file6) {
     stbi_set_flip_vertically_on_load(false);
     glGenTextures(1, &id);

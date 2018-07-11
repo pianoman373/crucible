@@ -143,6 +143,18 @@ void Model::importFile(std::string filename, bool loadTextures) {
     }
 }
 
+void Model::openFile(std::string filename) {
+    Path::format(filename);
+    std::string workingDirectory  = Path::getWorkingDirectory(filename);
+
+    json j;
+    std::ifstream o(filename);
+    o >> j;
+
+
+    fromJson(j, workingDirectory);
+}
+
 void Model::fromJson(json j, std::string workingDirectory) {
 
     json jMaterials = j["materials"];

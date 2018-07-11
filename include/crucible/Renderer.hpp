@@ -60,6 +60,8 @@ namespace Renderer {
 
 	extern PostProcessor postProcessor;
 
+	void resize(int resolutionX, int resolutionY);
+
     /**
      * Sets up vital shaders and variables only once at startup.
      */
@@ -79,12 +81,12 @@ namespace Renderer {
     /**
      * General purpose abstraction of all render calls to an internal renderer.
      */
-    void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb);
+    void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb=AABB());
 
     /**
      * Same as the general purpose render command, but accepts Models.
      */
-    void render(Model *model, Transform transform, AABB aabb);
+    void render(Model *model, Transform transform, AABB aabb=AABB());
 
 
     /**
@@ -96,6 +98,8 @@ namespace Renderer {
       * Disable outlineing called with enableOutline.
       */
      void disableOutline();
+
+     void renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &deferred, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic);
 
      /**
       * Flush command with frustum culling disabled.

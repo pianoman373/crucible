@@ -70,37 +70,6 @@ void PostProcessor::doBloom(Texture deferred) {
 
 
 void PostProcessor::init() {
-    vec2i resolution = Renderer::getResolution();
-
-    // HDR framebuffer 0
-    HDRbuffer0.setup(resolution.x, resolution.y);
-    HDRbuffer0.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
-    // HDR framebuffer 1
-    HDRbuffer1.setup(resolution.x, resolution.y);
-    HDRbuffer1.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
-
-    //bloom framebuffers
-    bloomBuffer0.setup(resolution.x/2, resolution.y/2);
-    bloomBuffer0.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-    bloomBuffer1.setup(resolution.x/2, resolution.y/2);
-    bloomBuffer1.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-
-    bloomBuffer2.setup(resolution.x/8, resolution.y/8);
-    bloomBuffer2.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-    bloomBuffer3.setup(resolution.x/8, resolution.y/8);
-    bloomBuffer3.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-
-    bloomBuffer4.setup(resolution.x/32, resolution.y/32);
-    bloomBuffer4.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-    bloomBuffer5.setup(resolution.x/32, resolution.y/32);
-    bloomBuffer5.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-
-    ssrBlurBuffer0.setup(resolution.x/8, resolution.y/8);
-    ssrBlurBuffer0.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-
-    ssrBlurBuffer1.setup(resolution.x/8, resolution.y/8);
-    ssrBlurBuffer1.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
-
     tonemapShader.loadPostProcessing(InternalShaders::tonemap_glsl);
     fxaaShader.loadPostProcessing(InternalShaders::fxaa_glsl);
     gaussianBlurShader.loadPostProcessing(InternalShaders::gaussianBlur_glsl);
@@ -143,9 +112,56 @@ void PostProcessor::init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     noiseTex.setID(noiseTexture);
 
+    resize();
+}
+
+void PostProcessor::resize() {
+    vec2i resolution = Renderer::getResolution();
+
+    // HDR framebuffer 0
+            HDRbuffer0.destroy();
+    HDRbuffer0.setup(resolution.x, resolution.y);
+    HDRbuffer0.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
+    // HDR framebuffer 1
+    HDRbuffer1.destroy();
+    HDRbuffer1.setup(resolution.x, resolution.y);
+    HDRbuffer1.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
+
+    //bloom framebuffers
+    bloomBuffer0.destroy();
+    bloomBuffer0.setup(resolution.x/2, resolution.y/2);
+    bloomBuffer0.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer1.destroy();
+    bloomBuffer1.setup(resolution.x/2, resolution.y/2);
+    bloomBuffer1.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+
+    bloomBuffer2.destroy();
+    bloomBuffer2.setup(resolution.x/8, resolution.y/8);
+    bloomBuffer2.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer3.destroy();
+    bloomBuffer3.setup(resolution.x/8, resolution.y/8);
+    bloomBuffer3.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+
+    bloomBuffer4.destroy();
+    bloomBuffer4.setup(resolution.x/32, resolution.y/32);
+    bloomBuffer4.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer5.destroy();
+    bloomBuffer5.setup(resolution.x/32, resolution.y/32);
+    bloomBuffer5.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+
+    ssrBlurBuffer0.destroy();
+    ssrBlurBuffer0.setup(resolution.x/8, resolution.y/8);
+    ssrBlurBuffer0.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+
+    ssrBlurBuffer1.destroy();
+    ssrBlurBuffer1.setup(resolution.x/8, resolution.y/8);
+    ssrBlurBuffer1.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+
+    ssaoBuffer.destroy();
     ssaoBuffer.setup(resolution.x, resolution.y);
     ssaoBuffer.attachTexture(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 
+    ssaoBufferBlur.destroy();
     ssaoBufferBlur.setup(resolution.x, resolution.y);
     ssaoBufferBlur.attachTexture(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 }

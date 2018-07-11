@@ -45,6 +45,6 @@ mat4 Camera::getProjection() {
     }
     else {
 
-        return perspective(70, size.x / size.y, 0.1f, 10000.0f);
+        return perspective(fov, size.x / size.y, 0.1f, 10000.0f);
     }
 }

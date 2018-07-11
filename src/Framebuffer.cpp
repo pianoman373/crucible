@@ -1,7 +1,5 @@
 #include <crucible/Framebuffer.hpp>
 
-//TODO: Adding this line makes windows compiler happy, need to figure out why.
-
 #include <glad/glad.h>
 
 #include <iostream>
@@ -115,4 +113,18 @@ void Framebuffer::bind() {
 
 Texture Framebuffer::getAttachment(int num) {
 	return attachments[num];
+}
+
+void Framebuffer::destroy() {
+	glDeleteFramebuffers(1, &fbo);
+	glDeleteRenderbuffers(1, &rbo);
+
+	for (int i = 0; i < attachments.size(); i++) {
+		attachments[i].destroy();
+	}
+
+	attachments.clear();
+	numAttachments = 0;
+	fbo = 0;
+	rbo = 0;
 }

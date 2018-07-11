@@ -109,30 +109,30 @@ static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f,
 static void renderDebugGui() {
     float aspect = (float)resolution.x / (float)resolution.y;
 
-    ImGui::Begin("frame buffers");
-//	ImGui::Image(ImTextureID((long long) ssaoBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//    ImGui::Begin("frame buffers");
+////	ImGui::Image(ImTextureID((long long) ssaoBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+////				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//    ImGui::SameLine(300);
+//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 //				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-    ImGui::SameLine(300);
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-    ImGui::SameLine(300);
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(2).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-
-
-	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(3).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-    ImGui::SameLine(300);
-	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-    ImGui::SameLine(300);
+//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//    ImGui::SameLine(300);
+//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(2).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//
+//
+//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(3).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//    ImGui::SameLine(300);
+//	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
+//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//    ImGui::SameLine(300);
 //	ImGui::Image(ImTextureID((long long) Renderer::postProcessor.HDRbuffer2.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
 //				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-	ImGui::End();
+//	ImGui::End();
 
 	bool p_open = false;
 	if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImVec2(0, 0), 0.3f,
@@ -142,22 +142,6 @@ static void renderDebugGui() {
 					ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
-
-	ImGui::SetNextWindowPos(ImVec2(Window::getWindowSize().x - 300, 0));
-    if (ImGui::Begin("Profiler", &p_open, ImVec2(300, 0), 0.3f,
-                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                     ImGuiWindowFlags_NoSavedSettings)) {
-        ImGui::Text("Profiler");
-        ImGui::Separator();
-
-        auto times = Profiler::getValues();
-
-        for (auto &i : times) {
-            ImGui::Text("%s = %.1fms", i.first.c_str(), i.second);
-        }
-
-        ImGui::End();
-    }
 }
 
 // public functions
@@ -189,6 +173,27 @@ namespace Renderer {
 	Texture brdf;
 
 	PostProcessor postProcessor;
+
+	void resize(int resolutionX, int resolutionY) {
+		resolution = vec2i(resolutionX, resolutionY);
+
+		std::cout << "resizing!" << std::endl;
+
+		HDRbuffer.destroy();
+		HDRbuffer.setup(resolution.x, resolution.y);
+		HDRbuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
+		HDRbuffer.attachRBO();
+
+		gBuffer.destroy();
+		gBuffer.setup(resolution.x, resolution.y);
+		gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //position
+		gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //normal
+		gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //color + specular
+		gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
+		gBuffer.attachRBO();
+
+		postProcessor.resize();
+	}
 
 	// ------------------------------------------------------------------------
 	void init(bool doShadows, int shadowResolution, int resolutionX, int resolutionY) {
@@ -356,8 +361,7 @@ namespace Renderer {
 		flush(cam, f, false);
 	}
 
-	// ------------------------------------------------------------------------
-	void flush(Camera cam, Frustum f, bool doFrustumCulling) {
+	void renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &deferred, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic) {
 		glStencilMask(0x00);
 
 		mat4 lightSpaceMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
@@ -468,12 +472,12 @@ namespace Renderer {
 		deferredShader.uniformInt("brdf", 6);
 		brdf.bind(6);
 
-        if (irradiance.getID() != 0 && specular.getID() != 0 && brdf.getID() != 0) {
-            deferredShader.uniformBool("doIBL", true);
-        }
-        else {
-            deferredShader.uniformBool("doIBL", false);
-        }
+		if (irradiance.getID() != 0 && specular.getID() != 0 && brdf.getID() != 0) {
+			deferredShader.uniformBool("doIBL", true);
+		}
+		else {
+			deferredShader.uniformBool("doIBL", false);
+		}
 
 		deferredShader.uniformVec3("cameraPos", vec3());
 		deferredShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
@@ -487,7 +491,7 @@ namespace Renderer {
 									   vec3(vec4(pointLights[i].position, 1.0f) * cam.getView()));
 			deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i].color);
 
-            deferredShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
+			deferredShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
 		}
 
 		if (shadows) {
@@ -517,6 +521,23 @@ namespace Renderer {
 		// -----------------
 		renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
 
+		deferred = HDRbuffer.getAttachment(0);
+		gPosition = gBuffer.getAttachment(0);
+		gNormal = gBuffer.getAttachment(1);
+		gAlbedo = gBuffer.getAttachment(2);
+		gRoughnessMetallic = gBuffer.getAttachment(3);
+	}
+
+	// ------------------------------------------------------------------------
+	void flush(Camera cam, Frustum f, bool doFrustumCulling) {
+		Texture deferred;
+		Texture gPosition;
+		Texture gNormal;
+		Texture gAlbedo;
+		Texture gRoughnessMetallic;
+
+		renderGbuffers(cam, f, doFrustumCulling, deferred, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+
 		Texture final = postProcessor.postRender(cam, HDRbuffer.getAttachment(0), gBuffer.getAttachment(0), gBuffer.getAttachment(1), gBuffer.getAttachment(2), gBuffer.getAttachment(3));
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -529,8 +550,8 @@ namespace Renderer {
 		// -------------------------------
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
 
 		// render object outlines

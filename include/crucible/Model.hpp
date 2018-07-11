@@ -21,6 +21,8 @@ public:
 
     void importFile(std::string filename, bool loadTextures=true);
 
+    void openFile(std::string filename);
+
     void fromJson(json j, std::string workingDirectory);
 
     json toJson(std::string workingDirectory);

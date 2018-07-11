@@ -20,6 +20,8 @@ public:
 	void setID(unsigned int id);
 
 	std::string getFilepath();
+
+	void destroy();
 };
 
 class Cubemap {

@@ -34,5 +34,7 @@ private:
 public:
     void init();
 
+    void resize();
+
     Texture postRender(Camera cam, Texture deferred, Texture gPosition, Texture gNormal, Texture gAlbedo, Texture gRoughnessMetallic);
 };

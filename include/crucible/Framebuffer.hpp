@@ -6,7 +6,7 @@
 class Framebuffer {
 private:
    
-    unsigned int rbo;
+    unsigned int rbo = 0;
     int width;
     int height;
 
@@ -40,4 +40,6 @@ public:
     int getWidth();
 
     int getHeight();
+
+    void destroy();
 };
