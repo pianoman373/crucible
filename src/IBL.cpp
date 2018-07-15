@@ -21,24 +21,6 @@ namespace IBL {
                         LookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f,  0.0f, -1.0f), vec3(0.0f, -1.0f,  0.0f))
                 };
 
-        static vec3 forwards[] = {
-                vec3(1.0f,  0.0f,  0.0f),
-                vec3(-1.0f,  0.0f,  0.0f),
-                vec3(0.0f,  1.0f,  0.0f),
-                vec3(0.0f, -1.0f,  0.0f),
-                vec3(0.0f,  0.0f,  1.0f),
-                vec3(0.0f,  0.0f, -1.0f)
-        };
-
-        static vec3 ups[] = {
-                vec3(0.0f,  -1.0f,  0.0f),
-                vec3(0.0f,  -1.0f,  0.0f),
-                vec3(0.0f,  0.0f,  1.0f),
-                vec3(0.0f, 0.0f,  -1.0f),
-                vec3(0.0f,  -1.0f, 0.0f),
-                vec3(0.0f,  -1.0f, 0.0f)
-        };
-
         unsigned int captureFBO, captureRBO;
         glGenFramebuffers(1, &captureFBO);
         glGenRenderbuffers(1, &captureRBO);
@@ -48,66 +30,7 @@ namespace IBL {
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 
-        unsigned int envCubemap;
-
-        glGenTextures(1, &envCubemap);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-            // note that we store each face with 16 bit floating point values
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
-                         resolution, resolution, 0, GL_RGB, GL_FLOAT, nullptr);
-        }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        // convert HDR equirectangular environment map to cubemap equivalent
-
-        vec2i internalResolution = Renderer::getResolution();
-        Renderer::resize(resolution, resolution);
-
-        glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
-        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-            //Renderer::eq2cubeShader.uniformMat4("view", captureViews[i]);
-            //Renderer::cubemapMesh.render(); // renders a 1x1 cube
-
-            //Renderer::renderSkybox(captureViews[i], captureProjection);
-
-            Texture deferred;
-            Texture gPosition;
-            Texture gNormal;
-            Texture gAlbedo;
-            Texture gRoughnessMetallic;
-
-            Camera cam;
-            cam.dimensions = {resolution, resolution};
-            cam.position = position;
-
-            cam.direction = forwards[i];
-            cam.up = ups[i];
-            cam.fov = 90.0f;
-
-            Renderer::renderGbuffers(cam, Frustum(), false, deferred, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
-
-            glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
-            glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                   GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            Renderer::passthroughShader.bind();
-            deferred.bind();
-            Renderer::framebufferMesh.render();
-
-
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        Renderer::resize(internalResolution.x, internalResolution.y);
+        Cubemap environment = Renderer::renderToProbe(position);
 
 
         // create the irradiance map from the captured environment map
@@ -131,8 +54,7 @@ namespace IBL {
 
         Renderer::irradianceShader.bind();
         Renderer::irradianceShader.uniformMat4("projection", captureProjection);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+       environment.bind();
 
         glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
@@ -170,7 +92,7 @@ namespace IBL {
         Renderer::prefilterShader.uniformInt("environmentMap", 0);
         Renderer::prefilterShader.uniformMat4("projection", captureProjection);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        environment.bind();
 
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
         unsigned int maxMipLevels = 5;

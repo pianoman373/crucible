@@ -27,12 +27,6 @@ struct RenderCall {
 	AABB aabb;
 };
 
-struct PointLight {
-    vec3 position;
-    vec3 color;
-    float radius;
-};
-
 // private variables
 // -----------------
 static const float cascadeDistances[4] = { 10.0f, 40.0f, 100.0f, 500.0f };
@@ -41,7 +35,6 @@ static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f,
 
 static std::vector<RenderCall> renderQueue;
 static std::vector<PointLight> pointLights;
-static std::vector<RenderCall> renderQueueOutline;
 
 static Framebuffer shadowBuffer0;
 static Framebuffer shadowBuffer1;
@@ -53,23 +46,49 @@ static Framebuffer gBuffer;
 static Shader skyboxShader;
 static Shader ShadowShader;
 static Shader deferredShader;
+static Shader deferredAmbientShader;
 
 static Mesh skyboxMesh;
 
 static bool shadows;
 static int shadow_resolution;
-static bool outlineEnabled = false;
 
 static vec2i resolution;
+
+RendererSettings Renderer::settings;
+
+vec3 Renderer::ambient = vec3(0.01f);
+
+DebugRenderer Renderer::debug;
+
+Mesh Renderer::cubemapMesh;
+Mesh Renderer::framebufferMesh;
+
+Shader Renderer::standardShader;
+Shader Renderer::eq2cubeShader;
+Shader Renderer::cubemapShader;
+Shader Renderer::irradianceShader;
+Shader Renderer::prefilterShader;
+Shader Renderer::brdfShader;
+Shader Renderer::outlineShader;
+Shader Renderer::passthroughShader;
+
+Cubemap Renderer::environment;
+Cubemap Renderer::irradiance;
+Cubemap Renderer::specular;
+
+Texture Renderer::brdf;
+
+PostProcessor Renderer::postProcessor;
 
 // private functions
 // -----------------
 
-static mat4 shadowMatrix(float radius, Camera &cam, float depth) {
+mat4 Renderer::shadowMatrix(float radius, Camera &cam, float depth) {
 	return orthographic(-radius, radius, -radius, radius, -depth, depth) * LookAt(cam.getPosition() - sun.direction, cam.getPosition(), vec3(0.0f, 1.0f, 0.0f));
 }
 // ------------------------------------------------------------------------
-static Frustum shadowFrustum(float radius, Camera &cam, float depth) {
+Frustum Renderer::shadowFrustum(float radius, Camera &cam, float depth) {
 	Frustum shadowFrustum;
 	shadowFrustum.setupInternalsOrthographic(-radius, radius, -radius, radius, -depth, depth);
 	Camera shadowCam;
@@ -82,7 +101,7 @@ static Frustum shadowFrustum(float radius, Camera &cam, float depth) {
 	return shadowFrustum;
 }
 // ------------------------------------------------------------------------
-static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f, bool doFrustumCulling) {
+void Renderer::renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f, bool doFrustumCulling) {
 	glViewport(0, 0, fbuffer.getWidth(), fbuffer.getHeight());
 	fbuffer.bind();
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -106,33 +125,8 @@ static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f,
 	}
 }
 // ------------------------------------------------------------------------
-static void renderDebugGui() {
-    float aspect = (float)resolution.x / (float)resolution.y;
-
-//    ImGui::Begin("frame buffers");
-////	ImGui::Image(ImTextureID((long long) ssaoBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-////				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//    ImGui::SameLine(300);
-//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//    ImGui::SameLine(300);
-//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(2).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//
-//
-//	ImGui::Image(ImTextureID((long long) gBuffer.getAttachment(3).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//    ImGui::SameLine(300);
-//	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//	ImGui::Image(ImTextureID((long long) HDRbuffer.getAttachment(1).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//    ImGui::SameLine(300);
-//	ImGui::Image(ImTextureID((long long) Renderer::postProcessor.HDRbuffer2.getAttachment(0).getID()), ImVec2(256, 256 / aspect), ImVec2(0, 1),
-//				 ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-//	ImGui::End();
+void Renderer::renderDebugGui() {
+	float aspect = (float)resolution.x / (float)resolution.y;
 
 	bool p_open = false;
 	if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImVec2(0, 0), 0.3f,
@@ -146,468 +140,489 @@ static void renderDebugGui() {
 
 // public functions
 // ---------------
+void Renderer::resize(int resolutionX, int resolutionY) {
+	resolution = vec2i(resolutionX, resolutionY);
 
-namespace Renderer {
-	RendererSettings settings;
+	std::cout << "resizing!" << std::endl;
 
-	vec3 ambient = vec3(0.01f);
+	HDRbuffer.destroy();
+	HDRbuffer.setup(resolution.x, resolution.y);
+	HDRbuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
+	HDRbuffer.attachRBO();
 
-	DebugRenderer debug;
+	gBuffer.destroy();
+	gBuffer.setup(resolution.x, resolution.y);
+	gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //position
+	gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //normal
+	gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //color + specular
+	gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
+	gBuffer.attachRBO();
 
-	Mesh cubemapMesh;
-	Mesh framebufferMesh;
+	postProcessor.resize();
+}
 
-	Shader standardShader;
-	Shader eq2cubeShader;
-	Shader cubemapShader;
-	Shader irradianceShader;
-	Shader prefilterShader;
-	Shader brdfShader;
-	Shader outlineShader;
-	Shader passthroughShader;
+// ------------------------------------------------------------------------
+void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int resolutionY) {
+	resolution = vec2i(resolutionX, resolutionY);
 
-	Cubemap environment;
-	Cubemap irradiance;
-	Cubemap specular;
+	debug.init();
 
-	Texture brdf;
+	shadows = doShadows;
+	shadow_resolution = shadowResolution;
 
-	PostProcessor postProcessor;
 
-	void resize(int resolutionX, int resolutionY) {
-		resolution = vec2i(resolutionX, resolutionY);
-
-		std::cout << "resizing!" << std::endl;
-
-		HDRbuffer.destroy();
-		HDRbuffer.setup(resolution.x, resolution.y);
-		HDRbuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
-		HDRbuffer.attachRBO();
-
-		gBuffer.destroy();
-		gBuffer.setup(resolution.x, resolution.y);
-		gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //position
-		gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //normal
-		gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //color + specular
-		gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
-		gBuffer.attachRBO();
-
-		postProcessor.resize();
+	if (shadows) {
+		shadowBuffer0.attachShadow(shadow_resolution, shadow_resolution);
+		shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
+		shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
+		shadowBuffer3.attachShadow(shadow_resolution, shadow_resolution);
+		ShadowShader.load(InternalShaders::shadow_vsh, InternalShaders::shadow_fsh);
 	}
 
-	// ------------------------------------------------------------------------
-	void init(bool doShadows, int shadowResolution, int resolutionX, int resolutionY) {
-		resolution = vec2i(resolutionX, resolutionY);
-
-		debug.init();
-
-		shadows = doShadows;
-		shadow_resolution = shadowResolution;
-
-
-		if (shadows) {
-			shadowBuffer0.attachShadow(shadow_resolution, shadow_resolution);
-			shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
-			shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
-			shadowBuffer3.attachShadow(shadow_resolution, shadow_resolution);
-			ShadowShader.load(InternalShaders::shadow_vsh, InternalShaders::shadow_fsh);
-		}
-
-		standardShader.load(InternalShaders::standard_vsh, InternalShaders::standard_fsh);
-		eq2cubeShader.load(InternalShaders::cubemap_vsh, InternalShaders::eq2cube_fsh);
-		cubemapShader.load(InternalShaders::cubemap_vsh, InternalShaders::cubemap_fsh);
-		irradianceShader.load(InternalShaders::cubemap_vsh, InternalShaders::irradiance_fsh);
-		prefilterShader.load(InternalShaders::cubemap_vsh, InternalShaders::prefilter_fsh);
-		outlineShader.load(InternalShaders::outline_vsh, InternalShaders::outline_fsh);
-		passthroughShader.loadPostProcessing(InternalShaders::passthrough_glsl);
+	standardShader.load(InternalShaders::standard_vsh, InternalShaders::standard_fsh);
+	eq2cubeShader.load(InternalShaders::cubemap_vsh, InternalShaders::eq2cube_fsh);
+	cubemapShader.load(InternalShaders::cubemap_vsh, InternalShaders::cubemap_fsh);
+	irradianceShader.load(InternalShaders::cubemap_vsh, InternalShaders::irradiance_fsh);
+	prefilterShader.load(InternalShaders::cubemap_vsh, InternalShaders::prefilter_fsh);
+	outlineShader.load(InternalShaders::outline_vsh, InternalShaders::outline_fsh);
+	passthroughShader.loadPostProcessing(InternalShaders::passthrough_glsl);
 
 
-		brdfShader.loadPostProcessing(InternalShaders::brdf_glsl);
-		deferredShader.loadPostProcessing(InternalShaders::deferred_glsl);
+	brdfShader.loadPostProcessing(InternalShaders::brdf_glsl);
+	deferredShader.loadPostProcessing(InternalShaders::deferred_glsl);
+	deferredAmbientShader.loadPostProcessing(InternalShaders::deferred_ambient_glsl);
 
-		skyboxShader = cubemapShader;
+	skyboxShader = cubemapShader;
 
-		Primitives::skybox(skyboxMesh);
-		Primitives::framebuffer(framebufferMesh);
-		Primitives::skybox(cubemapMesh);
+	Primitives::skybox(skyboxMesh);
+	Primitives::framebuffer(framebufferMesh);
+	Primitives::skybox(cubemapMesh);
 
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_STENCIL_TEST);
-		//    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+	//    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-		// HDR framebuffer
-		HDRbuffer.setup(resolution.x, resolution.y);
-		HDRbuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
-		HDRbuffer.attachRBO();
-
-		gBuffer.setup(resolution.x, resolution.y);
-		gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //position
-		gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //normal
-		gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //color + specular
-		gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
-		gBuffer.attachRBO();
-
-		postProcessor.init();
+	resize(resolution.x, resolution.y);
+	postProcessor.init();
 
 
-        // create brdf texture
-        unsigned int brdfLUTTexture;
-        glGenTextures(1, &brdfLUTTexture);
+	// create brdf texture
+	unsigned int brdfLUTTexture;
+	glGenTextures(1, &brdfLUTTexture);
 
-        // pre-allocate enough memory for the LUT texture.
-        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// pre-allocate enough memory for the LUT texture.
+	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        unsigned int captureFBO, captureRBO;
-        glGenFramebuffers(1, &captureFBO);
-        glGenRenderbuffers(1, &captureRBO);
+	unsigned int captureFBO, captureRBO;
+	glGenFramebuffers(1, &captureFBO);
+	glGenRenderbuffers(1, &captureRBO);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
 
-        glViewport(0, 0, 512, 512);
-        Renderer::brdfShader.bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        Renderer::framebufferMesh.render();
+	glViewport(0, 0, 512, 512);
+	Renderer::brdfShader.bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Renderer::framebufferMesh.render();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glDeleteFramebuffers(1, &captureFBO);
-        glDeleteRenderbuffers(1, &captureRBO);
+	glDeleteFramebuffers(1, &captureFBO);
+	glDeleteRenderbuffers(1, &captureRBO);
 
-        brdf.setID(brdfLUTTexture);
+	brdf.setID(brdfLUTTexture);
+}
+
+// ------------------------------------------------------------------------
+void Renderer::renderSkybox(mat4 view, mat4 projection, vec3 cameraPos) {
+	skyboxShader.bind();
+
+	skyboxShader.uniformMat4("view", view);
+	skyboxShader.uniformMat4("projection", projection);
+	skyboxShader.uniformVec3("sun.direction", sun.direction);
+	skyboxShader.uniformVec3("sun.color", sun.color);
+	skyboxShader.uniformVec3("ambient", ambient);
+	skyboxShader.uniformVec3("cameraPos", cameraPos);
+
+	if (environment.getID() != 0) {
+		environment.bind(0);
+		skyboxShader.uniformBool("isTextured", true);
+	}
+	else {
+		skyboxShader.uniformBool("isTextured", false);
 	}
 
-	// ------------------------------------------------------------------------
-	void renderSkybox(mat4 view, mat4 projection, vec3 cameraPos) {
-		glDepthMask(GL_TRUE);
-		skyboxShader.bind();
+	cubemapMesh.render();
+}
 
-		skyboxShader.uniformMat4("view", view);
-		skyboxShader.uniformMat4("projection", projection);
-		skyboxShader.uniformVec3("sun.direction", sun.direction);
-		skyboxShader.uniformVec3("sun.color", sun.color);
-		skyboxShader.uniformVec3("ambient", ambient);
-        skyboxShader.uniformVec3("cameraPos", cameraPos);
+// ------------------------------------------------------------------------
+void Renderer::renderPointLight(vec3 position, vec3 color, float radius) {
+	PointLight p;
+	p.position = position;
+	p.color = color;
+	p.radius = radius;
 
-		if (environment.getID() != 0) {
-			environment.bind(0);
-			skyboxShader.uniformBool("isTextured", true);
-		}
-		else {
-			skyboxShader.uniformBool("isTextured", false);
-		}
+	pointLights.push_back(p);
+}
 
+// ------------------------------------------------------------------------
+void Renderer::render(IRenderable *mesh, Material *material, Transform transform, AABB aabb) {
+	RenderCall call;
+	call.mesh = mesh;
+	call.material = material;
+	call.transform = transform;
+	call.aabb = aabb;
+	renderQueue.push_back(call);
+}
 
-
-
-		cubemapMesh.render();
-		glDepthMask(GL_TRUE);
+// ------------------------------------------------------------------------
+void Renderer::render(Model *model, Transform transform, AABB aabb) {
+	for (unsigned int i = 0; i < model->nodes.size(); i++) {
+		ModelNode *node = &model->nodes[i];
+		render(&node->mesh, &model->materials[node->materialIndex], transform, aabb);
 	}
+}
 
-    // ------------------------------------------------------------------------
-    void renderPointLight(vec3 position, vec3 color, float radius) {
-        PointLight p;
-        p.position = position;
-        p.color = color;
-        p.radius = radius;
+void Renderer::flush(Camera cam) {
+	Frustum f;
+	flush(cam, f, false);
+}
 
-        pointLights.push_back(p);
-	}
+void Renderer::renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic) {
+	// render objects in scene into g-buffer
+	// -------------------------------------
+	gBuffer.bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glViewport(0, 0, resolution.x, resolution.y);
 
-	// ------------------------------------------------------------------------
-	void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb) {
-		RenderCall call;
-		call.mesh = mesh;
-		call.material = material;
-		call.transform = transform;
-		call.aabb = aabb;
+	Material *lastMaterial = nullptr;
 
-		if (outlineEnabled)
-			renderQueueOutline.push_back(call);
-		else
-			renderQueue.push_back(call);
-	}
-
-	// ------------------------------------------------------------------------
-	void render(Model *model, Transform transform, AABB aabb) {
-		for (unsigned int i = 0; i < model->nodes.size(); i++) {
-			ModelNode *node = &model->nodes[i];
-			render(&node->mesh, &model->materials[node->materialIndex], transform, aabb);
-		}
-	}
-
-	// ------------------------------------------------------------------------
-	void enableOutline() {
-		outlineEnabled = true;
-	}
-
-	// ------------------------------------------------------------------------
-	void disableOutline() {
-		outlineEnabled = false;
-	}
-
-	void flush(Camera cam) {
-		Frustum f;
-		flush(cam, f, false);
-	}
-
-	void renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &deferred, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic) {
-		glStencilMask(0x00);
-
-		mat4 lightSpaceMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
-		mat4 lightSpaceMatrix1 = shadowMatrix(cascadeDistances[1], cam, cascadeDepths[1]);
-		mat4 lightSpaceMatrix2 = shadowMatrix(cascadeDistances[2], cam, cascadeDepths[2]);
-		mat4 lightSpaceMatrix3 = shadowMatrix(cascadeDistances[3], cam, cascadeDepths[3]);
-
-		Frustum shadowFrustum0 = shadowFrustum(cascadeDistances[0], cam, cascadeDepths[0]);
-		Frustum shadowFrustum1 = shadowFrustum(cascadeDistances[1], cam, cascadeDepths[1]);
-		Frustum shadowFrustum2 = shadowFrustum(cascadeDistances[2], cam, cascadeDepths[2]);
-		Frustum shadowFrustum3 = shadowFrustum(cascadeDistances[3], cam, cascadeDepths[3]);
-
-		// render scene multiple times to shadow buffers
-		if (shadows) {
-			glDisable(GL_CULL_FACE);
-			renderShadow(shadowBuffer0, lightSpaceMatrix0, shadowFrustum0, doFrustumCulling);
-			renderShadow(shadowBuffer1, lightSpaceMatrix1, shadowFrustum1, doFrustumCulling);
-			renderShadow(shadowBuffer2, lightSpaceMatrix2, shadowFrustum2, doFrustumCulling);
-			renderShadow(shadowBuffer3, lightSpaceMatrix3, shadowFrustum3, doFrustumCulling);
-			glEnable(GL_CULL_FACE);
-		}
-
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
-
-		// render objects in scene into g-buffer
-		// -------------------------------------
-		gBuffer.bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		glViewport(0, 0, resolution.x, resolution.y);
-
-		Material *lastMaterial = nullptr;
-
-
-		glStencilMask(0x00);
-
-		for (RenderCall call : renderQueue) {
-			if (doFrustumCulling) {
-				if (!f.isBoxInside(call.aabb)) {
-					continue;
-				}
+	for (RenderCall call : renderQueue) {
+		if (doFrustumCulling) {
+			if (!f.isBoxInside(call.aabb)) {
+				continue;
 			}
-
-			Shader s = call.material->getShader();
-
-			if (call.material != lastMaterial) {
-				s.bind();
-				call.material->bindUniforms();
-
-				s.uniformMat4("view", cam.getView());
-				s.uniformMat4("projection", cam.getProjection());
-
-			}
-
-			s.uniformMat4("model", call.transform.getMatrix());
-
-			call.mesh->render();
-
-			lastMaterial = call.material;
 		}
 
-		glStencilMask(0xFF);
-		for (RenderCall call : renderQueueOutline) {
+		Shader s = call.material->getShader();
 
-			Shader s = call.material->getShader();
-
-			if (call.material != lastMaterial) {
-				s.bind();
-				call.material->bindUniforms();
-
-				s.uniformMat4("view", cam.getView());
-				s.uniformMat4("projection", cam.getProjection());
-
-			}
-
-			s.uniformMat4("model", call.transform.getMatrix());
-
-			call.mesh->render();
-
-			lastMaterial = call.material;
-		}
-
-
-		HDRbuffer.bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-		HDRbuffer.bind();
-		// render the g-buffers with the deferred shader
-		// ---------------------------------------------
-		deferredShader.bind();
-
-		deferredShader.uniformInt("gPosition", 0);
-		gBuffer.getAttachment(0).bind(0);
-
-		deferredShader.uniformInt("gNormal", 1);
-		gBuffer.getAttachment(1).bind(1);
-
-		deferredShader.uniformInt("gAlbedo", 2);
-		gBuffer.getAttachment(2).bind(2);
-
-		deferredShader.uniformInt("gRoughnessMetallic", 3);
-		gBuffer.getAttachment(3).bind(3);
-
-		deferredShader.uniformInt("irradiance", 4);
-		irradiance.bind(4);
-		deferredShader.uniformInt("prefilter", 5);
-		specular.bind(5);
-		deferredShader.uniformInt("brdf", 6);
-		brdf.bind(6);
-
-		if (irradiance.getID() != 0 && specular.getID() != 0 && brdf.getID() != 0) {
-			deferredShader.uniformBool("doIBL", true);
-		}
-		else {
-			deferredShader.uniformBool("doIBL", false);
-		}
-
-		deferredShader.uniformVec3("cameraPos", vec3());
-		deferredShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
-		deferredShader.uniformVec3("sun.color", sun.color);
-		deferredShader.uniformVec3("ambient", ambient);
-		deferredShader.uniformMat4("view", cam.getView());
-
-		deferredShader.uniformInt("pointLightCount", (int) pointLights.size());
-		for (unsigned int i = 0; i < pointLights.size(); i++) {
-			deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
-									   vec3(vec4(pointLights[i].position, 1.0f) * cam.getView()));
-			deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i].color);
-
-			deferredShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
-		}
-
-		if (shadows) {
-			shadowBuffer0.getAttachment(0).bind(8);
-			shadowBuffer1.getAttachment(0).bind(9);
-			shadowBuffer2.getAttachment(0).bind(10);
-			shadowBuffer3.getAttachment(0).bind(11);
-
-			deferredShader.uniformInt("shadowTextures[0]", 8);
-			deferredShader.uniformInt("shadowTextures[1]", 9);
-			deferredShader.uniformInt("shadowTextures[2]", 10);
-			deferredShader.uniformInt("shadowTextures[3]", 11);
-
-			deferredShader.uniformMat4("lightSpaceMatrix[0]", lightSpaceMatrix0);
-			deferredShader.uniformMat4("lightSpaceMatrix[1]", lightSpaceMatrix1);
-			deferredShader.uniformMat4("lightSpaceMatrix[2]", lightSpaceMatrix2);
-			deferredShader.uniformMat4("lightSpaceMatrix[3]", lightSpaceMatrix3);
-
-			deferredShader.uniformFloat("cascadeDistances[0]", cascadeDistances[0]);
-			deferredShader.uniformFloat("cascadeDistances[1]", cascadeDistances[1]);
-			deferredShader.uniformFloat("cascadeDistances[2]", cascadeDistances[2]);
-			deferredShader.uniformFloat("cascadeDistances[3]", cascadeDistances[3]);
-		}
-		framebufferMesh.render();
-
-		// render the skybox
-		// -----------------
-		renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
-
-		deferred = HDRbuffer.getAttachment(0);
-		gPosition = gBuffer.getAttachment(0);
-		gNormal = gBuffer.getAttachment(1);
-		gAlbedo = gBuffer.getAttachment(2);
-		gRoughnessMetallic = gBuffer.getAttachment(3);
-	}
-
-	// ------------------------------------------------------------------------
-	void flush(Camera cam, Frustum f, bool doFrustumCulling) {
-		Texture deferred;
-		Texture gPosition;
-		Texture gNormal;
-		Texture gAlbedo;
-		Texture gRoughnessMetallic;
-
-		renderGbuffers(cam, f, doFrustumCulling, deferred, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
-
-		Texture final = postProcessor.postRender(cam, HDRbuffer.getAttachment(0), gBuffer.getAttachment(0), gBuffer.getAttachment(1), gBuffer.getAttachment(2), gBuffer.getAttachment(3));
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
-		passthroughShader.bind();
-		final.bind();
-		framebufferMesh.render();
-
-		// copy depth and stencil buffer
-		// -------------------------------
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-
-
-		// render object outlines
-		// ----------------------
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-
-		for (RenderCall call : renderQueueOutline) {
-
-			Shader s = outlineShader;
-
+		if (call.material != lastMaterial) {
 			s.bind();
 			call.material->bindUniforms();
 
 			s.uniformMat4("view", cam.getView());
 			s.uniformMat4("projection", cam.getProjection());
-			s.uniformMat4("model", call.transform.getMatrix());
-			s.uniformVec3("color", vec3(1.0f, 0.5f, 0.0f));
-			s.uniformFloat("thickness", 0.005);
 
-			call.mesh->render();
-		}
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-
-
-		// render debug tools
-		// ------------------
-		debug.flush(cam);
-
-		static bool lastKeydown = false;
-		static bool debug = false;
-		if (Input::isKeyDown(Input::KEY_F1) && !lastKeydown) {
-			debug = !debug;
-		}
-		lastKeydown = Input::isKeyDown(Input::KEY_F1);
-
-		if (debug) {
-			renderDebugGui();
 		}
 
-		pointLights.clear();
-		renderQueue.clear();
-		renderQueueOutline.clear();
+		s.uniformMat4("model", call.transform.getMatrix());
+
+		call.mesh->render();
+
+		lastMaterial = call.material;
 	}
 
-	// ------------------------------------------------------------------------
-	void setSkyboxShader(Shader s) {
-		skyboxShader = s;
+	gPosition = gBuffer.getAttachment(0);
+	gNormal = gBuffer.getAttachment(1);
+	gAlbedo = gBuffer.getAttachment(2);
+	gRoughnessMetallic = gBuffer.getAttachment(3);
+}
+
+Texture Renderer::lightGbuffers(Camera cam, Texture gPosition, Texture gNormal, Texture gAlbedo, Texture gRoughnessMetallic) {
+	mat4 lightSpaceMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
+	mat4 lightSpaceMatrix1 = shadowMatrix(cascadeDistances[1], cam, cascadeDepths[1]);
+	mat4 lightSpaceMatrix2 = shadowMatrix(cascadeDistances[2], cam, cascadeDepths[2]);
+	mat4 lightSpaceMatrix3 = shadowMatrix(cascadeDistances[3], cam, cascadeDepths[3]);
+
+	Frustum shadowFrustum0 = shadowFrustum(cascadeDistances[0], cam, cascadeDepths[0]);
+	Frustum shadowFrustum1 = shadowFrustum(cascadeDistances[1], cam, cascadeDepths[1]);
+	Frustum shadowFrustum2 = shadowFrustum(cascadeDistances[2], cam, cascadeDepths[2]);
+	Frustum shadowFrustum3 = shadowFrustum(cascadeDistances[3], cam, cascadeDepths[3]);
+
+	// render scene multiple times to shadow buffers
+	if (shadows) {
+		glDisable(GL_CULL_FACE);
+		renderShadow(shadowBuffer0, lightSpaceMatrix0, shadowFrustum0, false);
+		renderShadow(shadowBuffer1, lightSpaceMatrix1, shadowFrustum1, false);
+		renderShadow(shadowBuffer2, lightSpaceMatrix2, shadowFrustum2, false);
+		renderShadow(shadowBuffer3, lightSpaceMatrix3, shadowFrustum3, false);
+		glEnable(GL_CULL_FACE);
 	}
 
-	// ------------------------------------------------------------------------
-	void setSun(DirectionalLight light) {
-		sun = light;
+	HDRbuffer.bind();
+	glViewport(0, 0, resolution.x, resolution.y);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
+	glDepthFunc(GL_ALWAYS);
+	glDepthMask(GL_TRUE);
+
+	// render the g-buffers with the deferred shader
+	// ---------------------------------------------
+	deferredShader.bind();
+
+	deferredShader.uniformInt("gPosition", 0);
+	gPosition.bind(0);
+
+	deferredShader.uniformInt("gNormal", 1);
+	gNormal.bind(1);
+
+	deferredShader.uniformInt("gAlbedo", 2);
+	gAlbedo.bind(2);
+
+	deferredShader.uniformInt("gRoughnessMetallic", 3);
+	gRoughnessMetallic.bind(3);
+
+	deferredShader.uniformVec3("cameraPos", vec3());
+	deferredShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
+	deferredShader.uniformVec3("sun.color", sun.color);
+	deferredShader.uniformMat4("view", cam.getView());
+
+	deferredShader.uniformInt("pointLightCount", (int) pointLights.size());
+	for (unsigned int i = 0; i < pointLights.size(); i++) {
+		deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
+								   vec3(vec4(pointLights[i].position, 1.0f) * cam.getView()));
+		deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i].color);
+
+		deferredShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
 	}
 
-	vec2i getResolution() {
-		return resolution;
+	if (shadows) {
+		shadowBuffer0.getAttachment(0).bind(8);
+		shadowBuffer1.getAttachment(0).bind(9);
+		shadowBuffer2.getAttachment(0).bind(10);
+		shadowBuffer3.getAttachment(0).bind(11);
+
+		deferredShader.uniformInt("shadowTextures[0]", 8);
+		deferredShader.uniformInt("shadowTextures[1]", 9);
+		deferredShader.uniformInt("shadowTextures[2]", 10);
+		deferredShader.uniformInt("shadowTextures[3]", 11);
+
+		deferredShader.uniformMat4("lightSpaceMatrix[0]", lightSpaceMatrix0);
+		deferredShader.uniformMat4("lightSpaceMatrix[1]", lightSpaceMatrix1);
+		deferredShader.uniformMat4("lightSpaceMatrix[2]", lightSpaceMatrix2);
+		deferredShader.uniformMat4("lightSpaceMatrix[3]", lightSpaceMatrix3);
+
+		deferredShader.uniformFloat("cascadeDistances[0]", cascadeDistances[0]);
+		deferredShader.uniformFloat("cascadeDistances[1]", cascadeDistances[1]);
+		deferredShader.uniformFloat("cascadeDistances[2]", cascadeDistances[2]);
+		deferredShader.uniformFloat("cascadeDistances[3]", cascadeDistances[3]);
 	}
+	framebufferMesh.render();
+
+
+
+	// Render ambient lighting to the buffer
+	// ---------------------------------------------
+	deferredAmbientShader.bind();
+
+	deferredAmbientShader.uniformInt("gPosition", 0);
+	gBuffer.getAttachment(0).bind(0);
+
+	deferredAmbientShader.uniformInt("gNormal", 1);
+	gBuffer.getAttachment(1).bind(1);
+
+	deferredAmbientShader.uniformInt("gAlbedo", 2);
+	gBuffer.getAttachment(2).bind(2);
+
+	deferredAmbientShader.uniformInt("gRoughnessMetallic", 3);
+	gBuffer.getAttachment(3).bind(3);
+
+	deferredAmbientShader.uniformInt("irradiance", 4);
+	irradiance.bind(4);
+	deferredAmbientShader.uniformInt("prefilter", 5);
+	specular.bind(5);
+	deferredAmbientShader.uniformInt("brdf", 6);
+	brdf.bind(6);
+
+	if (irradiance.getID() != 0 && specular.getID() != 0 && brdf.getID() != 0) {
+		deferredAmbientShader.uniformBool("doIBL", true);
+	}
+	else {
+		deferredAmbientShader.uniformBool("doIBL", false);
+	}
+
+	deferredAmbientShader.uniformVec3("cameraPos", vec3());
+	deferredAmbientShader.uniformVec3("ambient", ambient);
+	deferredAmbientShader.uniformMat4("view", cam.getView());
+
+    framebufferMesh.render();
+
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+
+	// render the skybox
+	// -----------------
+	renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
+
+	return HDRbuffer.getAttachment(0);
+}
+
+// ------------------------------------------------------------------------
+void Renderer::flush(Camera cam, Frustum f, bool doFrustumCulling) {
+	Texture gPosition;
+	Texture gNormal;
+	Texture gAlbedo;
+	Texture gRoughnessMetallic;
+
+	renderGbuffers(cam, f, doFrustumCulling, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+	Texture deferred = lightGbuffers(cam, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+
+	Texture final = postProcessor.postRender(cam, deferred, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
+	passthroughShader.bind();
+	final.bind();
+	framebufferMesh.render();
+
+	// copy depth and stencil buffer
+	// -------------------------------
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+
+
+	// render debug tools
+	// ------------------
+	debug.flush(cam);
+
+	static bool lastKeydown = false;
+	static bool debug = false;
+	if (Input::isKeyDown(Input::KEY_F1) && !lastKeydown) {
+		debug = !debug;
+	}
+	lastKeydown = Input::isKeyDown(Input::KEY_F1);
+
+	if (debug) {
+		renderDebugGui();
+	}
+
+	pointLights.clear();
+	renderQueue.clear();
+}
+// ------------------------------------------------------------------------
+Cubemap Renderer::renderToProbe(vec3 position) {
+	static const int resolution = 512;
+
+	static vec3 forwards[] = {
+			vec3(1.0f,  0.0f,  0.0f),
+			vec3(-1.0f,  0.0f,  0.0f),
+			vec3(0.0f,  1.0f,  0.0f),
+			vec3(0.0f, -1.0f,  0.0f),
+			vec3(0.0f,  0.0f,  1.0f),
+			vec3(0.0f,  0.0f, -1.0f)
+	};
+
+	static vec3 ups[] = {
+			vec3(0.0f,  -1.0f,  0.0f),
+			vec3(0.0f,  -1.0f,  0.0f),
+			vec3(0.0f,  0.0f,  1.0f),
+			vec3(0.0f, 0.0f,  -1.0f),
+			vec3(0.0f,  -1.0f, 0.0f),
+			vec3(0.0f,  -1.0f, 0.0f)
+	};
+
+	unsigned int captureFBO, captureRBO;
+	glGenFramebuffers(1, &captureFBO);
+	glGenRenderbuffers(1, &captureRBO);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+	unsigned int envCubemap;
+
+	glGenTextures(1, &envCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		// note that we store each face with 16 bit floating point values
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+					 resolution, resolution, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// convert HDR equirectangular environment map to cubemap equivalent
+
+	vec2i internalResolution = Renderer::getResolution();
+	Renderer::resize(resolution, resolution);
+
+	glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		//Renderer::eq2cubeShader.uniformMat4("view", captureViews[i]);
+		//Renderer::cubemapMesh.render(); // renders a 1x1 cube
+
+		//Renderer::renderSkybox(captureViews[i], captureProjection);
+
+		Texture gPosition;
+		Texture gNormal;
+		Texture gAlbedo;
+		Texture gRoughnessMetallic;
+
+		Camera cam;
+		cam.dimensions = {resolution, resolution};
+		cam.position = position;
+
+		cam.direction = forwards[i];
+		cam.up = ups[i];
+		cam.fov = 90.0f;
+
+		Renderer::renderGbuffers(cam, Frustum(), false, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+		Texture deferred = Renderer::lightGbuffers(cam, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+
+		glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+							   GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		Renderer::passthroughShader.bind();
+		deferred.bind();
+		Renderer::framebufferMesh.render();
+
+
+	}
+	Renderer::resize(internalResolution.x, internalResolution.y);
+
+	glDeleteFramebuffers(1, &captureFBO);
+	glDeleteRenderbuffers(1, &captureRBO);
+
+	Cubemap c;
+	c.setID(envCubemap);
+
+	return c;
+}
+
+// ------------------------------------------------------------------------
+void Renderer::setSkyboxShader(Shader s) {
+	skyboxShader = s;
+}
+
+// ------------------------------------------------------------------------
+void Renderer::setSun(DirectionalLight light) {
+	sun = light;
+}
+
+vec2i Renderer::getResolution() {
+	return resolution;
 }

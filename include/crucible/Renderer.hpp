@@ -21,6 +21,12 @@ struct DirectionalLight {
     vec3 color;
 };
 
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float radius;
+};
+
 struct RendererSettings {
 	bool fxaa = true;
 	bool vignette = true;
@@ -33,78 +39,90 @@ struct RendererSettings {
 	int ssaoKernelSize = 8;
 };
 
-namespace Renderer {
-	extern RendererSettings settings;
+class Renderer {
+public:
+	static RendererSettings settings;
 
-	extern vec3 ambient;
+	static vec3 ambient;
 
-	extern DebugRenderer debug;
+	static DebugRenderer debug;
 
-	extern Mesh cubemapMesh;
-	extern Mesh framebufferMesh;
+	static Mesh cubemapMesh;
+	static Mesh framebufferMesh;
 
-	extern Shader standardShader;
-	extern Shader eq2cubeShader;
-	extern Shader cubemapShader;
-	extern Shader irradianceShader;
-	extern Shader prefilterShader;
-	extern Shader brdfShader;
-	extern Shader outlineShader;
-	extern Shader passthroughShader;
+	static Shader standardShader;
+	static Shader eq2cubeShader;
+	static Shader cubemapShader;
+	static Shader irradianceShader;
+	static Shader prefilterShader;
+	static Shader brdfShader;
+	static Shader outlineShader;
+	static Shader passthroughShader;
 
-	extern Cubemap environment;
-	extern Cubemap irradiance;
-	extern Cubemap specular;
+	static Cubemap environment;
+	static Cubemap irradiance;
+	static Cubemap specular;
 
-	extern Texture brdf;
+	static Texture brdf;
 
-	extern PostProcessor postProcessor;
+	static PostProcessor postProcessor;
 
-	void resize(int resolutionX, int resolutionY);
+private:
+    static mat4 shadowMatrix(float radius, Camera &cam, float depth);
+    static Frustum shadowFrustum(float radius, Camera &cam, float depth);
+    static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f, bool doFrustumCulling);
+    static void renderDebugGui();
+
+public:
+	static void resize(int resolutionX, int resolutionY);
 
     /**
      * Sets up vital shaders and variables only once at startup.
      */
-    void init(bool shadows, int shadowResolution, int resolutionX, int resolutionY);
+    static void init(bool shadows, int shadowResolution, int resolutionX, int resolutionY);
 
     /**
      * Mostly internal function that will only render the skybox and nothing else. This doesn't need to be called under
      * normal rendering circumstances.
      */
-	void renderSkybox(mat4 view, mat4 projection, vec3 cameraPos={0, 0, 0});
+    static void renderSkybox(mat4 view, mat4 projection, vec3 cameraPos={0, 0, 0});
 
 	/**
 	 * Pushes a point light to the render buffer for the next flush event.
 	 */
-	void renderPointLight(vec3 position, vec3 color, float radius);
+    static void renderPointLight(vec3 position, vec3 color, float radius);
 
     /**
      * General purpose abstraction of all render calls to an internal renderer.
      */
-    void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb=AABB());
+    static void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb=AABB());
 
     /**
      * Same as the general purpose render command, but accepts Models.
      */
-    void render(Model *model, Transform transform, AABB aabb=AABB());
+    static void render(Model *model, Transform transform, AABB aabb=AABB());
 
 
     /**
      * Make all future render calls render with an outline.
      */
-     void enableOutline();
+    static void enableOutline();
 
      /**
       * Disable outlineing called with enableOutline.
       */
-     void disableOutline();
+     static void disableOutline();
 
-     void renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &deferred, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic);
+    static void renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic);
+
+    static Texture lightGbuffers(Camera cam, Texture gPosition, Texture gNormal, Texture gAlbedo, Texture gRoughnessMetallic);
 
      /**
       * Flush command with frustum culling disabled.
       */
-	void flush(Camera cam);
+      static void flush(Camera cam);
+
+      static Cubemap renderToProbe(vec3 position);
 
 
 	/**
@@ -112,11 +130,11 @@ namespace Renderer {
      * are put in a buffer to be drawn later. Calling flush renders them all at once and
      * clears the buffer for the next time.
      */
-	void flush(Camera cam, Frustum f, bool doFrustumCulling=true);
+    static void flush(Camera cam, Frustum f, bool doFrustumCulling=true);
 
-    void setSkyboxShader(Shader s);
+    static void setSkyboxShader(Shader s);
 
-    void setSun(DirectionalLight light);
+    static void setSun(DirectionalLight light);
 
-    vec2i getResolution();
-}
+    static vec2i getResolution();
+};

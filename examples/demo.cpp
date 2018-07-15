@@ -83,7 +83,7 @@ public:
 
         vec3 gunOffset = (cam.getRight() * 0.15f) + (cam.getDirection() * 0.2f) - (cam.getUp() * 0.15f);
 
-        // gun cont
+        // gun control
         gun->transform.position = this->getParent()->transform.position + gunOffset;
         gun->transform.rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(rotX + 180.0f)) * quaternion(vec3(1.0f, 0.0f, 0.0f), radians(rotY));
     }
@@ -118,7 +118,6 @@ int main() {
 
     Mesh torus2;
     Primitives::torus(torus2, 4.0f, 0.5f, 64, 64);
-
 
 	Model shaderBall;
 	shaderBall.importFile("resources/shaderball.fbx", false);
@@ -221,11 +220,12 @@ int main() {
         scene.render();
 
         if (first) {
-            IBL::generateIBLmaps(vec3(0.0f, 1.0f, 0.0f), Renderer::irradiance, Renderer::specular);
+            IBL::generateIBLmaps(vec3(0.0f,  2.0f, 0.0f), Renderer::irradiance, Renderer::specular);
             first = false;
 
-            scene.createMeshObject(&sphere, &mirror, Transform(vec3(0.0f, 1.0f, 0.0f)), "probe");
+            scene.createMeshObject(&sphere, &mirror, Transform(vec3(0.0f,  2.0f, 0.0f)), "probe");
         }
+
 
         Renderer::flush(cam);
 

@@ -67,9 +67,9 @@ int main() {
     cubemapRaw.load("resources/canyon.hdr");
 
     Renderer::environment = cubemap;
-    IBL::generateIBLmaps(Renderer::irradiance, Renderer::specular);
-    cubemap.setID(0);
-    Renderer::environment = cubemap;
+    IBL::generateIBLmaps(vec3(), Renderer::irradiance, Renderer::specular);
+//    cubemap.setID(0);
+//    Renderer::environment = cubemap;
 
     Renderer::setSun({ vec3(1.05f, -6.8f, -1.3f), vec3(10.0f, 9.5f, 9.0f) });
 
