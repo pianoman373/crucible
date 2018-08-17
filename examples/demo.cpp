@@ -4,6 +4,7 @@
 #include <crucible/GameObject.hpp>
 #include <crucible/Scene.hpp>
 #include <crucible/RigidBody.hpp>
+#include <crucible/Bone.hpp>
 #include <imgui.h>
 
 class CharacterController : public Component {
@@ -128,6 +129,10 @@ int main() {
 	Model gunModel;
 	gunModel.openFile("resources/Rifle/rifle.crmodel");
 
+	Model character;
+	character.importFile("resources/Character Running.fbx");
+	character.materials[0].setPBRUniforms(Resources::getTexture("resources/Character Texture.png"), 0.7f, 0.0f);
+
 	Material wood;
 	wood.loadFile("resources/wood.crmaterial");
 
@@ -182,7 +187,14 @@ int main() {
 
     bool first = true;
 
+    Bone root("resources/Character Running.fbx", "Torso");
+
+
     while (Window::isOpen()) {
+        root.children[0].children[0].rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(180.0f)) * quaternion(normalize(vec3(5.2f, 1.0f, 0.1f)), sin(Window::getTime())*0.5f);
+        root.children[0].children[2].rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(180.0f)) * quaternion(normalize(vec3(5.2f, 1.0f, 0.1f)), radians(180.0f) + cos(Window::getTime()));
+        root.children[0].children[2].children[0].rotation = quaternion(normalize(vec3(1.0f, 0.0f, 0.0f)), cos(Window::getTime())+1.0f);
+
         Window::begin();
         cam.dimensions = {(float)Window::getWindowSize().x, (float)Window::getWindowSize().y};
 
@@ -222,10 +234,11 @@ int main() {
         if (first) {
             IBL::generateIBLmaps(vec3(0.0f,  2.0f, 0.0f), Renderer::irradiance, Renderer::specular);
             first = false;
-
-            scene.createMeshObject(&sphere, &mirror, Transform(vec3(0.0f,  2.0f, 0.0f)), "probe");
         }
 
+        Renderer::render(&character.nodes[0].mesh, &character.materials[0], Transform(vec3(5.0f, 0.0f, 0.0f), quaternion(), vec3(0.3f)), AABB(), &root);
+
+        root.debugDraw();
 
         Renderer::flush(cam);
 

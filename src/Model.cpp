@@ -117,7 +117,7 @@ void Model::importFile(std::string filename, bool loadTextures) {
             mesh.normals[i] = vec3(aMesh->mNormals[i].x, aMesh->mNormals[i].y, aMesh->mNormals[i].z);
             mesh.tangents[i] = vec3(aMesh->mTangents[i].x, aMesh->mTangents[i].y, aMesh->mTangents[i].z);
 
-            if (isnan(mesh.tangents[i].x) || isnan(mesh.tangents[i].z == NAN) ||  isnan(mesh.tangents[i].z)) {
+            if (isnan(mesh.tangents[i].x) || isnan(mesh.tangents[i].y) ||  isnan(mesh.tangents[i].z)) {
                 mesh.tangents[i] = {0.0f, 0.0f, 0.0f};
             }
 
@@ -126,6 +126,59 @@ void Model::importFile(std::string filename, bool loadTextures) {
             }
         }
 
+        if (aMesh->mNumBones > 0) {
+            mesh.boneIDs.resize(aMesh->mNumVertices);
+            mesh.boneWeights.resize(aMesh->mNumVertices);
+
+            std::vector<std::vector<int>> tempBoneIDs;
+            tempBoneIDs.resize(aMesh->mNumVertices);
+
+            std::vector<std::vector<float>> tempBoneWeights;
+            tempBoneWeights.resize(aMesh->mNumVertices);
+
+
+
+            for (int i = 0; i < aMesh->mNumBones; i++) {
+                aiBone *bone = aMesh->mBones[i];
+
+                for (int j = 0; j < bone->mNumWeights; j++) {
+                    aiVertexWeight weight = bone->mWeights[j];
+
+                    tempBoneIDs[weight.mVertexId].push_back(i);
+                    tempBoneWeights[weight.mVertexId].push_back(weight.mWeight);
+                }
+            }
+
+            for (int i = 0; i < tempBoneIDs.size(); i++) {
+                std::vector<int> idsAtVertex = tempBoneIDs[i];
+                std::vector<float> weightsAtVertex = tempBoneWeights[i];
+
+                int size = idsAtVertex.size();
+
+                vec4i boneID;
+                vec4 boneWeight;
+
+                if (size > 0) {
+                    boneID.x = idsAtVertex[0];
+                    boneWeight.x = weightsAtVertex[0];
+                }
+                if (size > 1) {
+                    boneID.y = idsAtVertex[1];
+                    boneWeight.y = weightsAtVertex[1];
+                }
+                if (size > 2) {
+                    boneID.z = idsAtVertex[2];
+                    boneWeight.z = weightsAtVertex[2];
+                }
+                if (size > 3) {
+                    boneID.w = idsAtVertex[3];
+                    boneWeight.w = weightsAtVertex[3];
+                }
+
+                mesh.boneIDs[i] = boneID;
+                mesh.boneWeights[i] = boneWeight;
+            }
+        }
 
         for (unsigned int f = 0; f < aMesh->mNumFaces; ++f) {
             for (unsigned int i = 0; i < 3; ++i) {

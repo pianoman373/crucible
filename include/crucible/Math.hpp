@@ -687,6 +687,92 @@ inline mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
     return translate(mat, vec3(-eye.x, -eye.y, -eye.z));
 }
 
+inline float determinant3x3(float t00, float t01, float t02, float t10, float t11, float t12, float t20, float t21, float t22) {
+    return   t00 * (t11 * t22 - t12 * t21) + t01 * (t12 * t20 - t10 * t22) + t02 * (t10 * t21 - t11 * t20);
+}
+
+inline float determinant(const mat4 &mat) {
+    float f =
+            mat.m00
+            * ((mat.m11 * mat.m22 * mat.m33 + mat.m12 * mat.m23 * mat.m31 + mat.m13 * mat.m21 * mat.m32)
+               - mat.m13 * mat.m22 * mat.m31
+               - mat.m11 * mat.m23 * mat.m32
+               - mat.m12 * mat.m21 * mat.m33);
+    f -= mat.m01
+         * ((mat.m10 * mat.m22 * mat.m33 + mat.m12 * mat.m23 * mat.m30 + mat.m13 * mat.m20 * mat.m32)
+            - mat.m13 * mat.m22 * mat.m30
+            - mat.m10 * mat.m23 * mat.m32
+            - mat.m12 * mat.m20 * mat.m33);
+    f += mat.m02
+         * ((mat.m10 * mat.m21 * mat.m33 + mat.m11 * mat.m23 * mat.m30 + mat.m13 * mat.m20 * mat.m31)
+            - mat.m13 * mat.m21 * mat.m30
+            - mat.m10 * mat.m23 * mat.m31
+            - mat.m11 * mat.m20 * mat.m33);
+    f -= mat.m03
+         * ((mat.m10 * mat.m21 * mat.m32 + mat.m11 * mat.m22 * mat.m30 + mat.m12 * mat.m20 * mat.m31)
+            - mat.m12 * mat.m21 * mat.m30
+            - mat.m10 * mat.m22 * mat.m31
+            - mat.m11 * mat.m20 * mat.m32);
+    return f;
+}
+
+inline mat4 inverse(const mat4 &src) {
+    mat4 dest;
+
+    float d = determinant(src);
+
+    if (d != 0) {
+        /*
+         * m00 m01 m02 m03
+         * m10 m11 m12 m13
+         * m20 m21 m22 m23
+         * m30 m31 m32 m33
+         */
+        float determinant_inv = 1.0f/d;
+
+        // first row
+        float t00 =  determinant3x3(src.m11, src.m12, src.m13, src.m21, src.m22, src.m23, src.m31, src.m32, src.m33);
+        float t01 = -determinant3x3(src.m10, src.m12, src.m13, src.m20, src.m22, src.m23, src.m30, src.m32, src.m33);
+        float t02 =  determinant3x3(src.m10, src.m11, src.m13, src.m20, src.m21, src.m23, src.m30, src.m31, src.m33);
+        float t03 = -determinant3x3(src.m10, src.m11, src.m12, src.m20, src.m21, src.m22, src.m30, src.m31, src.m32);
+        // second row
+        float t10 = -determinant3x3(src.m01, src.m02, src.m03, src.m21, src.m22, src.m23, src.m31, src.m32, src.m33);
+        float t11 =  determinant3x3(src.m00, src.m02, src.m03, src.m20, src.m22, src.m23, src.m30, src.m32, src.m33);
+        float t12 = -determinant3x3(src.m00, src.m01, src.m03, src.m20, src.m21, src.m23, src.m30, src.m31, src.m33);
+        float t13 =  determinant3x3(src.m00, src.m01, src.m02, src.m20, src.m21, src.m22, src.m30, src.m31, src.m32);
+        // third row
+        float t20 =  determinant3x3(src.m01, src.m02, src.m03, src.m11, src.m12, src.m13, src.m31, src.m32, src.m33);
+        float t21 = -determinant3x3(src.m00, src.m02, src.m03, src.m10, src.m12, src.m13, src.m30, src.m32, src.m33);
+        float t22 =  determinant3x3(src.m00, src.m01, src.m03, src.m10, src.m11, src.m13, src.m30, src.m31, src.m33);
+        float t23 = -determinant3x3(src.m00, src.m01, src.m02, src.m10, src.m11, src.m12, src.m30, src.m31, src.m32);
+        // fourth row
+        float t30 = -determinant3x3(src.m01, src.m02, src.m03, src.m11, src.m12, src.m13, src.m21, src.m22, src.m23);
+        float t31 =  determinant3x3(src.m00, src.m02, src.m03, src.m10, src.m12, src.m13, src.m20, src.m22, src.m23);
+        float t32 = -determinant3x3(src.m00, src.m01, src.m03, src.m10, src.m11, src.m13, src.m20, src.m21, src.m23);
+        float t33 =  determinant3x3(src.m00, src.m01, src.m02, src.m10, src.m11, src.m12, src.m20, src.m21, src.m22);
+
+        // transpose and divide by the determinant
+        dest.m00 = t00*determinant_inv;
+        dest.m11 = t11*determinant_inv;
+        dest.m22 = t22*determinant_inv;
+        dest.m33 = t33*determinant_inv;
+        dest.m01 = t10*determinant_inv;
+        dest.m10 = t01*determinant_inv;
+        dest.m20 = t02*determinant_inv;
+        dest.m02 = t20*determinant_inv;
+        dest.m12 = t21*determinant_inv;
+        dest.m21 = t12*determinant_inv;
+        dest.m03 = t30*determinant_inv;
+        dest.m30 = t03*determinant_inv;
+        dest.m13 = t31*determinant_inv;
+        dest.m31 = t13*determinant_inv;
+        dest.m32 = t23*determinant_inv;
+        dest.m23 = t32*determinant_inv;
+    }
+
+    return dest;
+}
+
 
 //---------less than----------//
 

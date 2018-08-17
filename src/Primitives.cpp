@@ -173,52 +173,51 @@ void Primitives::framebuffer(Mesh &m) {
 
 void Primitives::cube(Mesh &m, float scale, float width, float height, float depth) {
     m.positions = std::vector<vec3> {
-            { 0.5f*width,  0.5f*height, -0.5f*depth},
-            { 0.5f*width, -0.5f*height, -0.5f*depth},
-            {-0.5f*width, -0.5f*height, -0.5f*depth},
-            {-0.5f*width, -0.5f*height, -0.5f*depth},
-            {-0.5f*width,  0.5f*height, -0.5f*depth},
-            { 0.5f*width,  0.5f*height, -0.5f*depth},
+			{ 0.5f*width,  0.5f*height, -0.5f*depth},
+			{ 0.5f*width, -0.5f*height, -0.5f*depth},
+			{-0.5f*width, -0.5f*height, -0.5f*depth},
+			{-0.5f*width, -0.5f*height, -0.5f*depth},
+			{-0.5f*width,  0.5f*height, -0.5f*depth},
+			{ 0.5f*width,  0.5f*height, -0.5f*depth},
 
 
-            {-0.5f*width, -0.5f*height,  0.5f*depth},
-            { 0.5f*width, -0.5f*height,  0.5f*depth},
-            { 0.5f*width,  0.5f*height,  0.5f*depth},
-            { 0.5f*width,  0.5f*height,  0.5f*depth},
-            {-0.5f*width,  0.5f*height,  0.5f*depth},
-            {-0.5f*width, -0.5f*height,  0.5f*depth},
+			{-0.5f*width, -0.5f*height,  0.5f*depth},
+			{ 0.5f*width, -0.5f*height,  0.5f*depth},
+			{ 0.5f*width,  0.5f*height,  0.5f*depth},
+			{ 0.5f*width,  0.5f*height,  0.5f*depth},
+			{-0.5f*width,  0.5f*height,  0.5f*depth},
+			{-0.5f*width, -0.5f*height,  0.5f*depth},
 
-            {-0.5f*width,  0.5f*height,  0.5f*depth},
-            {-0.5f*width,  0.5f*height, -0.5f*depth},
-            {-0.5f*width, -0.5f*height, -0.5f*depth},
-            {-0.5f*width, -0.5f*height, -0.5f*depth},
-            {-0.5f*width, -0.5f*height,  0.5f*depth},
-            {-0.5f*width,  0.5f*height,  0.5f*depth},
-
-
-            { 0.5f*width, -0.5f*height, -0.5f*depth},
-            { 0.5f*width,  0.5f*height, -0.5f*depth},
-            { 0.5f*width,  0.5f*height,  0.5f*depth},
-            { 0.5f*width,  0.5f*height,  0.5f*depth},
-            { 0.5f*width, -0.5f*height,  0.5f*depth},
-            { 0.5f*width, -0.5f*height, -0.5f*depth},
+			{-0.5f*width,  0.5f*height,  0.5f*depth},
+			{-0.5f*width,  0.5f*height, -0.5f*depth},
+			{-0.5f*width, -0.5f*height, -0.5f*depth},
+			{-0.5f*width, -0.5f*height, -0.5f*depth},
+			{-0.5f*width, -0.5f*height,  0.5f*depth},
+			{-0.5f*width,  0.5f*height,  0.5f*depth},
 
 
-            {-0.5f*width, -0.5f*height, -0.5f*depth},
-            { 0.5f*width, -0.5f*height, -0.5f*depth},
-            { 0.5f*width, -0.5f*height,  0.5f*depth},
-            { 0.5f*width, -0.5f*height,  0.5f*depth},
-            {-0.5f*width, -0.5f*height,  0.5f*depth},
-            {-0.5f*width, -0.5f*height, -0.5f*depth},
+			{ 0.5f*width, -0.5f*height, -0.5f*depth},
+			{ 0.5f*width,  0.5f*height, -0.5f*depth},
+			{ 0.5f*width,  0.5f*height,  0.5f*depth},
+			{ 0.5f*width,  0.5f*height,  0.5f*depth},
+			{ 0.5f*width, -0.5f*height,  0.5f*depth},
+			{ 0.5f*width, -0.5f*height, -0.5f*depth},
 
 
-            { 0.5f*width,  0.5f*height,  0.5f*depth},
-            { 0.5f*width,  0.5f*height, -0.5f*depth},
-            {-0.5f*width,  0.5f*height, -0.5f*depth},
-            {-0.5f*width,  0.5f*height, -0.5f*depth},
-            {-0.5f*width,  0.5f*height,  0.5f*depth},
-            { 0.5f*width,  0.5f*height,  0.5f*depth},
+			{-0.5f*width, -0.5f*height, -0.5f*depth},
+			{ 0.5f*width, -0.5f*height, -0.5f*depth},
+			{ 0.5f*width, -0.5f*height,  0.5f*depth},
+			{ 0.5f*width, -0.5f*height,  0.5f*depth},
+			{-0.5f*width, -0.5f*height,  0.5f*depth},
+			{-0.5f*width, -0.5f*height, -0.5f*depth},
 
+
+			{ 0.5f*width,  0.5f*height,  0.5f*depth},
+			{ 0.5f*width,  0.5f*height, -0.5f*depth},
+			{-0.5f*width,  0.5f*height, -0.5f*depth},
+			{-0.5f*width,  0.5f*height, -0.5f*depth},
+			{-0.5f*width,  0.5f*height,  0.5f*depth},
+			{ 0.5f*width,  0.5f*height,  0.5f*depth},
     };
     m.uvs = std::vector<vec2> {
             {0.0f*height*scale, 0.0f*width*scale},
@@ -348,6 +347,98 @@ void Primitives::cube(Mesh &m, float scale, float width, float height, float dep
 			{ -1.0f,  0.0f,  0.0f},
 			{ -1.0f,  0.0f,  0.0f},
 			{ -1.0f,  0.0f,  0.0f},
+	};
+
+	m.boneIDs = std::vector<vec4i> {
+			{1, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+
+
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{0, 0, 0, 0},
+
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{1, 0, 0, 0},
+
+
+			{0, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+
+
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+
+
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+			{1, 0, 0, 0},
+	};
+
+	m.boneWeights = std::vector<vec4>{
+			{ 1.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+            { 0.0f,  0.0f, 0.0f, 0.0f},
+
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
+            { 1.0f,  0.0f, 0.0f, 0.0f},
 	};
 
     m.generate();

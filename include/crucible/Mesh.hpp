@@ -24,6 +24,10 @@ public:
     std::vector<vec3> normals;
     std::vector<vec3> tangents;
     std::vector<unsigned int> indices;
+
+    std::vector<vec4i> boneIDs;
+    std::vector<vec4> boneWeights;
+
     int renderMode = 0x0004;
 
     Mesh();

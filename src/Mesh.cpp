@@ -64,6 +64,34 @@ void Mesh::generate() {
             data.push_back(tangents[i].y);
             data.push_back(tangents[i].z);
         }
+
+        if (boneIDs.size() > 0) {
+            // Since integers and floats both take up 4 bytes in opengl we can actually store an integer value in a float buffer.
+            // This is crazy but it seems to work great.
+            float f0;
+            *(unsigned int *)&f0 = boneIDs[i].x;
+
+            float f1;
+            *(unsigned int *)&f1 = boneIDs[i].y;
+
+            float f2;
+            *(unsigned int *)&f2 = boneIDs[i].z;
+
+            float f3;
+            *(unsigned int *)&f3 = boneIDs[i].w;
+
+            data.push_back(f0);
+            data.push_back(f1);
+            data.push_back(f2);
+            data.push_back(f3);
+        }
+
+        if (boneWeights.size() > 0) {
+            data.push_back(boneWeights[i].x);
+            data.push_back(boneWeights[i].y);
+            data.push_back(boneWeights[i].z);
+            data.push_back(boneWeights[i].w);
+        }
     }
 
     length = positions.size();
@@ -88,6 +116,8 @@ void Mesh::generate() {
 		if (uvs.size() > 0) stride += 2 * sizeof(float);
 		if (normals.size() > 0) stride += 3 * sizeof(float);
 		if (tangents.size() > 0) stride += 3 * sizeof(float);
+		if (boneIDs.size() > 0) stride += 4 * sizeof(float);
+		if (boneWeights.size() > 0) stride += 4 * sizeof(float);
 
 
 		long offset = 0;
@@ -112,6 +142,16 @@ void Mesh::generate() {
 			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (GLvoid*)offset);
 			offset += 3 * sizeof(float);
 		}
+		if (boneIDs.size() > 0) {
+		    glEnableVertexAttribArray(4);
+		    glVertexAttribIPointer(4, 4, GL_INT, stride, (GLvoid*)offset);
+            offset += 4 * sizeof(float);
+		}
+        if (boneWeights.size() > 0) {
+            glEnableVertexAttribArray(5);
+            glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, stride, (GLvoid*)offset);
+            offset += 4 * sizeof(float);
+        }
 	}
 }
 

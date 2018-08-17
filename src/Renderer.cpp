@@ -25,6 +25,7 @@ struct RenderCall {
 	Material *material;
 	Transform transform;
 	AABB aabb;
+	Bone *bones;
 };
 
 // private variables
@@ -276,12 +277,14 @@ void Renderer::renderPointLight(vec3 position, vec3 color, float radius) {
 }
 
 // ------------------------------------------------------------------------
-void Renderer::render(IRenderable *mesh, Material *material, Transform transform, AABB aabb) {
+void Renderer::render(IRenderable *mesh, Material *material, Transform transform, AABB aabb, Bone *bones) {
 	RenderCall call;
 	call.mesh = mesh;
 	call.material = material;
 	call.transform = transform;
 	call.aabb = aabb;
+	call.bones = bones;
+
 	renderQueue.push_back(call);
 }
 
@@ -323,6 +326,21 @@ void Renderer::renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Text
 			s.uniformMat4("view", cam.getView());
 			s.uniformMat4("projection", cam.getProjection());
 
+		}
+
+		if (call.bones) {
+		    s.uniformBool("doAnimation", true);
+
+		    std::vector<mat4> skinningMatrices = call.bones->getSkinningTransforms();
+
+			for (int i = 0; i < skinningMatrices.size(); i++) {
+				mat4 trans = skinningMatrices.at(i);
+
+				s.uniformMat4("bones["+std::to_string(i)+"]", trans);
+			}
+		}
+		else {
+            s.uniformBool("doAnimation", false);
 		}
 
 		s.uniformMat4("model", call.transform.getMatrix());

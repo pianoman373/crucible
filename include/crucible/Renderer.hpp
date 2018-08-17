@@ -8,6 +8,7 @@
 #include <crucible/Frustum.hpp>
 #include <crucible/IRenderable.hpp>
 #include <crucible/PostProcessor.hpp>
+#include <crucible/Bone.hpp>
 
 #include <vector>
 
@@ -95,7 +96,7 @@ public:
     /**
      * General purpose abstraction of all render calls to an internal renderer.
      */
-    static void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb=AABB());
+    static void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb=AABB(), Bone *bones=nullptr);
 
     /**
      * Same as the general purpose render command, but accepts Models.
