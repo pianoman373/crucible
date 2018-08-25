@@ -8,7 +8,7 @@ void DebugRenderer::init() {
     debugShader.load(InternalShaders::debug_vsh, InternalShaders::debug_fsh);
 }
 
-void DebugRenderer::renderDebugLine(vec3 v1, vec3 v2, vec3 color) {
+void DebugRenderer::renderDebugLine(const vec3 &v1, const vec3 &v2, const vec3 &color) {
     positions.push_back(v1);
     colors.push_back(color);
 
@@ -16,7 +16,7 @@ void DebugRenderer::renderDebugLine(vec3 v1, vec3 v2, vec3 color) {
     colors.push_back(color);
 }
 // ------------------------------------------------------------------------
-void DebugRenderer::renderDebugAABB(vec3 v1, vec3 v2, vec3 color) {
+void DebugRenderer::renderDebugAABB(const vec3 &v1, const vec3 &v2, const vec3 &color) {
     //top square
     renderDebugLine(vec3(v1.x, v1.y, v1.z), vec3(v2.x, v1.y, v1.z), color);
     renderDebugLine(vec3(v1.x, v1.y, v1.z), vec3(v1.x, v1.y, v2.z), color);
@@ -36,11 +36,11 @@ void DebugRenderer::renderDebugAABB(vec3 v1, vec3 v2, vec3 color) {
     renderDebugLine(vec3(v1.x, v1.y, v2.z), vec3(v1.x, v2.y, v2.z), color);
 }
 // ------------------------------------------------------------------------
-void DebugRenderer::renderDebugAABB(AABB aabb, vec3 color) {
+void DebugRenderer::renderDebugAABB(const AABB &aabb, const vec3 &color) {
     renderDebugAABB(aabb.min, aabb.max, color);
 }
 
-void DebugRenderer::renderDebugSphere(vec3 pos, float radius, vec3 color) {
+void DebugRenderer::renderDebugSphere(const vec3 &pos, float radius, const vec3 &color) {
     float pi = 3.141592f;
 
     for (int i = 0; i < 64; i++) {
@@ -56,7 +56,7 @@ void DebugRenderer::renderDebugSphere(vec3 pos, float radius, vec3 color) {
     }
 }
 
-void DebugRenderer::flush(Camera cam) {
+void DebugRenderer::flush(const Camera &cam) {
     debugRendererMesh.positions = positions;
     debugRendererMesh.normals = colors;
 

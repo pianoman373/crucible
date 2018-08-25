@@ -25,7 +25,7 @@ Shader::Shader() {
 
 }
 
-void Shader::loadFile(const std::string vertexPath, const std::string fragmentPath) {
+void Shader::loadFile(const std::string &vertexPath, const std::string &fragmentPath) {
     // 1. Retrieve the vertex/fragment source code from filePath
 
     std::cout << "loading shaders: " << vertexPath << " and " << fragmentPath << std::endl;
@@ -186,11 +186,11 @@ std::string Shader::readShader(std::ifstream &file, std::string directory) {
     return source;
 }
 
-void Shader::bind() {
+void Shader::bind() const {
     glUseProgram(this->id);
 }
 
-void Shader::uniformMat4(const std::string location, const mat4 &mat) {
+void Shader::uniformMat4(const std::string &location, const mat4 &mat) const {
     unsigned int transformLoc = glGetUniformLocation(this->id, location.c_str());
 
     float matrixArray[] = {
@@ -202,27 +202,27 @@ void Shader::uniformMat4(const std::string location, const mat4 &mat) {
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, matrixArray);
 }
 
-void Shader::uniformVec3(const std::string location, const vec3 &vec) {
+void Shader::uniformVec3(const std::string &location, const vec3 &vec) const {
     unsigned int transformLoc = glGetUniformLocation(this->id, location.c_str());
     glUniform3f(transformLoc, vec.x, vec.y, vec.z);
 }
 
-void Shader::uniformVec4(const std::string location, const vec4 &vec) {
+void Shader::uniformVec4(const std::string &location, const vec4 &vec) const {
     unsigned int transformLoc = glGetUniformLocation(this->id, location.c_str());
     glUniform4f(transformLoc, vec.x, vec.y, vec.z, vec.w);
 }
 
-void Shader::uniformInt(const std::string location, int value) {
+void Shader::uniformInt(const std::string &location, int value) const {
     unsigned int transformLoc = glGetUniformLocation(this->id, location.c_str());
     glUniform1i(transformLoc,value);
 }
 
-void Shader::uniformFloat(const std::string location, float value) {
+void Shader::uniformFloat(const std::string &location, float value) const {
     unsigned int transformLoc = glGetUniformLocation(this->id, location.c_str());
     glUniform1f(transformLoc,value);
 }
 
-void Shader::uniformBool(const std::string location, bool value) {
+void Shader::uniformBool(const std::string &location, bool value) const {
     unsigned int transformLoc = glGetUniformLocation(this->id, location.c_str());
     glUniform1i(transformLoc,value);
 }

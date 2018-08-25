@@ -99,19 +99,19 @@ void Framebuffer::attachShadow(int width, int height) {
 	numAttachments++;
 }
 
-int Framebuffer::getWidth() {
+int Framebuffer::getWidth() const {
     return width;
 }
 
-int Framebuffer::getHeight() {
+int Framebuffer::getHeight() const {
     return height;
 }
 
-void Framebuffer::bind() {
+void Framebuffer::bind() const {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
 
-Texture Framebuffer::getAttachment(int num) {
+const Texture &Framebuffer::getAttachment(int num) const {
 	return attachments[num];
 }
 

@@ -42,16 +42,17 @@ Scene::~Scene() {
     delete debugDrawer;
 }
 
-GameObject *Scene::createObject(Transform transform, std::string name) {
-    GameObject *obj = new GameObject(this, transform, name);
+GameObject &Scene::createObject(const Transform &transform, const std::string &name) {
+    GameObject *obj = new GameObject(*this, transform, name);
     objects.push_back(obj);
 
-    return obj;
+    return *obj;
 }
 
-GameObject *Scene::createMeshObject(Mesh *mesh, Material *material, Transform transform, std::string name) {
-    GameObject *obj = createObject(transform, name);
-    obj->addComponent(new ModelComponent(mesh, material));
+GameObject &Scene::createMeshObject(const Mesh &mesh, const Material &material, const Transform &transform,
+                                           const std::string &name) {
+    GameObject &obj = createObject(transform, name);
+    obj.addComponent(new ModelComponent(mesh, material));
 
     return obj;
 }
@@ -102,6 +103,6 @@ btDiscreteDynamicsWorld *Scene::getBulletWorld() {
     return dynamicsWorld;
 }
 
-bool Scene::isPhysicsEnabled() {
+bool Scene::isPhysicsEnabled() const {
     return physicsEnabled;
 }

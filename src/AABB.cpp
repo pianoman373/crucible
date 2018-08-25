@@ -7,7 +7,7 @@ AABB::AABB() {
     this->max = vec3();
 };
 
-AABB::AABB(vec3 min, vec3 max) {
+AABB::AABB(const vec3 &min, const vec3 &max) {
     this->min.x = std::min(min.x, max.x);
     this->min.y = std::min(min.y, max.y);
     this->min.z = std::min(min.z, max.z);
@@ -18,19 +18,19 @@ AABB::AABB(vec3 min, vec3 max) {
 }
 
 //Code stolen from Minecraft.
-bool AABB::intersectsWith(const AABB &other)
+bool AABB::intersectsWith(const AABB &other) const
 {
     return other.max.x > min.x && other.min.x < max.x ? (other.max.y > min.y && other.min.y < max.y ? (other.max.z > min.z && other.min.z < max.z) : false) : false;
 }
 
 //Code stolen from Minecraft.
-bool AABB::isVecInside(vec3 vec)
+bool AABB::isVecInside(const vec3 &vec) const
 {
     return vec.x > min.x && vec.x < max.x ? (vec.y > min.y && vec.y < max.y ? (vec.z > min.z && vec.z < max.z) : false) : false;
 }
 
 //Code stolen from Minetest.
-bool AABB::raycast(vec3 start, vec3 dir, vec3 &collisionPoint, vec3 &collisionNormal) {
+bool AABB::raycast(const vec3 &start, const vec3 &dir, vec3 &collisionPoint, vec3 &collisionNormal) const {
     if (isVecInside(start)) {
             collisionPoint = start;
             collisionNormal = vec3();
@@ -98,7 +98,7 @@ bool AABB::raycast(vec3 start, vec3 dir, vec3 &collisionPoint, vec3 &collisionNo
 }
 
 //Code stolen from Minecraft.
-float AABB::calculateXOffset(AABB &other, float offset)
+float AABB::calculateXOffset(const AABB &other, float offset) const
 {
     if (other.max.y > min.y && other.min.y < max.y && other.max.z > min.z && other.min.z < max.z)
     {
@@ -132,7 +132,7 @@ float AABB::calculateXOffset(AABB &other, float offset)
 }
 
 //Code stolen from Minecraft.
-float AABB::calculateYOffset(AABB &other, float offset)
+float AABB::calculateYOffset(const AABB &other, float offset) const
 {
     if (other.max.x > min.x && other.min.x < max.x && other.max.z > min.z && other.min.z < max.z)
     {
@@ -166,7 +166,7 @@ float AABB::calculateYOffset(AABB &other, float offset)
 }
 
 //Code stolen from Minecraft.
-float AABB::calculateZOffset(AABB &other, float offset)
+float AABB::calculateZOffset(const AABB &other, float offset) const
 {
     if (other.max.x > min.x && other.min.x < max.x && other.max.y > min.y && other.min.y < max.y)
     {
@@ -199,12 +199,12 @@ float AABB::calculateZOffset(AABB &other, float offset)
     }
 }
 
-void AABB::move(vec3 offset) {
+void AABB::move(const vec3 &offset) {
     min = min + offset;
     max = max + offset;
 }
 
-vec3 AABB::getCorner(int i) {
+vec3 AABB::getCorner(int i) const {
     switch (i) {
         case 0:
             return vec3(min.x, min.y, min.z);

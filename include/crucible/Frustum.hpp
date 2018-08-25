@@ -25,9 +25,9 @@ public:
 
     void updateCamPosition(Camera &cam);
 
-    void renderDebug();
+    void renderDebug() const;
 
-    bool isPointInside(vec3 point);
+    bool isPointInside(const vec3 &point) const;
 
-    bool isBoxInside(AABB box);
+    bool isBoxInside(const AABB &box) const;
 };

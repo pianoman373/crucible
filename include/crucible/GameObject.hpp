@@ -15,7 +15,7 @@ private:
 public:
     void setParent(GameObject *parent);
 
-    GameObject *getParent();
+    GameObject *getParent() const;
 
     virtual void render();
 
@@ -24,11 +24,11 @@ public:
 
 class ModelComponent : public Component {
 private:
-    Mesh *mesh;
-    Material *material;
+    const Mesh &mesh;
+    const Material &material;
 
 public:
-    ModelComponent(Mesh *mesh, Material *material);
+    ModelComponent(const Mesh &mesh, const Material &material);
 
     void render();
 };
@@ -37,7 +37,7 @@ class GameObject {
 private:
     std::vector<Component*> components;
     std::string name;
-    Scene *scene;
+    Scene &scene;
     RigidBody *rb;
 
 public:
@@ -45,7 +45,7 @@ public:
 
     ~GameObject();
 
-    GameObject(Scene *scene, Transform transform, std::string name);
+    GameObject(Scene &scene, const Transform &transform, const std::string &name);
 
     void render();
 
@@ -61,9 +61,9 @@ public:
 
     Component *getComponent(int index);
 
-    std::string getName();
+    const std::string &getName() const;
 
-    void setName(std::string name);
+    void setName(const std::string &name);
 
     template <typename T>
     T *getComponent() {

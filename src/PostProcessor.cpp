@@ -7,7 +7,7 @@
 
 #include <random>
 
-void PostProcessor::doBloom(Texture deferred) {
+void PostProcessor::doBloom(const Texture &deferred) {
     glViewport(0, 0, bloomBuffer0.getWidth(), bloomBuffer0.getHeight());
     bloomBuffer1.bind();
     Renderer::passthroughShader.bind();
@@ -166,7 +166,7 @@ void PostProcessor::resize() {
     ssaoBufferBlur.attachTexture(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 }
 
-Texture PostProcessor::postRender(Camera cam, Texture deferred, Texture gPosition, Texture gNormal, Texture gAlbedo, Texture gRoughnessMetallic) {
+Texture PostProcessor::postRender(const Camera &cam, const Texture &deferred, const Texture &gPosition, const Texture &gNormal, const Texture &gAlbedo, const Texture &gRoughnessMetallic) {
     vec2i resolution = Renderer::getResolution();
 
     if (Renderer::settings.ssao) {

@@ -9,7 +9,7 @@ Bone::Bone() {
 
 }
 
-Bone::Bone(std::string name, vec3 position, quaternion rotation) {
+Bone::Bone(const std::string &name, vec3 position, quaternion rotation) {
     this->name = name;
     this->position = position;
     this->rotation = rotation;
@@ -34,7 +34,7 @@ static void processNode(Bone &b, aiNode *node) {
     }
 }
 
-Bone::Bone(std::string filename, std::string root) {
+Bone::Bone(const std::string &filename, const std::string &root) {
     Assimp::Importer importer;
 
     const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices);
@@ -63,7 +63,7 @@ Bone &Bone::addChild(Bone b) {
     return children.back();
 }
 
-mat4 Bone::getLocalTransform() {
+mat4 Bone::getLocalTransform() const {
     mat4 mat;
     mat = translate(mat, position);
     mat = mat * toMatrix(rotation);
@@ -71,7 +71,7 @@ mat4 Bone::getLocalTransform() {
     return mat;
 };
 
-mat4 Bone::getStartingTransform() {
+mat4 Bone::getStartingTransform() const {
     mat4 mat;
     mat = translate(mat, startingPosition);
     mat = mat * toMatrix(startingRotation);
@@ -79,7 +79,7 @@ mat4 Bone::getStartingTransform() {
     return mat;
 };
 
-std::vector<mat4> Bone::getStartingTransforms() {
+std::vector<mat4> Bone::getStartingTransforms() const {
     std::vector<mat4> transforms;
 
     mat4 local = getStartingTransform();
@@ -98,7 +98,7 @@ std::vector<mat4> Bone::getStartingTransforms() {
 }
 
 
-std::vector<mat4> Bone::getSkeletonTransforms() {
+std::vector<mat4> Bone::getSkeletonTransforms() const {
     std::vector<mat4> transforms;
 
     mat4 local = getLocalTransform();
@@ -116,7 +116,7 @@ std::vector<mat4> Bone::getSkeletonTransforms() {
     return transforms;
 }
 
-std::vector<mat4> Bone::getSkinningTransforms() {
+std::vector<mat4> Bone::getSkinningTransforms() const {
     std::vector<mat4> transforms = getSkeletonTransforms();
     std::vector<mat4> startingTransforms = getStartingTransforms();
 
@@ -133,7 +133,7 @@ static void renderMat4(mat4 mat) {
     Renderer::debug.renderDebugLine(vec3(mat * vec4(0.0f, 0.0f, 0.0f, 1.0f)), vec3(mat * vec4(0.0f, 0.0f, 0.1f, 1.0f)), vec3(0.0f, 0.0f, 1.0f)); //z
 }
 
-void Bone::debugDraw(mat4 parentTransform) {
+void Bone::debugDraw(const mat4 &parentTransform) const {
     //Renderer::debug.renderDebugSphere(this->position, 0.1f, vec3(1.0f, 0.0f, 0.0f));
 
     //Renderer::debug.renderDebugSphere(vec3(getLocalTransform() * vec4(0.0f, 0.0f, 0.0f, 1.0f)), 0.1f, vec3(1.0f, 0.0f, 0.0f));

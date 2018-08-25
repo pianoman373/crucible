@@ -7,10 +7,10 @@
 #include <stb_image.h>
 #include <glad/glad.h>
 
-void Texture::load(const char *file, bool pixelated) {
+void Texture::load(const std::string &file, bool pixelated) {
     stbi_set_flip_vertically_on_load(false);
     int width, height, components;
-    unsigned char* image = stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
+    unsigned char* image = stbi_load(file.c_str(), &width, &height, &components, STBI_rgb_alpha);
 
     glGenTextures(1, &id);
 
@@ -39,7 +39,7 @@ void Texture::load(const char *file, bool pixelated) {
     filepath = file;
 }
 
-void Texture::loadFromSingleColor(vec4 color) {
+void Texture::loadFromSingleColor(const vec4 &color) {
     unsigned char image[4] = {(unsigned char)(color.x * 255.0f), (unsigned char)(color.y * 255.0f), (unsigned char)(color.z * 255.0f), (unsigned char)(color.w * 255.0f)};
 
     glGenTextures(1, &id);
@@ -51,12 +51,12 @@ void Texture::loadFromSingleColor(vec4 color) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::bind(unsigned int unit) {
+void Texture::bind(unsigned int unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
-unsigned int Texture::getID() {
+unsigned int Texture::getID() const {
     return id;
 }
 
@@ -64,7 +64,7 @@ void Texture::setID(unsigned int id) {
 	this->id = id;
 }
 
-std::string Texture::getFilepath() {
+std::string Texture::getFilepath() const {
 	return filepath;
 }
 
@@ -74,7 +74,8 @@ void Texture::destroy() {
 	id = 0;
 }
 
-void Cubemap::load(const char *file1, const char *file2, const char *file3, const char *file4, const char *file5, const char *file6) {
+void Cubemap::load(const std::string &file1, const std::string &file2, const std::string &file3,
+				   const std::string &file4, const std::string &file5, const std::string &file6) {
     stbi_set_flip_vertically_on_load(false);
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, id);
@@ -84,7 +85,7 @@ void Cubemap::load(const char *file1, const char *file2, const char *file3, cons
 
     //stbi_set_flip_vertically_on_load(false);
 
-    const char *files[] = {file1, file2, file3, file4, file5, file6};
+    const char *files[] = {file1.c_str(), file2.c_str(), file3.c_str(), file4.c_str(), file5.c_str(), file6.c_str()};
 
     //iterate over all 6 textures and send their raw data to the cubemap
     for (int i = 0; i < 6; i++) {
@@ -105,7 +106,7 @@ void Cubemap::load(const char *file1, const char *file2, const char *file3, cons
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 }
 
-void Cubemap::loadEquirectangular(std::string file, int resolution) {
+void Cubemap::loadEquirectangular(const std::string &file, int resolution) {
 	unsigned int hdrTexture;
 	unsigned int envCubemap;
 
@@ -191,12 +192,12 @@ void Cubemap::loadEquirectangular(std::string file, int resolution) {
 	this->setID(envCubemap);
 }
 
-void Cubemap::bind(unsigned int unit) {
+void Cubemap::bind(unsigned int unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
 
-unsigned int Cubemap::getID() {
+unsigned int Cubemap::getID() const {
     return id;
 }
 

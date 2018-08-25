@@ -39,90 +39,90 @@ public:
     /**
      * Json serialization. Working directory is needed in order to output correct texture paths.
      */
-    void fromJson(json j, std::string workingDirectory);
+    void fromJson(const json &j, const std::string &workingDirectory);
 
 	/**
      * Json serialization. Working directory is needed in order to output correct texture paths.
      */
-    json toJson(std::string workingDirectory);
+    json toJson(const std::string &workingDirectory) const;
 
     void loadFile(std::string file);
 
-    void saveFile(std::string file);
+    void saveFile(const std::string &file) const;
 
 	void setDefaultPBRUniforms();
 
     //all combinations of textures vs floats etc
-    void setPBRUniforms(vec3 albedo, float roughness, float metallic);
+    void setPBRUniforms(const vec3 &albedo, float roughness, float metallic);
 
-    void setPBRUniforms(Texture albedo, float roughness, float metallic);
+    void setPBRUniforms(const Texture &albedo, float roughness, float metallic);
 
-    void setPBRUniforms(Texture albedo, Texture roughness, float metallic);
+    void setPBRUniforms(const Texture &albedo, const Texture &roughness, float metallic);
 
-    void setPBRUniforms(Texture albedo, float roughness, Texture metallic);
+    void setPBRUniforms(const Texture &albedo, float roughness, const Texture &metallic);
 
-    void setPBRUniforms(Texture albedo, Texture roughness, Texture metallic);
+    void setPBRUniforms(const Texture &albedo, const Texture &roughness, const Texture &metallic);
 
-    void setPBRUniforms(vec3 albedo, Texture roughness, float metallic);
+    void setPBRUniforms(const vec3 &albedo, const Texture &roughness, float metallic);
 
-    void setPBRUniforms(vec3 albedo, float roughness, Texture metallic);
+    void setPBRUniforms(const vec3 &albedo, float roughness, const Texture &metallic);
 
-    void setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic);
+    void setPBRUniforms(const vec3 &albedo, const Texture &roughness, const Texture &metallic);
 
 	//with normal maps
-	void setPBRUniforms(vec3 albedo, float roughness, float metallic, Texture normal);
+	void setPBRUniforms(const vec3 &albedo, float roughness, float metallic, const Texture &normal);
 
-	void setPBRUniforms(Texture albedo, float roughness, float metallic, Texture normal);
+	void setPBRUniforms(const Texture &albedo, float roughness, float metallic, const Texture &normal);
 
-	void setPBRUniforms(Texture albedo, Texture roughness, float metallic, Texture normal);
+	void setPBRUniforms(const Texture &albedo, const Texture &roughness, float metallic, const Texture &normal);
 
-	void setPBRUniforms(Texture albedo, float roughness, Texture metallic, Texture normal);
+	void setPBRUniforms(const Texture &albedo, float roughness, const Texture &metallic, const Texture &normal);
 
-	void setPBRUniforms(Texture albedo, Texture roughness, Texture metallic, Texture normal);
+	void setPBRUniforms(const Texture &albedo, const Texture &roughness, const Texture &metallic, const Texture &normal);
 
-	void setPBRUniforms(vec3 albedo, Texture roughness, float metallic, Texture normal);
+	void setPBRUniforms(const vec3 &albedo, const Texture &roughness, float metallic, const Texture &normal);
 
-	void setPBRUniforms(vec3 albedo, float roughness, Texture metallic, Texture normal);
+	void setPBRUniforms(const vec3 &albedo, float roughness, const Texture &metallic, const Texture &normal);
 
-	void setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic, Texture normal);
+	void setPBRUniforms(const vec3 &albedo, const Texture &roughness, const Texture &metallic, const Texture &normal);
 
 
 
-    void setUniformTexture(std::string name, Texture value, unsigned int unit = 0);
+    void setUniformTexture(const std::string &name, const Texture &value, unsigned int unit = 0);
 
-    void setUniformVec3(std::string name, vec3 value);
+    void setUniformVec3(const std::string &name, const vec3 &value);
 
-    void setUniformFloat(std::string name, float value);
+    void setUniformFloat(const std::string &name, float value);
 
-    void setUniformBool(std::string name, bool value);
+    void setUniformBool(const std::string &name, bool value);
 
     /** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
-    vec3 *getUniformVec3(std::string name);
+    vec3 &getUniformVec3(const std::string &name);
 
 	/** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
-    float *getUniformFloat(std::string name);
+    float &getUniformFloat(const std::string &name);
 
 	/** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
-    bool *getUniformBool(std::string name);
+    bool &getUniformBool(const std::string &name);
 
 	/** Returns a pointer to the queried value. If the value does not exist then it is added to the list of uniforms **/
-    Texture *getUniformTexture(std::string name);
+    Texture &getUniformTexture(const std::string &name);
 
-    void setShader(Shader shader);
+    void setShader(const Shader &shader);
 
-    Shader getShader();
+    const Shader &getShader() const;
 
-    std::map<std::string, UniformTexture> *getTextureUniforms();
+    const std::map<std::string, UniformTexture> &getTextureUniforms() const;
 
-    std::map<std::string, vec3> *getVec3Uniforms();
+    const std::map<std::string, vec3> &getVec3Uniforms() const;
 
-    std::map<std::string, float> *getFloatUniforms();
+    const std::map<std::string, float> &getFloatUniforms() const;
 
-    std::map<std::string, bool> *getBoolUniforms();
+    const std::map<std::string, bool> &getBoolUniforms() const;
 
     /**
      * Binds all specified uniforms to this material's specified shader (also binds specified textures).
      * Assumes currently bound shader is the same as the material's.
      */
-    void bindUniforms();
+    void bindUniforms() const;
 };

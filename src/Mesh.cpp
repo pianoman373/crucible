@@ -7,25 +7,25 @@ Mesh::Mesh() {
 
 }
 
-Mesh::Mesh(std::vector<vec3> positions, std::vector<unsigned int> indices) {
+Mesh::Mesh(const std::vector<vec3> &positions, const std::vector<unsigned int> &indices) {
     this->positions = positions;
     this->indices = indices;
 }
 
-Mesh::Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<unsigned int> indices) {
+Mesh::Mesh(const std::vector<vec3> &positions, const std::vector<vec3> &normals, const std::vector<unsigned int> &indices) {
     this->positions = positions;
     this->normals = normals;
     this->indices = indices;
 }
 
-Mesh::Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<unsigned int> indices) {
+Mesh::Mesh(const std::vector<vec3> &positions, const std::vector<vec3> &normals, const std::vector<vec2> &uvs, const std::vector<unsigned int> &indices) {
     this->positions = positions;
     this->normals = normals;
     this->uvs = uvs;
     this->indices = indices;
 }
 
-Mesh::Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<vec3> colors, std::vector<unsigned int> indices) {
+Mesh::Mesh(const std::vector<vec3> &positions, const std::vector<vec3> &normals, const std::vector<vec2> &uvs, const std::vector<vec3> &colors, const std::vector<unsigned int> &indices) {
     this->positions = positions;
     this->normals = normals;
     this->uvs = uvs;
@@ -163,7 +163,7 @@ void Mesh::clear() {
     indices.clear();
 }
 
-void Mesh::render() {
+void Mesh::render() const {
     glBindVertexArray(VAO);
 
     if (EBO) {
@@ -196,7 +196,7 @@ static std::vector<std::string> split(const std::string &s, char delim) {
 }
 // ------------------------------------------------------------------------------------------------
 
-json Mesh::toJson() {
+json Mesh::toJson() const {
     json j;
 
     std::string sPositions;
@@ -260,7 +260,7 @@ json Mesh::toJson() {
     return j;
 }
 
-void Mesh::fromJson(json j) {
+void Mesh::fromJson(const json &j) {
     clear();
     json jPositions = j["positions"];
     json jNormals = j["normals"];

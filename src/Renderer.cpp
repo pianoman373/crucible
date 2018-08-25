@@ -21,11 +21,11 @@
 #include <string>
 
 struct RenderCall {
-	IRenderable *mesh;
-	Material *material;
-	Transform transform;
-	AABB aabb;
-	Bone *bones;
+	const IRenderable *mesh;
+	const Material *material;
+	const Transform *transform;
+	const AABB *aabb;
+	const Bone *bones;
 };
 
 // private variables
@@ -85,11 +85,11 @@ PostProcessor Renderer::postProcessor;
 // private functions
 // -----------------
 
-mat4 Renderer::shadowMatrix(float radius, Camera &cam, float depth) {
+mat4 Renderer::shadowMatrix(float radius, const Camera &cam, float depth) {
 	return orthographic(-radius, radius, -radius, radius, -depth, depth) * LookAt(cam.getPosition() - sun.direction, cam.getPosition(), vec3(0.0f, 1.0f, 0.0f));
 }
 // ------------------------------------------------------------------------
-Frustum Renderer::shadowFrustum(float radius, Camera &cam, float depth) {
+Frustum Renderer::shadowFrustum(float radius, const Camera &cam, float depth) {
 	Frustum shadowFrustum;
 	shadowFrustum.setupInternalsOrthographic(-radius, radius, -radius, radius, -depth, depth);
 	Camera shadowCam;
@@ -111,7 +111,7 @@ void Renderer::renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum
 	for (RenderCall c : renderQueue) {
 
 		if (doFrustumCulling) {
-			if (!f.isBoxInside(c.aabb)) {
+			if (!f.isBoxInside(*c.aabb)) {
 				continue;
 			}
 		}
@@ -120,7 +120,7 @@ void Renderer::renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum
 		ShadowShader.bind();
 		ShadowShader.uniformMat4("lightSpaceMatrix", lightSpaceMatrix);
 
-		ShadowShader.uniformMat4("model", c.transform.getMatrix());
+		ShadowShader.uniformMat4("model", c.transform->getMatrix());
 
 		c.mesh->render();
 	}
@@ -245,7 +245,7 @@ void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int r
 }
 
 // ------------------------------------------------------------------------
-void Renderer::renderSkybox(mat4 view, mat4 projection, vec3 cameraPos) {
+void Renderer::renderSkybox(const mat4 &view, const mat4 &projection, const vec3 &cameraPos) {
 	skyboxShader.bind();
 
 	skyboxShader.uniformMat4("view", view);
@@ -267,7 +267,7 @@ void Renderer::renderSkybox(mat4 view, mat4 projection, vec3 cameraPos) {
 }
 
 // ------------------------------------------------------------------------
-void Renderer::renderPointLight(vec3 position, vec3 color, float radius) {
+void Renderer::renderPointLight(const vec3 &position, const vec3 &color, float radius) {
 	PointLight p;
 	p.position = position;
 	p.color = color;
@@ -277,7 +277,7 @@ void Renderer::renderPointLight(vec3 position, vec3 color, float radius) {
 }
 
 // ------------------------------------------------------------------------
-void Renderer::render(IRenderable *mesh, Material *material, Transform transform, AABB aabb, Bone *bones) {
+void Renderer::render(const IRenderable *mesh, const Material *material, const Transform *transform, const AABB *aabb, const Bone *bones) {
 	RenderCall call;
 	call.mesh = mesh;
 	call.material = material;
@@ -289,31 +289,34 @@ void Renderer::render(IRenderable *mesh, Material *material, Transform transform
 }
 
 // ------------------------------------------------------------------------
-void Renderer::render(Model *model, Transform transform, AABB aabb) {
+void Renderer::render(const Model *model, const Transform *transform, const AABB *aabb) {
 	for (unsigned int i = 0; i < model->nodes.size(); i++) {
-		ModelNode *node = &model->nodes[i];
+		const ModelNode *node = &model->nodes[i];
 		render(&node->mesh, &model->materials[node->materialIndex], transform, aabb);
 	}
 }
 
-void Renderer::flush(Camera cam) {
+void Renderer::flush(const Camera &cam) {
 	Frustum f;
 	flush(cam, f, false);
 }
 
-void Renderer::renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic) {
+void Renderer::renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling, Texture &gPosition,
+							  Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic) {
 	// render objects in scene into g-buffer
 	// -------------------------------------
 	gBuffer.bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glViewport(0, 0, resolution.x, resolution.y);
 
-	Material *lastMaterial = nullptr;
+	const Material *lastMaterial = nullptr;
 
 	for (RenderCall call : renderQueue) {
 		if (doFrustumCulling) {
-			if (!f.isBoxInside(call.aabb)) {
-				continue;
+			if (call.aabb) {
+				if (!f.isBoxInside(*call.aabb)) {
+					continue;
+				}
 			}
 		}
 
@@ -343,7 +346,7 @@ void Renderer::renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Text
             s.uniformBool("doAnimation", false);
 		}
 
-		s.uniformMat4("model", call.transform.getMatrix());
+		s.uniformMat4("model", call.transform->getMatrix());
 
 		call.mesh->render();
 
@@ -356,7 +359,8 @@ void Renderer::renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Text
 	gRoughnessMetallic = gBuffer.getAttachment(3);
 }
 
-Texture Renderer::lightGbuffers(Camera cam, Texture gPosition, Texture gNormal, Texture gAlbedo, Texture gRoughnessMetallic) {
+Texture Renderer::lightGbuffers(const Camera &cam, const Texture &gPosition, const Texture &gNormal,
+								const Texture &gAlbedo, const Texture &gRoughnessMetallic) {
 	mat4 lightSpaceMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
 	mat4 lightSpaceMatrix1 = shadowMatrix(cascadeDistances[1], cam, cascadeDepths[1]);
 	mat4 lightSpaceMatrix2 = shadowMatrix(cascadeDistances[2], cam, cascadeDepths[2]);
@@ -488,7 +492,7 @@ Texture Renderer::lightGbuffers(Camera cam, Texture gPosition, Texture gNormal, 
 }
 
 // ------------------------------------------------------------------------
-void Renderer::flush(Camera cam, Frustum f, bool doFrustumCulling) {
+void Renderer::flush(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
 	Texture gPosition;
 	Texture gNormal;
 	Texture gAlbedo;
@@ -532,7 +536,7 @@ void Renderer::flush(Camera cam, Frustum f, bool doFrustumCulling) {
 	renderQueue.clear();
 }
 // ------------------------------------------------------------------------
-Cubemap Renderer::renderToProbe(vec3 position) {
+Cubemap Renderer::renderToProbe(const vec3 &position) {
 	static const int resolution = 512;
 
 	static vec3 forwards[] = {
@@ -632,12 +636,12 @@ Cubemap Renderer::renderToProbe(vec3 position) {
 }
 
 // ------------------------------------------------------------------------
-void Renderer::setSkyboxShader(Shader s) {
+void Renderer::setSkyboxShader(const Shader &s) {
 	skyboxShader = s;
 }
 
 // ------------------------------------------------------------------------
-void Renderer::setSun(DirectionalLight light) {
+void Renderer::setSun(const DirectionalLight &light) {
 	sun = light;
 }
 

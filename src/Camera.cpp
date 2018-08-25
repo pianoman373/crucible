@@ -9,19 +9,19 @@ Camera::Camera(vec3 position) {
     this->position = position;
 }
 
-vec3 Camera::getPosition() {
+const vec3 &Camera::getPosition() const {
     return this->position;
 }
 
-vec3 Camera::getDirection() {
+const vec3 &Camera::getDirection() const {
     return this->direction;
 }
 
-vec3 Camera::getRight() {
+vec3 Camera::getRight() const {
     return normalize(cross(this->direction, this->up));
 }
 
-vec3 Camera::getUp() {
+vec3 Camera::getUp() const {
     return normalize(cross(getRight(), this->direction));
 }
 
@@ -33,11 +33,11 @@ void Camera::setDirection(const vec3 &direction) {
     this->direction = direction;
 }
 
-mat4 Camera::getView() {
+mat4 Camera::getView() const {
     return LookAt(this->position, this->position + normalize(direction), getUp());
 }
 
-mat4 Camera::getProjection() {
+mat4 Camera::getProjection() const {
     vec2 size = dimensions;
 
     if (this->orthographic) {

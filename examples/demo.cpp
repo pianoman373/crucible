@@ -5,14 +5,15 @@
 #include <crucible/Scene.hpp>
 #include <crucible/RigidBody.hpp>
 #include <crucible/Bone.hpp>
+#include <crucible/Stopwatch.hpp>
 #include <imgui.h>
 
 class CharacterController : public Component {
     Camera &cam;
-    GameObject *gun;
+    GameObject &gun;
 
 public:
-    CharacterController(Camera &cam, GameObject *gun): cam(cam), gun(gun) {
+    CharacterController(Camera &cam, GameObject &gun): cam(cam), gun(gun) {
 
     }
 
@@ -85,8 +86,8 @@ public:
         vec3 gunOffset = (cam.getRight() * 0.15f) + (cam.getDirection() * 0.2f) - (cam.getUp() * 0.15f);
 
         // gun control
-        gun->transform.position = this->getParent()->transform.position + gunOffset;
-        gun->transform.rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(rotX + 180.0f)) * quaternion(vec3(1.0f, 0.0f, 0.0f), radians(rotY));
+        gun.transform.position = this->getParent()->transform.position + gunOffset;
+        gun.transform.rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(rotX + 180.0f)) * quaternion(vec3(1.0f, 0.0f, 0.0f), radians(rotY));
     }
 };
 
@@ -161,33 +162,46 @@ int main() {
     Scene scene;
     scene.setupPhysicsWorld();
 
-    scene.createMeshObject(&shaderBall.nodes[0].mesh, &plastic, Transform(vec3(0.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 0")->addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
-    scene.createMeshObject(&shaderBall.nodes[0].mesh, &wood, Transform(vec3(4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 1")->addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
-    scene.createMeshObject(&shaderBall.nodes[0].mesh, &rustediron, Transform(vec3(-4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 2")->addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
-    scene.createMeshObject(&shaderBall.nodes[0].mesh, &gold, Transform(vec3(8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 3")->addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
-    scene.createMeshObject(&shaderBall.nodes[0].mesh, &checker, Transform(vec3(-8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 4")->addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
+    scene.createMeshObject(shaderBall.nodes[0].mesh, plastic, Transform(vec3(0.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 0").addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
+    scene.createMeshObject(shaderBall.nodes[0].mesh, wood, Transform(vec3(4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 1").addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
+    scene.createMeshObject(shaderBall.nodes[0].mesh, rustediron, Transform(vec3(-4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 2").addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
+    scene.createMeshObject(shaderBall.nodes[0].mesh, gold, Transform(vec3(8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 3").addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
+    scene.createMeshObject(shaderBall.nodes[0].mesh, checker, Transform(vec3(-8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 4").addRigidBody(0.0f)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
 
-    scene.createMeshObject(&environment.nodes[0].mesh, &checker, Transform(vec3(), quaternion(), vec3(0.5f)), "environment")->addRigidBody(0.0f)->addMeshCollider(vec3(), &environment.nodes[0].mesh, vec3(0.5f));
+    scene.createMeshObject(environment.nodes[0].mesh, checker, Transform(vec3(), quaternion(), vec3(0.5f)), "environment").addRigidBody(0.0f)->addMeshCollider(vec3(), environment.nodes[0].mesh, vec3(0.5f));
 
-    GameObject *gun = scene.createMeshObject(&gunModel.nodes[0].mesh, &gunModel.materials[0], Transform(vec3(), quaternion(), vec3(0.05f)), "gun");
+    GameObject &gun = scene.createMeshObject(gunModel.nodes[0].mesh, gunModel.materials[0], Transform(vec3(), quaternion(), vec3(0.05f)), "gun");
 
 
-    GameObject *torusObject0 = scene.createMeshObject(&torus0, &gold, Transform(vec3(0.0f, 20.0f, -10.0f)), "torus 0");
-    GameObject *torusObject1 = scene.createMeshObject(&torus1, &gold, Transform(vec3(0.0f, 20.0f, -10.0f)), "torus 1");
-    GameObject *torusObject2 = scene.createMeshObject(&torus2, &gold, Transform(vec3(0.0f, 20.0f, -10.0f)), "torus 2");
+    GameObject &torusObject0 = scene.createMeshObject(torus0, gold, Transform(vec3(0.0f, 20.0f, -10.0f)), "torus 0");
+    GameObject &torusObject1 = scene.createMeshObject(torus1, gold, Transform(vec3(0.0f, 20.0f, -10.0f)), "torus 1");
+    GameObject &torusObject2 = scene.createMeshObject(torus2, gold, Transform(vec3(0.0f, 20.0f, -10.0f)), "torus 2");
 
-    GameObject *player = scene.createObject(Transform(vec3(0.0f, 10.0f, 0.0f)), "player");
-    RigidBody *rb = player->addRigidBody(1.0f);
+    GameObject &player = scene.createObject(Transform(vec3(0.0f, 10.0f, 0.0f)), "player");
+    RigidBody *rb = player.addRigidBody(1.0f);
     rb->addSphereCollider(vec3(), 0.5f);
     rb->addSphereCollider(vec3(0.0f, -1.0f, 0.0f), 0.5f);
     rb->setAngularFactor(0.0f);
-    player->addComponent(new CharacterController(cam, gun));
+    player.addComponent(new CharacterController(cam, gun));
 
     vec2i lastResolution = Window::getWindowSize();
 
     bool first = true;
 
     Bone root("resources/Character Running.fbx", "Torso");
+
+    std::vector<Transform> transforms;
+
+    int amount = 50;
+    float size = 20.0f;
+    for (int x = 0; x < amount; x++) {
+        for (int z = 0; z < amount; z++) {
+            ///Renderer::render(&cube, &checker, , quaternion(), vec3(0.1f)));
+            transforms.push_back(Transform(vec3(((float)x / (float)amount) * size, 3.0f, ((float)z / (float)amount) * size), quaternion(), vec3(0.1f)));
+        }
+    }
+
+    Transform characterTransform = Transform(vec3(5.0f, 0.0f, 0.0f), quaternion(), vec3(0.3f));
 
 
     while (Window::isOpen()) {
@@ -213,10 +227,10 @@ int main() {
 			if (Input::isMouseButtonDown(0)) {
 				keyDown = true;
 
-                GameObject *obj = scene.createMeshObject(&cube, &checker, Transform(cam.getPosition(), quaternion(), vec3(1.00f)), "physics object 1");
-                obj->addRigidBody(1.0f);
-                obj->getRigidBody()->addBoxCollider(vec3(), vec3(0.5f));
-                obj->getRigidBody()->setVelocity(cam.getDirection() * 20.0f);
+                GameObject &obj = scene.createMeshObject(cube, checker, Transform(cam.getPosition(), quaternion(), vec3(1.00f)), "physics object 1");
+                obj.addRigidBody(1.0f);
+                obj.getRigidBody()->addBoxCollider(vec3(), vec3(0.5f));
+                obj.getRigidBody()->setVelocity(cam.getDirection() * 20.0f);
 			}
         }
 
@@ -224,9 +238,9 @@ int main() {
         quaternion q1 = normalize(q0 * quaternion(vec3(0.0f, 1.0f, 0.0f), Window::getTime()*2.0f));
         quaternion q2 = normalize(q1 * quaternion(vec3(1.0f, 0.0f, 0.0f), Window::getTime()*3.0f));
 
-        torusObject0->transform.rotation = q2;
-        torusObject1->transform.rotation = q1;
-        torusObject2->transform.rotation = q0;
+        torusObject0.transform.rotation = q2;
+        torusObject1.transform.rotation = q1;
+        torusObject2.transform.rotation = q0;
 
         scene.update(ImGui::GetIO().DeltaTime);
         scene.render();
@@ -236,7 +250,11 @@ int main() {
             first = false;
         }
 
-        Renderer::render(&character.nodes[0].mesh, &character.materials[0], Transform(vec3(5.0f, 0.0f, 0.0f), quaternion(), vec3(0.3f)), AABB(), &root);
+        Renderer::render(character.nodes[0].mesh, character.materials[0], characterTransform, root);
+
+        for (int i = 0; i < transforms.size(); i++) {
+            Renderer::render(cube, checker, transforms[i]);
+        }
 
         root.debugDraw();
 

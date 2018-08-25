@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <fstream>
 
-void Model::addSubmesh(Mesh mesh, Material material, std::string name) {
+void Model::addSubmesh(const Mesh &mesh, const Material &material, const std::string &name) {
     materials.push_back(material);
 
     ModelNode node;
@@ -208,7 +208,7 @@ void Model::openFile(std::string filename) {
     fromJson(j, workingDirectory);
 }
 
-void Model::fromJson(json j, std::string workingDirectory) {
+void Model::fromJson(const json &j, const std::string &workingDirectory) {
 
     json jMaterials = j["materials"];
 
@@ -242,7 +242,7 @@ void Model::fromJson(json j, std::string workingDirectory) {
     }
 }
 
-json Model::toJson(std::string workingDirectory) {
+json Model::toJson(const std::string &workingDirectory) const {
    json j;
 
     for (int i = 0; i < nodes.size(); i++) {

@@ -34,7 +34,7 @@ void Material::setDefaultPBRUniforms() {
     setUniformBool("roughnessMetallicAlpha", false);
 }
 
-void Material::fromJson(json j, std::string workingDirectory) {
+void Material::fromJson(const json &j, const std::string &workingDirectory) {
     setDefaultPBRUniforms();
     json uniforms = j["uniforms"];
 
@@ -70,40 +70,40 @@ void Material::fromJson(json j, std::string workingDirectory) {
     }
 }
 
-json Material::toJson(std::string workingDirectory) {
+json Material::toJson(const std::string &workingDirectory) const {
     json ret;
     json uniforms;
 
-    std::map<std::string, float> *floatUniforms = this->getFloatUniforms();
-    for (auto it = floatUniforms->begin(); it != floatUniforms->end(); ++it)
+    const std::map<std::string, float> &floatUniforms = getFloatUniforms();
+    for (auto it = floatUniforms.begin(); it != floatUniforms.end(); ++it)
     {
-        //shader.uniformFloat(it->first, it->second);
+        //shader.uniformFloat(it.first, it.second);
         uniforms[it->first] = it->second;
     }
 
     //boolean
-    std::map<std::string, bool> *boolUniforms = this->getBoolUniforms();
-    for (auto it = boolUniforms->begin(); it != boolUniforms->end(); ++it)
+    const std::map<std::string, bool> &boolUniforms = getBoolUniforms();
+    for (auto it = boolUniforms.begin(); it != boolUniforms.end(); ++it)
     {
-        //shader.uniformBool(it->first, it->second);
+        //shader.uniformBool(it.first, it.second);
         uniforms[it->first] = it->second;
     }
 
     //vec3
-    std::map<std::string, vec3> *vec3Uniforms = this->getVec3Uniforms();
-    for (auto it = vec3Uniforms->begin(); it != vec3Uniforms->end(); ++it)
+    const std::map<std::string, vec3> &vec3Uniforms = getVec3Uniforms();
+    for (auto it = vec3Uniforms.begin(); it != vec3Uniforms.end(); ++it)
     {
-        //shader.uniformVec3(it->first, it->second);
+        //shader.uniformVec3(it.first, it.second);
        uniforms[it->first] = {it->second.x, it->second.y, it->second.z};
     }
 
     //textures
-    std::map<std::string, UniformTexture> *textures = this->getTextureUniforms();
-    for (auto it = textures->begin(); it != textures->end(); ++it)
+    const std::map<std::string, UniformTexture> &textures = getTextureUniforms();
+    for (auto it = textures.begin(); it != textures.end(); ++it)
     {
-//        UniformTexture uniform = it->second;
+//        UniformTexture uniform = it.second;
 //        uniform.tex.bind(uniform.unit);
-//        shader.uniformInt(it->first, uniform.unit);
+//        shader.uniformInt(it.first, uniform.unit);
 
         uniforms[it->first] = Path::getRelativePath(workingDirectory, it->second.tex.getFilepath());
 
@@ -129,14 +129,14 @@ void Material::loadFile(std::string file) {
     fromJson(j, wd);
 }
 
-void Material::saveFile(std::string file) {
+void Material::saveFile(const std::string &file) const {
     std::ofstream o(file);
     o << std::setw(4) << toJson(Path::getWorkingDirectory(file)) << std::endl;
 }
 
 //<-----===== non normal =====----->//
 
-void Material::setPBRUniforms(vec3 albedo, float roughness, float metallic) {
+void Material::setPBRUniforms(const vec3 &albedo, float roughness, float metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", false);
     setUniformVec3("albedoColor", albedo);
@@ -147,7 +147,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, float metallic) {
     setUniformBool("normalTextured", false);
 }
 
-void Material::setPBRUniforms(Texture albedo, float roughness, float metallic) {
+void Material::setPBRUniforms(const Texture &albedo, float roughness, float metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", true);
     setUniformTexture("albedoTex", albedo, 0);
@@ -158,7 +158,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, float metallic) {
     setUniformBool("normalTextured", false);
 }
 
-void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic) {
+void Material::setPBRUniforms(const Texture &albedo, const Texture &roughness, float metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", true);
     setUniformTexture("albedoTex", albedo, 0);
@@ -169,7 +169,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic)
     setUniformBool("normalTextured", false);
 }
 
-void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic) {
+void Material::setPBRUniforms(const Texture &albedo, float roughness, const Texture &metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", true);
     setUniformTexture("albedoTex", albedo, 0);
@@ -180,7 +180,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic)
     setUniformBool("normalTextured", false);
 }
 
-void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metallic) {
+void Material::setPBRUniforms(const Texture &albedo, const Texture &roughness, const Texture &metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", true);
     setUniformTexture("albedoTex", albedo, 0);
@@ -191,7 +191,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metalli
     setUniformBool("normalTextured", false);
 }
 
-void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic) {
+void Material::setPBRUniforms(const vec3 &albedo, const Texture &roughness, float metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", false);
     setUniformVec3("albedoColor", albedo);
@@ -202,7 +202,7 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic) {
     setUniformBool("normalTextured", false);
 }
 
-void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic) {
+void Material::setPBRUniforms(const vec3 &albedo, float roughness, const Texture &metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", false);
     setUniformVec3("albedoColor", albedo);
@@ -214,7 +214,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic) {
     
 }
 
-void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic) {
+void Material::setPBRUniforms(const vec3 &albedo, const Texture &roughness, const Texture &metallic) {
     setDefaultPBRUniforms();
     setUniformBool("albedoTextured", false);
     setUniformVec3("albedoColor", albedo);
@@ -228,7 +228,7 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic) 
 
 //<-----===== normal =====----->//
 
-void Material::setPBRUniforms(vec3 albedo, float roughness, float metallic, Texture normal) {
+void Material::setPBRUniforms(const vec3 &albedo, float roughness, float metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", false);
 	setUniformVec3("albedoColor", albedo);
@@ -241,7 +241,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, float metallic, Text
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setPBRUniforms(Texture albedo, float roughness, float metallic, Texture normal) {
+void Material::setPBRUniforms(const Texture &albedo, float roughness, float metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", true);
 	setUniformTexture("albedoTex", albedo, 0);
@@ -254,7 +254,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, float metallic, T
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic, Texture normal) {
+void Material::setPBRUniforms(const Texture &albedo, const Texture &roughness, float metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", true);
 	setUniformTexture("albedoTex", albedo, 0);
@@ -267,7 +267,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, float metallic,
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic, Texture normal) {
+void Material::setPBRUniforms(const Texture &albedo, float roughness, const Texture &metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", true);
 	setUniformTexture("albedoTex", albedo, 0);
@@ -280,7 +280,7 @@ void Material::setPBRUniforms(Texture albedo, float roughness, Texture metallic,
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metallic, Texture normal) {
+void Material::setPBRUniforms(const Texture &albedo, const Texture &roughness, const Texture &metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", true);
 	setUniformTexture("albedoTex", albedo, 0);
@@ -293,7 +293,7 @@ void Material::setPBRUniforms(Texture albedo, Texture roughness, Texture metalli
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic, Texture normal) {
+void Material::setPBRUniforms(const vec3 &albedo, const Texture &roughness, float metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", false);
 	setUniformVec3("albedoColor", albedo);
@@ -306,7 +306,7 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, float metallic, Te
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic, Texture normal) {
+void Material::setPBRUniforms(const vec3 &albedo, float roughness, const Texture &metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", false);
 	setUniformVec3("albedoColor", albedo);
@@ -319,7 +319,7 @@ void Material::setPBRUniforms(vec3 albedo, float roughness, Texture metallic, Te
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic, Texture normal) {
+void Material::setPBRUniforms(const vec3 &albedo, const Texture &roughness, const Texture &metallic, const Texture &normal) {
     setDefaultPBRUniforms();
 	setUniformBool("albedoTextured", false);
 	setUniformVec3("albedoColor", albedo);
@@ -332,88 +332,88 @@ void Material::setPBRUniforms(vec3 albedo, Texture roughness, Texture metallic, 
     setUniformFloat("emission", 0.0f);
 }
 
-void Material::setUniformTexture(std::string name, Texture value, unsigned int unit) {
+void Material::setUniformTexture(const std::string &name, const Texture &value, unsigned int unit) {
     textures[name].tex = value;
     textures[name].unit = unit;
 }
 
-void Material::setUniformVec3(std::string name, vec3 value) {
+void Material::setUniformVec3(const std::string &name, const vec3 &value) {
     vec3Uniforms[name] = value;
 }
 
-void Material::setUniformFloat(std::string name, float value) {
+void Material::setUniformFloat(const std::string &name, float value) {
     floatUniforms[name] = value;
 }
 
-void Material::setUniformBool(std::string name, bool value) {
+void Material::setUniformBool(const std::string &name, bool value) {
     boolUniforms[name] = value;
 }
 
-vec3 *Material::getUniformVec3(std::string name) {
-    return &vec3Uniforms[name];
+vec3 &Material::getUniformVec3(const std::string &name) {
+    return vec3Uniforms[name];
 }
 
-float *Material::getUniformFloat(std::string name) {
-    return &floatUniforms[name];
+float &Material::getUniformFloat(const std::string &name) {
+    return floatUniforms[name];
 }
 
-bool *Material::getUniformBool(std::string name) {
-    return &boolUniforms[name];
+bool &Material::getUniformBool(const std::string &name) {
+    return boolUniforms[name];
 }
 
-Texture *Material::getUniformTexture(std::string name) {
-    return &textures[name].tex;
+Texture &Material::getUniformTexture(const std::string &name) {
+    return textures[name].tex;
 }
 
-void Material::setShader(Shader shader) {
+void Material::setShader(const Shader &shader) {
     this->shader = shader;
 }
 
-Shader Material::getShader() {
+const Shader &Material::getShader() const {
     return shader;
 }
 
-std::map<std::string, UniformTexture> *Material::getTextureUniforms() {
-    return &textures;
+const std::map<std::string, UniformTexture> &Material::getTextureUniforms() const {
+    return textures;
 }
 
-std::map<std::string, vec3> *Material::getVec3Uniforms() {
-    return &vec3Uniforms;
+const std::map<std::string, vec3> &Material::getVec3Uniforms() const {
+    return vec3Uniforms;
 }
 
-std::map<std::string, float> *Material::getFloatUniforms() {
-    return &floatUniforms;
+const std::map<std::string, float> &Material::getFloatUniforms() const {
+    return floatUniforms;
 }
 
-std::map<std::string, bool> *Material::getBoolUniforms() {
-    return &boolUniforms;
+const std::map<std::string, bool> &Material::getBoolUniforms() const {
+    return boolUniforms;
 }
 
-void Material::bindUniforms() {
+void Material::bindUniforms() const {
     //float
-    std::map<std::string, float> *floatUniforms = this->getFloatUniforms();
-    for (auto it = floatUniforms->begin(); it != floatUniforms->end(); ++it)
+    const std::map<std::string, float> &floatUniforms = getFloatUniforms();
+    for (auto it = floatUniforms.begin(); it != floatUniforms.end(); ++it)
     {
         shader.uniformFloat(it->first, it->second);
     }
 
     //boolean
-    std::map<std::string, bool> *boolUniforms = this->getBoolUniforms();
-    for (auto it = boolUniforms->begin(); it != boolUniforms->end(); ++it)
+    const std::map<std::string, bool> &boolUniforms = getBoolUniforms();
+    for (auto it = boolUniforms.begin(); it != boolUniforms.end(); ++it)
     {
         shader.uniformBool(it->first, it->second);
     }
 
     //vec3
-    std::map<std::string, vec3> *vec3Uniforms = this->getVec3Uniforms();
-    for (auto it = vec3Uniforms->begin(); it != vec3Uniforms->end(); ++it)
+    const std::map<std::string, vec3> &vec3Uniforms = getVec3Uniforms();
+    for (auto it = vec3Uniforms.begin(); it != vec3Uniforms.end(); ++it)
     {
         shader.uniformVec3(it->first, it->second);
     }
 
     //textures
-    std::map<std::string, UniformTexture> *textures = this->getTextureUniforms();
-    for (auto it = textures->begin(); it != textures->end(); ++it)
+    const std::map<std::string, UniformTexture> &textures = getTextureUniforms();
+    for (auto it = textures.begin(); it != textures.end(); ++it)
     {
         UniformTexture uniform = it->second;
         uniform.tex.bind(uniform.unit);

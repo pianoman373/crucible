@@ -69,8 +69,8 @@ public:
 	static PostProcessor postProcessor;
 
 private:
-    static mat4 shadowMatrix(float radius, Camera &cam, float depth);
-    static Frustum shadowFrustum(float radius, Camera &cam, float depth);
+    static mat4 shadowMatrix(float radius, const Camera &cam, float depth);
+    static Frustum shadowFrustum(float radius, const Camera &cam, float depth);
     static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f, bool doFrustumCulling);
     static void renderDebugGui();
 
@@ -86,44 +86,63 @@ public:
      * Mostly internal function that will only render the skybox and nothing else. This doesn't need to be called under
      * normal rendering circumstances.
      */
-    static void renderSkybox(mat4 view, mat4 projection, vec3 cameraPos={0, 0, 0});
+    static void renderSkybox(const mat4 &view, const mat4 &projection, const vec3 &cameraPos = {0, 0, 0});
 
 	/**
 	 * Pushes a point light to the render buffer for the next flush event.
 	 */
-    static void renderPointLight(vec3 position, vec3 color, float radius);
+    static void renderPointLight(const vec3 &position, const vec3 &color, float radius);
 
     /**
      * General purpose abstraction of all render calls to an internal renderer.
      */
-    static void render(IRenderable *mesh, Material *material, Transform transform, AABB aabb=AABB(), Bone *bones=nullptr);
+    static void render(const IRenderable *mesh, const Material *material, const Transform *transform, const AABB *aabb=nullptr, const Bone *bones=nullptr);
 
     /**
      * Same as the general purpose render command, but accepts Models.
      */
-    static void render(Model *model, Transform transform, AABB aabb=AABB());
+    static void render(const Model *model, const Transform *transform, const AABB *aabb=nullptr);
 
 
-    /**
-     * Make all future render calls render with an outline.
-     */
-    static void enableOutline();
+    // macro functions for usability
+    inline static void render(const IRenderable &mesh, const Material &material, const Transform &transform) {
+        render(&mesh, &material, &transform, nullptr, nullptr);
+    }
 
-     /**
-      * Disable outlineing called with enableOutline.
-      */
-     static void disableOutline();
+    inline static void render(const IRenderable &mesh, const Material &material, const Transform &transform, const AABB &aabb) {
+        render(&mesh, &material, &transform, &aabb, nullptr);
+    }
 
-    static void renderGbuffers(Camera cam, Frustum f, bool doFrustumCulling, Texture &gPosition, Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic);
+    inline static void render(const IRenderable &mesh, const Material &material, const Transform &transform, const Bone &bones) {
+        render(&mesh, &material, &transform, nullptr, &bones);
+    }
 
-    static Texture lightGbuffers(Camera cam, Texture gPosition, Texture gNormal, Texture gAlbedo, Texture gRoughnessMetallic);
+    inline static void render(const IRenderable &mesh, const Material &material, const Transform &transform, const AABB &aabb, const Bone &bones) {
+        render(&mesh, &material, &transform, &aabb, &bones);
+    }
+
+
+
+    inline static void render(const Model &model, const Transform &transform) {
+        render(&model, &transform, nullptr);
+    }
+
+    inline static void render(const Model &model, const Transform &transform, const AABB &aabb) {
+        render(&model, &transform, &aabb);
+    }
+
+    static void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling, Texture &gPosition,
+                               Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic);
+
+    static Texture lightGbuffers(const Camera &cam, const Texture &gPosition, const Texture &gNormal,
+                                 const Texture &gAlbedo, const Texture &gRoughnessMetallic);
 
      /**
       * Flush command with frustum culling disabled.
       */
-      static void flush(Camera cam);
+      static void flush(const Camera &cam);
 
-      static Cubemap renderToProbe(vec3 position);
+      static Cubemap renderToProbe(const vec3 &position);
 
 
 	/**
@@ -131,11 +150,11 @@ public:
      * are put in a buffer to be drawn later. Calling flush renders them all at once and
      * clears the buffer for the next time.
      */
-    static void flush(Camera cam, Frustum f, bool doFrustumCulling=true);
+    static void flush(const Camera &cam, const Frustum &f, bool doFrustumCulling = true);
 
-    static void setSkyboxShader(Shader s);
+    static void setSkyboxShader(const Shader &s);
 
-    static void setSun(DirectionalLight light);
+    static void setSun(const DirectionalLight &light);
 
     static vec2i getResolution();
 };

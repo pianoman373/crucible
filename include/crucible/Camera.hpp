@@ -21,22 +21,22 @@ public:
 
     Camera(vec3 position);
 
-    vec3 getPosition();
+    const vec3 &getPosition() const;
 
-    vec3 getDirection();
+    const vec3 &getDirection() const;
 
     /**
      * Returns the vector that is perpendicular to the look vector and the up vector (a.k.a "right").
      */
-    vec3 getRight();
+    vec3 getRight() const;
 
-    vec3 getUp();
+    vec3 getUp() const;
 
     void setPosition(const vec3 &position);
 
     void setDirection(const vec3 &direction);
 
-    mat4 getView();
+    mat4 getView() const;
 
-    mat4 getProjection();
+    mat4 getProjection() const;
 };

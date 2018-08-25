@@ -13,27 +13,28 @@ public:
     quaternion startingRotation;
 
     vec3 position;
+
     quaternion rotation;
 
     std::string name;
 
     Bone();
 
-    Bone(std::string name, vec3 position, quaternion rotation);
+    Bone(const std::string &name, const vec3 position, quaternion rotation);
 
-    Bone(std::string filename, std::string root);
+    Bone(const std::string &filename, const std::string &root);
 
     Bone &addChild(Bone b);
 
-    mat4 getLocalTransform();
+    mat4 getLocalTransform() const;
 
-    mat4 getStartingTransform();
+    mat4 getStartingTransform() const;
 
-    std::vector<mat4> getStartingTransforms();
+    std::vector<mat4> getStartingTransforms() const;
 
-    std::vector<mat4> getSkeletonTransforms();
+    std::vector<mat4> getSkeletonTransforms() const;
 
-    std::vector<mat4> getSkinningTransforms();
+    std::vector<mat4> getSkinningTransforms() const;
 
-    void debugDraw(mat4 parentTransform=mat4());
+    void debugDraw(const mat4 &parentTransform=mat4()) const;
 };

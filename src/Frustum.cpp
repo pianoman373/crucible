@@ -70,7 +70,7 @@ void Frustum::updateCamPosition(Camera &cam) {
     normalBottom = normFromPoints(nbl, nbr, fbr);
 }
 
-void Frustum::renderDebug() {
+void Frustum::renderDebug() const {
     vec3 color = vec3(1.0f, 0.0f, 0.0f);
     Renderer::debug.renderDebugLine(ftl, ntl, color);
     Renderer::debug.renderDebugLine(ftr, ntr, color);
@@ -93,7 +93,7 @@ void Frustum::renderDebug() {
     Renderer::debug.renderDebugLine(pos, pos + dir, vec3(0.0f, 0.0f, 1.0f));
 }
 
-bool Frustum::isBoxInside(AABB box) {
+bool Frustum::isBoxInside(const AABB &box) const {
     vec3 sides[5] = {dir, normalRight, normalLeft, normalTop, normalBottom};
     vec3 offsets[5] = {pos + (dir * near), pos - (right * nw), pos + (right * nw), pos - (up * nh), pos + (up * nh)};
 
@@ -120,7 +120,7 @@ bool Frustum::isBoxInside(AABB box) {
     return true;
 }
 
-bool Frustum::isPointInside(vec3 point) {
+bool Frustum::isPointInside(const vec3 &point) const {
     vec3 sides[5] = {dir, normalRight, normalLeft, normalTop, normalBottom};
     vec3 offsets[5] = {nbl, nbr, ntl, ntr, nbl};
 

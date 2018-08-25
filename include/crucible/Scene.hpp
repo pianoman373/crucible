@@ -22,9 +22,10 @@ private:
 public:
     ~Scene();
 
-    GameObject *createObject(Transform transform, std::string name);
+    GameObject &createObject(const Transform &transform, const std::string &name);
 
-    GameObject *createMeshObject(Mesh *mesh, Material *material, Transform transform, std::string name);
+    GameObject &createMeshObject(const Mesh &mesh, const Material &material, const Transform &transform,
+                                        const std::string &name);
 
     void render();
 
@@ -34,5 +35,5 @@ public:
 
     btDiscreteDynamicsWorld *getBulletWorld();
 
-    bool isPhysicsEnabled();
+    bool isPhysicsEnabled() const;
 };

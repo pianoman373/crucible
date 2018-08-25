@@ -13,25 +13,25 @@ private:
     float mass;
 
 public:
-    RigidBody(Scene *scene, Transform transform, float mass);
+    RigidBody(Scene &scene, const Transform &transform, float mass);
 
     ~RigidBody();
 
-    vec3 getPosition();
+    vec3 getPosition() const;
 
-    quaternion getRotation();
+    quaternion getRotation() const;
 
-    void setVelocity(vec3 velocity);
+    void setVelocity(const vec3 &velocity);
 
-    vec3 getVelocity();
+    vec3 getVelocity() const;
 
     void setAngularFactor(float factor);
 
-    RigidBody *addBoxCollider(vec3 origin, vec3 halfExtents);
+    RigidBody *addBoxCollider(const vec3 &origin, const vec3 &halfExtents);
 
-    RigidBody *addSphereCollider(vec3 origin, float radius);
+    RigidBody *addSphereCollider(const vec3 &origin, float radius);
 
-    RigidBody *addCylinderCollider(vec3 origin, float radius, float height);
+    RigidBody *addCylinderCollider(const vec3 &origin, float radius, float height);
 
-    RigidBody *addMeshCollider(vec3 origin, Mesh *mesh, vec3 scale);
+    RigidBody *addMeshCollider(const vec3 &origin, const Mesh &mesh, const vec3 &scale);
 };

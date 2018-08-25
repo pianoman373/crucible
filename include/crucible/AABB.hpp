@@ -14,11 +14,11 @@ public:
      * and the second is the maximum point. It actually doesn't matter to make sure min
      * is less than max, as the code automatically would fix it.
      */
-    AABB(vec3 min, vec3 max);
+    AABB(const vec3 &min, const vec3 &max);
 
-    bool intersectsWith(const AABB &other);
+    bool intersectsWith(const AABB &other) const;
 
-    bool isVecInside(vec3 vec);
+    bool isVecInside(const vec3 &vec) const;
 
     /**
      * Tests if a ray intersects with this AABB.
@@ -31,31 +31,31 @@ public:
      *
      * collisionNormal is a passthrough argument that is set to the normal of the face the ray touches.
      */
-    bool raycast(vec3 start, vec3 dir, vec3 &collisionPoint, vec3 &collisionNormal);
+    bool raycast(const vec3 &start, const vec3 &dir, vec3 &collisionPoint, vec3 &collisionNormal) const;
 
     /**
      * If this AABB intersects the other AABB on the YZ axis, return the offset between them
      * on the X axis. If there is no intersection, returns provided offset.
      */
-    float calculateXOffset(AABB &other, float offset);
+    float calculateXOffset(const AABB &other, float offset) const;
 
     /**
      * If this AABB intersects the other AABB on the XZ axis, return the offset between them
      * on the Y axis. If there is no intersection, returns provided offset.
      */
-    float calculateYOffset(AABB &other, float offset);
+    float calculateYOffset(const AABB &other, float offset) const;
 
     /**
      * If this AABB intersects the other AABB on the XY axis, return the offset between them
      * on the Z axis. If there is no intersection, returns provided offset.
      */
-    float calculateZOffset(AABB &other, float offset);
+    float calculateZOffset(const AABB &other, float offset) const;
 
-    void move(vec3 offset);
+    void move(const vec3 &offset);
 
     /**
      * Returns a point representing the specified corner of this AABB. Argument ranges from 0 to 7 for each of the
      * eight corners of a cube.
      */
-    vec3 getCorner(int i);
+    vec3 getCorner(int i) const;
 };

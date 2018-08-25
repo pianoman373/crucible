@@ -29,12 +29,12 @@ private:
     std::vector<vec3> ssaoKernel;
     Texture noiseTex;
 
-    void doBloom(Texture deferred);
+    void doBloom(const Texture &deferred);
 
 public:
     void init();
 
     void resize();
 
-    Texture postRender(Camera cam, Texture deferred, Texture gPosition, Texture gNormal, Texture gAlbedo, Texture gRoughnessMetallic);
+    Texture postRender(const Camera &cam, const Texture &deferred, const Texture &gPosition, const Texture &gNormal, const Texture &gAlbedo, const Texture &gRoughnessMetallic);
 };

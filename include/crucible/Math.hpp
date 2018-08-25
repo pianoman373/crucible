@@ -165,21 +165,21 @@ typedef matrix4<float> mat4;
 //--------IO operator--------//
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream &lhs, vector2<T> rhs) {
+inline std::ostream& operator<<(std::ostream &lhs, const vector2<T> &rhs) {
     lhs << "(" << rhs.x << ", " << rhs.y << ")";
 
     return lhs;
 }
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream &lhs, vector3<T> rhs) {
+inline std::ostream& operator<<(std::ostream &lhs, const vector3<T> &rhs) {
     lhs << "(" << rhs.x << ", " << rhs.y << ", " << rhs.z << ")";
 
     return lhs;
 }
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream &lhs, vector4<T> rhs) {
+inline std::ostream& operator<<(std::ostream &lhs, const vector4<T> &rhs) {
     lhs << "(" << rhs.x << ", " << rhs.y << rhs.z << ", " << rhs.w << ")";
 
     return lhs;
@@ -192,49 +192,49 @@ inline std::ostream& operator<<(std::ostream &lhs, vector4<T> rhs) {
 
 //vec2
 template <typename T>
-inline vector2<T> operator+(vector2<T> lhs, vector2<T> rhs) {
+inline vector2<T> operator+(const vector2<T> &lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 
 template <typename T>
-inline vector2<T> operator+(vector2<T> lhs, T rhs) {
+inline vector2<T> operator+(const vector2<T> &lhs, T rhs) {
     return vector2<T>(lhs.x + rhs, lhs.y + rhs);
 }
 
 template <typename T>
-inline vector2<T> operator+(T lhs, vector2<T> rhs) {
+inline vector2<T> operator+(T lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs + rhs.x, lhs + rhs.y);
 }
 
 //vec3
 template <typename T>
-inline vector3<T> operator+(vector3<T> lhs, vector3<T> rhs) {
+inline vector3<T> operator+(const vector3<T> &lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 
 template <typename T>
-inline vector3<T> operator+(vector3<T> lhs, T rhs) {
+inline vector3<T> operator+(const vector3<T> &lhs, T rhs) {
     return vector3<T>(lhs.x + rhs, lhs.y + rhs, lhs.z + rhs);
 }
 
 template <typename T>
-inline vector3<T> operator+(T lhs, vector3<T> rhs) {
+inline vector3<T> operator+(T lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs + rhs.x, lhs + rhs.y, lhs + rhs.z);
 }
 
 //vec4
 template <typename T>
-inline vector4<T> operator+(vector4<T> lhs, vector4<T> rhs) {
+inline vector4<T> operator+(const vector4<T> &lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
 
 template <typename T>
-inline vector4<T> operator+(vector4<T> lhs, T rhs) {
-    return vector3<T>(lhs.x + rhs, lhs.y + rhs, lhs.z + rhs, lhs.w + rhs);
+inline vector4<T> operator+(const vector4<T> &lhs, T rhs) {
+    return vector4<T>(lhs.x + rhs, lhs.y + rhs, lhs.z + rhs, lhs.w + rhs);
 }
 
 template <typename T>
-inline vector4<T> operator+(T lhs, vector4<T> rhs) {
+inline vector4<T> operator+(T lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs + rhs.x, lhs + rhs.y, lhs + rhs.z, lhs + rhs.w);
 }
 
@@ -245,49 +245,49 @@ inline vector4<T> operator+(T lhs, vector4<T> rhs) {
 
 //vec2
 template <typename T>
-inline vector2<T> operator-(vector2<T> lhs, vector2<T> rhs) {
+inline vector2<T> operator-(const vector2<T> &lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 
 template <typename T>
-inline vector2<T> operator-(vector2<T> lhs, T rhs) {
+inline vector2<T> operator-(const vector2<T> &lhs, T rhs) {
     return vector2<T>(lhs.x - rhs, lhs.y - rhs);
 }
 
 template <typename T>
-inline vector2<T> operator-(T lhs, vector2<T> rhs) {
+inline vector2<T> operator-(T lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs - rhs.x, lhs - rhs.y);
 }
 
 //vec3
 template <typename T>
-inline vector3<T> operator-(vector3<T> lhs, vector3<T> rhs) {
+inline vector3<T> operator-(const vector3<T> &lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 
 template <typename T>
-inline vector3<T> operator-(vector3<T> lhs, T rhs) {
+inline vector3<T> operator-(const vector3<T> &lhs, T rhs) {
     return vector3<T>(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs);
 }
 
 template <typename T>
-inline vector3<T> operator-(T lhs, vector3<T> rhs) {
+inline vector3<T> operator-(T lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z);
 }
 
 //vec4
 template <typename T>
-inline vector4<T> operator-(vector4<T> lhs, vector4<T> rhs) {
+inline vector4<T> operator-(const vector4<T> &lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
 
 template <typename T>
-inline vector4<T> operator-(vector4<T> lhs, T rhs) {
-    return vector3<T>(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs, lhs.w - rhs);
+inline vector4<T> operator-(const vector4<T> &lhs, T rhs) {
+    return vector4<T>(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs, lhs.w - rhs);
 }
 
 template <typename T>
-inline vector4<T> operator-(T lhs, vector4<T> rhs) {
+inline vector4<T> operator-(T lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z, lhs - rhs.w);
 }
 
@@ -298,49 +298,49 @@ inline vector4<T> operator-(T lhs, vector4<T> rhs) {
 
 //vec2
 template <typename T>
-inline vector2<T> operator*(vector2<T> lhs, vector2<T> rhs) {
+inline vector2<T> operator*(const vector2<T> &lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs.x * rhs.x, lhs.y * rhs.y);
 }
 
 template <typename T>
-inline vector2<T> operator*(vector2<T> lhs, T rhs) {
+inline vector2<T> operator*(const vector2<T> &lhs, T rhs) {
     return vector2<T>(lhs.x * rhs, lhs.y * rhs);
 }
 
 template <typename T>
-inline vector2<T> operator*(T lhs, vector2<T> rhs) {
+inline vector2<T> operator*(T lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs * rhs.x, lhs * rhs.y);
 }
 
 //vec3
 template <typename T>
-inline vector3<T> operator*(vector3<T> lhs, vector3<T> rhs) {
+inline vector3<T> operator*(const vector3<T> &lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
 
 template <typename T>
-inline vector3<T> operator*(vector3<T> lhs, T rhs) {
+inline vector3<T> operator*(const vector3<T> &lhs, T rhs) {
     return vector3<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
 }
 
 template <typename T>
-inline vector3<T> operator*(T lhs, vector3<T> rhs) {
+inline vector3<T> operator*(T lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z);
 }
 
 //vec4
 template <typename T>
-inline vector4<T> operator*(vector4<T> lhs, vector4<T> rhs) {
+inline vector4<T> operator*(const vector4<T> &lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
 
 template <typename T>
-inline vector4<T> operator*(vector4<T> lhs, T rhs) {
-    return vector3<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs);
+inline vector4<T> operator*(const vector4<T> &lhs, T rhs) {
+    return vector4<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs);
 }
 
 template <typename T>
-inline vector4<T> operator*(T lhs, vector4<T> rhs) {
+inline vector4<T> operator*(T lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w);
 }
 
@@ -351,49 +351,49 @@ inline vector4<T> operator*(T lhs, vector4<T> rhs) {
 
 //vec2
 template <typename T>
-inline vector2<T> operator/(vector2<T> lhs, vector2<T> rhs) {
+inline vector2<T> operator/(const vector2<T> &lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 
 template <typename T>
-inline vector2<T> operator/(vector2<T> lhs, T rhs) {
+inline vector2<T> operator/(const vector2<T> &lhs, T rhs) {
     return vector2<T>(lhs.x / rhs, lhs.y / rhs);
 }
 
 template <typename T>
-inline vector2<T> operator/(T lhs, vector2<T> rhs) {
+inline vector2<T> operator/(T lhs, const vector2<T> &rhs) {
     return vector2<T>(lhs / rhs.x, lhs / rhs.y);
 }
 
 //vec3
 template <typename T>
-inline vector3<T> operator/(vector3<T> lhs, vector3<T> rhs) {
+inline vector3<T> operator/(const vector3<T> &lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 
 template <typename T>
-inline vector3<T> operator/(vector3<T> lhs, T rhs) {
+inline vector3<T> operator/(const vector3<T> &lhs, T rhs) {
     return vector3<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
 }
 
 template <typename T>
-inline vector3<T> operator/(T lhs, vector3<T> rhs) {
+inline vector3<T> operator/(T lhs, const vector3<T> &rhs) {
     return vector3<T>(lhs / rhs.x, lhs / rhs.y, lhs / rhs.z);
 }
 
 //vec4
 template <typename T>
-inline vector4<T> operator/(vector4<T> lhs, vector4<T> rhs) {
+inline vector4<T> operator/(const vector4<T> &lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 
 template <typename T>
-inline vector4<T> operator/(vector4<T> lhs, T rhs) {
-    return vector3<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs);
+inline vector4<T> operator/(const vector4<T> &lhs, T rhs) {
+    return vector4<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs);
 }
 
 template <typename T>
-inline vector4<T> operator/(T lhs, vector4<T> rhs) {
+inline vector4<T> operator/(T lhs, const vector4<T> &rhs) {
     return vector4<T>(lhs / rhs.x, lhs / rhs.y, lhs / rhs.z, lhs / rhs.w);
 }
 
@@ -402,17 +402,17 @@ inline vector4<T> operator/(T lhs, vector4<T> rhs) {
 //--------equality---------//
 
 template <typename T>
-inline bool operator==(vector2<T> lhs, vector2<T> rhs) {
+inline bool operator==(const vector2<T> &lhs, const vector2<T> &rhs) {
     return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
 template <typename T>
-inline bool operator==(vector3<T> lhs, vector3<T> rhs) {
+inline bool operator==(const vector3<T> &lhs, const vector3<T> &rhs) {
     return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
 }
 
 template <typename T>
-inline bool operator==(vector4<T> lhs, vector4<T> rhs) {
+inline bool operator==(const vector4<T> &lhs, const vector4<T> &rhs) {
     return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
 }
 
@@ -442,7 +442,7 @@ inline vector4<T> vector4<T>::operator-()
 //-------mat4 operations--------//
 
 template <typename T>
-inline matrix4<T> operator*(matrix4<T> lhs, matrix4<T> rhs) {
+inline matrix4<T> operator*(const matrix4<T> &lhs, const matrix4<T> &rhs) {
     matrix4<T> result;
 
     result.m00 = lhs.m00 * rhs.m00 + lhs.m01 * rhs.m10 + lhs.m02 * rhs.m20 + lhs.m03 * rhs.m30;
@@ -469,7 +469,7 @@ inline matrix4<T> operator*(matrix4<T> lhs, matrix4<T> rhs) {
 }
 
 template <typename T>
-inline vector4<T> operator*(matrix4<T> lhs, vector4<T> rhs) {
+inline vector4<T> operator*(const matrix4<T> &lhs, const vector4<T> &rhs) {
     float x = lhs.m00 * rhs.x + lhs.m01 * rhs.y + lhs.m02 * rhs.z + lhs.m03 * rhs.w;
     float y = lhs.m10 * rhs.x + lhs.m11 * rhs.y + lhs.m12 * rhs.z + lhs.m13 * rhs.w;
     float z = lhs.m20 * rhs.x + lhs.m21 * rhs.y + lhs.m22 * rhs.z + lhs.m23 * rhs.w;
@@ -478,12 +478,9 @@ inline vector4<T> operator*(matrix4<T> lhs, vector4<T> rhs) {
 }
 
 template <typename T>
-inline vector4<T> operator*(vector4<T> lhs, matrix4<T> rhs) {
+inline vector4<T> operator*(const vector4<T> &lhs, const matrix4<T> &rhs) {
     return rhs * lhs;
 }
-
-
-
 
 
 
@@ -495,23 +492,23 @@ inline vector4<T> operator*(vector4<T> lhs, matrix4<T> rhs) {
 //--------operators--------//
 
 template <typename T>
-inline T lengthSquared(vector3<T> vec) {
+inline T lengthSquared(const vector3<T> &vec) {
     return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
 }
 
 template <typename T>
-inline float length(vector3<T> vec) {
+inline float length(const vector3<T> &vec) {
     return sqrt(lengthSquared(vec));
 }
 
 template <typename T>
-inline vector3<T> normalize(vector3<T> vec) {
+inline vector3<T> normalize(const vector3<T> &vec) {
     return vec / length(vec);
 }
 
 
 template <typename T>
-inline vector3<T> cross(vector3<T> lhs, vector3<T> rhs) {
+inline vector3<T> cross(const vector3<T> &lhs, const vector3<T> &rhs) {
     float x = lhs.y * rhs.z - lhs.z * rhs.y;
     float y = lhs.z * rhs.x - lhs.x * rhs.z;
     float z = lhs.x * rhs.y - lhs.y * rhs.x;
@@ -519,7 +516,7 @@ inline vector3<T> cross(vector3<T> lhs, vector3<T> rhs) {
 }
 
 template <typename T>
-inline T dot(vector3<T> lhs, vector3<T> rhs) {
+inline T dot(const vector3<T> &lhs, const vector3<T> &rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
@@ -563,7 +560,7 @@ inline matrix4<T> rotate(const matrix4<T> &mat, const vector3<T>& axis, const T&
 }
 
 template <typename T>
-inline matrix4<T> scale(const matrix4<T> &mat, vector3<T> scale) {
+inline matrix4<T> scale(const matrix4<T> &mat, const vector3<T> &scale) {
     matrix4<T> scaling;
 
     scaling.m00 = scale.x;
@@ -585,7 +582,7 @@ inline matrix4<T> scale(const matrix4<T> &mat, T scale) {
 }
 
 template <typename T>
-inline matrix4<T> transpose(matrix4<T> mat) {
+inline matrix4<T> transpose(const matrix4<T> &mat) {
     matrix4<T> temp;
 
     temp.m00 = mat.m00;
@@ -650,7 +647,7 @@ inline mat4 orthographic(float left, float right, float bottom, float top, float
     return ortho;
 }
 
-inline mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
+inline mat4 LookAt(const vec3 &eye, const vec3 &center, const vec3 &up) {
     vec3 forward = vec3(0, 0, -1);
     vec3 upVec = vec3(0, 1, 0);
     vec3 side = vec3(1, 0, 0);
@@ -777,7 +774,7 @@ inline mat4 inverse(const mat4 &src) {
 //---------less than----------//
 
 template <typename T>
-inline bool operator<(vector3<T> lhs, vector3<T> rhs) {
+inline bool operator<(const vector3<T> &lhs, const vector3<T> &rhs) {
     float l1 = length(lhs);
     float l2 = length(rhs);
 
@@ -900,7 +897,7 @@ struct Transform {
         this->scale = scale;
     }
 
-    mat4 getMatrix() {
+    mat4 getMatrix() const {
         mat4 mat;
         mat = translate(mat, position);
         mat = ::scale(mat, this->scale);

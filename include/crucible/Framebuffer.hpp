@@ -33,13 +33,13 @@ public:
     /**
      * Binds the framebuffer (makes all render calls draw do it.
      */
-    void bind();
+    void bind() const;
 
-	Texture getAttachment(int num);
+	const Texture &getAttachment(int num) const;
 
-    int getWidth();
+    int getWidth() const;
 
-    int getHeight();
+    int getHeight() const;
 
     void destroy();
 };

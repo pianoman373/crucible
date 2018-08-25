@@ -32,17 +32,17 @@ public:
 
     Mesh();
 
-    Mesh(std::vector<vec3> positions, std::vector<unsigned int> indices);
+    Mesh(const std::vector<vec3> &positions, const std::vector<unsigned int> &indices);
 
-    Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<unsigned int> indices);
+    Mesh(const std::vector<vec3> &positions, const std::vector<vec3> &normals, const std::vector<unsigned int> &indices);
 
-    Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<unsigned int> indices);
+    Mesh(const std::vector<vec3> &positions, const std::vector<vec3> &normals, const std::vector<vec2> &uvs, const std::vector<unsigned int> &indices);
 
-    Mesh(std::vector<vec3> positions, std::vector<vec3> normals, std::vector<vec2> uvs, std::vector<vec3> colors, std::vector<unsigned int> indices);
+    Mesh(const std::vector<vec3> &positions, const std::vector<vec3> &normals, const std::vector<vec2> &uvs, const std::vector<vec3> &colors, const std::vector<unsigned int> &indices);
 
-    json toJson();
+    json toJson() const;
 
-    void fromJson(json j);
+    void fromJson(const json &j);
 
     /**
      * Sends buffered data to OpenGL to make this mesh ready for rendering. (Note this does not clear buffered data as OpenGL still needs it)
@@ -54,7 +54,7 @@ public:
      */
     void clear();
 
-    void render();
+    void render() const;
 
     /**
      *  Deletes mesh handles on OpenGL and local buffer data.

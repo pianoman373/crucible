@@ -9,7 +9,7 @@
 
 GLFWwindow *Window::window;
 
-void Window::create(vec2i resolution, std::string title, bool fullscreen) {
+void Window::create(const vec2i &resolution, const std::string &title, bool fullscreen) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

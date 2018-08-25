@@ -7,7 +7,7 @@
 #include <glad/glad.h>
 
 namespace IBL {
-    void generateIBLmaps(vec3 position, Cubemap &irradiance, Cubemap &specular) {
+    void generateIBLmaps(const vec3 &position, Cubemap &irradiance, Cubemap &specular) {
         static const int resolution = 512;
 
         static mat4 captureProjection = perspective(90.0f, 1.0f, 0.1f, 10.0f);

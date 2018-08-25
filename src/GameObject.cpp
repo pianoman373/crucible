@@ -8,7 +8,7 @@ void Component::setParent(GameObject *parent) {
     this->parent = parent;
 }
 
-GameObject *Component::getParent() {
+GameObject *Component::getParent() const {
     return this->parent;
 }
 
@@ -20,13 +20,12 @@ void Component::update(float delta) {
 
 }
 
-ModelComponent::ModelComponent(Mesh *mesh, Material *material) {
-    this->mesh = mesh;
-    this->material = material;
+ModelComponent::ModelComponent(const Mesh &mesh, const Material &material): mesh(mesh), material(material) {
+
 }
 
 void ModelComponent::render() {
-    Renderer::render(mesh, material, this->getParent()->transform, AABB());
+    Renderer::render(mesh, material, this->getParent()->transform);
 }
 
 GameObject::~GameObject() {
@@ -40,10 +39,9 @@ GameObject::~GameObject() {
     }
 }
 
-GameObject::GameObject(Scene *scene, Transform transform, std::string name) {
+GameObject::GameObject(Scene &scene, const Transform &transform, const std::string &name): scene(scene) {
     this->transform = transform;
     this->name = name;
-    this->scene = scene;
     this->rb = nullptr;
 
 }
@@ -89,10 +87,10 @@ void GameObject::update(float delta) {
     }
 }
 
-std::string GameObject::getName() {
+const std::string &GameObject::getName() const {
     return this->name;
 }
 
-void GameObject::setName(std::string name) {
+void GameObject::setName(const std::string &name) {
     this->name = name;
 }

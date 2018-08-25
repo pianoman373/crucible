@@ -9,17 +9,17 @@ private:
 
 	std::string filepath;
 public:
-    void load(const char *file, bool pixelated=false);
+    void load(const std::string &file, bool pixelated=false);
 
-    void loadFromSingleColor(vec4 color);
+    void loadFromSingleColor(const vec4 &color);
 
-    void bind(unsigned int unit = 0);
+    void bind(unsigned int unit = 0) const;
 
-    unsigned int getID();
+    unsigned int getID() const;
 
 	void setID(unsigned int id);
 
-	std::string getFilepath();
+	std::string getFilepath() const;
 
 	void destroy();
 };
@@ -29,13 +29,14 @@ private:
     unsigned int id;
 
 public:
-    void load(const char *file1, const char *file2, const char *file3, const char *file4, const char *file5, const char *file6);
+    void load(const std::string &file1, const std::string &file2, const std::string &file3, const std::string &file4,
+			  const std::string &file5, const std::string &file6);
 
-	void loadEquirectangular(std::string file, int resolution=512);
+	void loadEquirectangular(const std::string &file, int resolution = 512);
 
-    void bind(unsigned int unit = 0);
+    void bind(unsigned int unit = 0) const;
 
-    unsigned int getID();
+    unsigned int getID() const;
 
 	void setID(unsigned int id);
 };

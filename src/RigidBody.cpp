@@ -1,7 +1,7 @@
 #include <crucible/RigidBody.hpp>
 #include <btBulletDynamicsCommon.h>
 
-RigidBody::RigidBody(Scene *scene, Transform transform, float mass) {
+RigidBody::RigidBody(Scene &scene, const Transform &transform, float mass) {
     this->mass = mass;
 
     //create a dynamic rigidbody
@@ -20,7 +20,7 @@ RigidBody::RigidBody(Scene *scene, Transform transform, float mass) {
     body = new btRigidBody(rbInfo);
 
 
-    scene->getBulletWorld()->addRigidBody(body);
+    scene.getBulletWorld()->addRigidBody(body);
 }
 
 RigidBody::~RigidBody() {
@@ -33,26 +33,26 @@ RigidBody::~RigidBody() {
     delete body;
 }
 
-vec3 RigidBody::getPosition() {
+vec3 RigidBody::getPosition() const {
     btTransform trans;
     body->getMotionState()->getWorldTransform(trans);
 
     return vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 }
 
-quaternion RigidBody::getRotation() {
+quaternion RigidBody::getRotation() const {
     btTransform trans;
     body->getMotionState()->getWorldTransform(trans);
 
     return quaternion(trans.getRotation().w(), trans.getRotation().x(), trans.getRotation().y(), trans.getRotation().z());
 }
 
-void RigidBody::setVelocity(vec3 velocity) {
+void RigidBody::setVelocity(const vec3 &velocity) {
     body->activate(true);
     body->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
 }
 
-vec3 RigidBody::getVelocity() {
+vec3 RigidBody::getVelocity() const {
     btVector3 v = body->getLinearVelocity();
 
     return vec3(v.x(), v.y(), v.z());
@@ -62,7 +62,7 @@ void RigidBody::setAngularFactor(float factor) {
     body->setAngularFactor(btVector3(factor, factor, factor));
 }
 
-RigidBody *RigidBody::addBoxCollider(vec3 origin, vec3 halfExtents) {
+RigidBody *RigidBody::addBoxCollider(const vec3 &origin, const vec3 &halfExtents) {
     btTransform t;  //position and rotation
     t.setIdentity();
     t.setOrigin(btVector3(origin.x,origin.y,origin.z));
@@ -80,7 +80,7 @@ RigidBody *RigidBody::addBoxCollider(vec3 origin, vec3 halfExtents) {
     return this;
 }
 
-RigidBody *RigidBody::addSphereCollider(vec3 origin, float radius) {
+RigidBody *RigidBody::addSphereCollider(const vec3 &origin, float radius) {
     btTransform t;  //position and rotation
     t.setIdentity();
     t.setOrigin(btVector3(origin.x,origin.y,origin.z));
@@ -99,7 +99,7 @@ RigidBody *RigidBody::addSphereCollider(vec3 origin, float radius) {
     return this;
 }
 
-RigidBody *RigidBody::addCylinderCollider(vec3 origin, float radius, float height) {
+RigidBody *RigidBody::addCylinderCollider(const vec3 &origin, float radius, float height) {
     btTransform t;  //position and rotation
     t.setIdentity();
     t.setOrigin(btVector3(origin.x,origin.y,origin.z));
@@ -117,14 +117,14 @@ RigidBody *RigidBody::addCylinderCollider(vec3 origin, float radius, float heigh
     return this;
 }
 
-RigidBody *RigidBody::addMeshCollider(vec3 origin, Mesh *mesh, vec3 scale) {
+RigidBody *RigidBody::addMeshCollider(const vec3 &origin, const Mesh &mesh, const vec3 &scale) {
     btTriangleMesh *tm = new btTriangleMesh();
 
-    if (mesh->indices.size() > 0) {
-        for (int i = 0; i < mesh->indices.size(); i += 3) {
-            vec3 v1 = mesh->positions[mesh->indices[i]] * scale;
-            vec3 v2 = mesh->positions[mesh->indices[i+1]] * scale;
-            vec3 v3 = mesh->positions[mesh->indices[i+2]] * scale;
+    if (mesh.indices.size() > 0) {
+        for (int i = 0; i < mesh.indices.size(); i += 3) {
+            vec3 v1 = mesh.positions[mesh.indices[i]] * scale;
+            vec3 v2 = mesh.positions[mesh.indices[i+1]] * scale;
+            vec3 v3 = mesh.positions[mesh.indices[i+2]] * scale;
 
             tm->addTriangle(btVector3(v1.x, v1.y, v1.z), btVector3(v2.x, v2.y, v2.z), btVector3(v3.x, v3.y, v3.z));
         }

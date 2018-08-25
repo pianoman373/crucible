@@ -4,5 +4,5 @@
 #include <crucible/Texture.hpp>
 
 namespace Resources {
-    Texture getTexture(std::string path);
+    const Texture &getTexture(const std::string &path);
 }

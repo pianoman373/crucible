@@ -13,7 +13,7 @@ public:
     static GLFWwindow *window;
 
 
-    static void create(vec2i resolution, std::string title, bool fullscreen);
+    static void create(const vec2i &resolution, const std::string &title, bool fullscreen);
 
     static bool isOpen();
 

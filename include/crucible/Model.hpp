@@ -17,15 +17,15 @@ public:
     std::vector<Material> materials;
     std::vector<ModelNode> nodes;
 
-    void addSubmesh(Mesh mesh, Material material, std::string names="Untitled Submesh");
+    void addSubmesh(const Mesh &mesh, const Material &material, const std::string &names="Untitled Submesh");
 
     void importFile(std::string filename, bool loadTextures=true);
 
     void openFile(std::string filename);
 
-    void fromJson(json j, std::string workingDirectory);
+    void fromJson(const json &j, const std::string &workingDirectory);
 
-    json toJson(std::string workingDirectory);
+    json toJson(const std::string &workingDirectory) const;
 
     void clear();
 };
