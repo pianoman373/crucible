@@ -197,7 +197,7 @@ int main() {
     for (int x = 0; x < amount; x++) {
         for (int z = 0; z < amount; z++) {
             ///Renderer::render(&cube, &checker, , quaternion(), vec3(0.1f)));
-            transforms.push_back(Transform(vec3(((float)x / (float)amount) * size, 3.0f, ((float)z / (float)amount) * size), quaternion(), vec3(0.1f)));
+            //transforms.push_back(Transform(vec3(((float)x / (float)amount) * size, 3.0f, ((float)z / (float)amount) * size), quaternion(), vec3(0.1f)));
         }
     }
 

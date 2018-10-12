@@ -77,12 +77,14 @@ int main() {
 
     GuiMain gui(&model);
 
+    Transform trans = Transform(vec3(), quaternion(), vec3(1.0f));
+
     while (Window::isOpen()) {
         Window::begin();
         cam.dimensions = {1920, 1080};
         orbitCamera(cam);
 
-        Renderer::render(&model, Transform(vec3(), quaternion(), vec3(1.0f)), AABB());
+        Renderer::render(model, trans);
 
         Renderer::flush(cam);
         gui.render();

@@ -2,7 +2,6 @@
 #include "SimplexNoise.hpp"
 
 #include <imgui.h>
-#include <imgui_dock.h>
 
 static float noise(vec2 position, int octaves, float frequency, float persistence) {
     float total = 0.0;

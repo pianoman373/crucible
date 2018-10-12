@@ -1,7 +1,6 @@
 #include "GuiMain.hpp"
 
 #include <imgui.h>
-#include <imgui_dock.h>
 #include <tinyfiledialogs.h>
 
 #include <crucible/Window.hpp>
@@ -11,33 +10,33 @@
 #include <fstream>
 
 bool ImGuiMaterialEditBool(std::string label, std::string id, Material *mat) {
-    bool *val = mat->getUniformBool(id);
+    bool &val = mat->getUniformBool(id);
 
-    ImGui::Checkbox(label.c_str(), val);
+    ImGui::Checkbox(label.c_str(), &val);
 
-    return *val;
+    return val;
 }
 
 float ImGuiMaterialEditFloat(std::string label, std::string id, Material *mat, float min, float max) {
-    float *val = mat->getUniformFloat(id);
-    ImGui::SliderFloat(label.c_str(), val, min, max);
+    float &val = mat->getUniformFloat(id);
+    ImGui::SliderFloat(label.c_str(), &val, min, max);
 
-    return *val;
+    return val;
 }
 
 vec3 ImGuiMaterialEditVec3(std::string label, std::string id, Material *mat) {
-    vec3 *val = mat->getUniformVec3(id);
+    vec3 &val = mat->getUniformVec3(id);
 
-    ImGui::ColorEdit3(label.c_str(), (float*)val);
+    ImGui::ColorEdit3(label.c_str(), (float*)&val);
 
-    return *val;
+    return val;
 }
 
 void ImGuiMaterialEditTexture(std::string label, std::string id, Material *mat, unsigned int unit) {
     Texture value;
 
-    auto search = mat->getTextureUniforms()->find(id);
-    if(search != mat->getTextureUniforms()->end()) {
+    auto search = mat->getTextureUniforms().find(id);
+    if(search != mat->getTextureUniforms().end()) {
         value = search->second.tex;
     }
     else {
@@ -83,14 +82,14 @@ void GuiMain::renderMaterial(Material *mat) {
 
     ImGuiMaterialEditBool("Invert Roughness", "invertRoughness", mat);
 
-    if (*mat->getUniformBool("metallicTextured")) {
+    if (mat->getUniformBool("metallicTextured")) {
         ImGuiMaterialEditBool("Use Metallic Alpha", "roughnessMetallicAlpha", mat);
     }
     else {
         mat->setUniformBool("roughnessMetallicAlpha", false); // if metallicTextured gets turned off we need to turn this off as well
     }
 
-    if (!*mat->getUniformBool("roughnessMetallicAlpha")) { //if "use metallic alpha" is enabled we don't need these options
+    if (!mat->getUniformBool("roughnessMetallicAlpha")) { //if "use metallic alpha" is enabled we don't need these options
         if (ImGuiMaterialEditBool("Roughness Textured", "roughnessTextured", mat)) {
             ImGuiMaterialEditTexture("Roughness", "roughnessTex", mat, 1);
         }
