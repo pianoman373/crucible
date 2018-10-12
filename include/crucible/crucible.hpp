@@ -14,7 +14,6 @@
 #include <crucible/Model.hpp>
 #include <crucible/Primitives.hpp>
 #include <crucible/Renderer.hpp>
-#include <crucible/Renderer2D.hpp>
 #include <crucible/Shader.hpp>
 #include <crucible/Texture.hpp>
 #include <crucible/Camera.hpp>

@@ -61,10 +61,6 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     target_link_libraries(demo crucible)
     set_target_properties(demo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-    add_executable(2dDemo examples/2dDemo.cpp)
-    target_link_libraries(2dDemo crucible)
-    set_target_properties(2dDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-
     add_executable(NBodyDemo examples/NBodyDemo.cpp)
     target_link_libraries(NBodyDemo crucible)
     set_target_properties(NBodyDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
