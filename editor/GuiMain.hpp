@@ -10,6 +10,12 @@ private:
 
     void renderMaterial(Material *mat);
 
+    void renderToolbar();
+
+    void renderSceneWindow();
+
+    void renderMaterialWindow();
+
 public:
     int selected = -1;
 

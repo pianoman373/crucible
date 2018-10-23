@@ -4,7 +4,9 @@
 
 #include <glad/glad.h>
 #include <imgui.h>
-#include <crucible/imgui_impl_glfw_gl3.h>
+
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 GLFWwindow *Window::window;
 
@@ -44,7 +46,14 @@ void Window::create(const vec2i &resolution, const std::string &title, bool full
 
     // Setup ImGui binding
     ImGui::CreateContext();
-    ImGui_ImplGlfwGL3_Init(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+
+    const char* glsl_version = "#version 130";
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+
     ImGui::StyleColorsDark();
 
     glfwSetKeyCallback(window, Input::key_callback);
@@ -75,7 +84,10 @@ void Window::begin() {
     glClearColor(0.0f ,0.0f , 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    ImGui_ImplGlfwGL3_NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
 
     Input::update();
     glfwPollEvents();
@@ -83,13 +95,13 @@ void Window::begin() {
 
 void Window::end() {
     ImGui::Render();
-    ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
 }
 
 void Window::terminate() {
-    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
     glfwTerminate();
 }
 
