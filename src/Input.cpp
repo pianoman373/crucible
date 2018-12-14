@@ -1,8 +1,8 @@
 #include <crucible/Input.hpp>
 #include <imgui.h>
 
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include <examples/imgui_impl_glfw.h>
+#include <examples/imgui_impl_opengl3.h>
 
 static bool keys[1024];
 static bool mouse[4];

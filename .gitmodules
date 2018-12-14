@@ -4,3 +4,12 @@
 [submodule "lib/bullet"]
 	path = lib/bullet
 	url = https://github.com/bulletphysics/bullet3
+[submodule "lib/assimp"]
+	path = lib/assimp
+	url = https://github.com/assimp/assimp
+[submodule "lib/stb"]
+	path = lib/stb
+	url = https://github.com/nothings/stb
+[submodule "lib/imgui"]
+	path = lib/imgui
+	url = https://github.com/ocornut/imgui

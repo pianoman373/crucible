@@ -5,8 +5,8 @@
 #include <glad/glad.h>
 #include <imgui.h>
 
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include <examples/imgui_impl_glfw.h>
+#include <examples/imgui_impl_opengl3.h>
 
 GLFWwindow *Window::window;
 
@@ -51,7 +51,7 @@ void Window::create(const vec2i &resolution, const std::string &title, bool full
     const char* glsl_version = "#version 130";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    //ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 
     ImGui::StyleColorsDark();

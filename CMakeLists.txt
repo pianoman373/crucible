@@ -24,21 +24,30 @@ include_directories(
                     include/
                     lib/GLFW/include/
                     lib/bullet/src/
+                    lib/assimp/include/
+                    lib/stb/
+                    lib/imgui/
                     )
 
 file(GLOB PROJECT_SOURCES src/*.cpp
                           src/*.c
+                          lib/imgui/imgui.cpp
+                          lib/imgui/imgui_draw.cpp
+                          lib/imgui/imgui_widgets.cpp
+                          lib/imgui/examples/imgui_impl_glfw.cpp
+                          lib/imgui/examples/imgui_impl_opengl3.cpp
                           )
 
 file(GLOB PROJECT_HEADERS include/crucible/*.h
 						  include/crucible/*.hpp
 						  )
 
-add_definitions(-DGLFW_INCLUDE_NONE
-                -DASSIMP_BUILD_BOOST_WORKAROUND
-                -DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"
-				-DGLFW_STATIC
-				-DSFML_STATIC)
+add_compile_definitions(GLFW_INCLUDE_NONE
+                ASSIMP_BUILD_BOOST_WORKAROUND
+                PROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"
+				GLFW_STATIC
+				SFML_STATIC
+                IMGUI_IMPL_OPENGL_LOADER_GLAD)
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 
 if(WIN32)
