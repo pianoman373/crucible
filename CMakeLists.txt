@@ -22,6 +22,7 @@ add_subdirectory(lib/bullet)
 
 include_directories(
                     include/
+                    lib/GLFW/include/
                     lib/bullet/src/
                     )
 
