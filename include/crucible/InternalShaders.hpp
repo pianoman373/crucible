@@ -202,6 +202,9 @@ void main()
     T = normalize(T - dot(T, N) * N); // re-orthogonalize T with respect to N
     vec3 B = cross(N, T); // then retrieve perpendicular vector B with the cross product of T and N
 
+    if (dot(cross(N, T), B) < 0.0)
+        T = T * -1.0;
+
     TBN = mat3(view) * mat3(T, B, N);
 }
 )";
@@ -477,10 +480,10 @@ vec3 lighting(vec3 fragPos, vec3 albedo, vec3 normal, float roughness, float met
     vec4 fragLightSpace3 = biasMatrix * lightSpaceMatrix[3] * inverse(view) * vec4(fragPos, 1.0);
 
     float distance = length(cameraPos - fragPos);
-	float shadow0 = mix(1.0, ShadowCalculationPCF(0.0005, fragLightSpace0, shadowTextures[0]), inShadow(fragLightSpace0));
-    float shadow1 = mix(1.0, ShadowCalculation(0.0005, fragLightSpace1, shadowTextures[1]), inShadow(fragLightSpace1) * (1-inShadow(fragLightSpace0)));
-    float shadow2 = mix(1.0, ShadowCalculation(0.0005, fragLightSpace2, shadowTextures[2]), inShadow(fragLightSpace2) * (1-inShadow(fragLightSpace1)));
-    float shadow3 = mix(1.0, ShadowCalculation(0.0005, fragLightSpace3, shadowTextures[3]), inShadow(fragLightSpace3) * (1-inShadow(fragLightSpace2)));
+	float shadow0 = mix(1.0, ShadowCalculationPCF(0.0001, fragLightSpace0, shadowTextures[0]), inShadow(fragLightSpace0));
+    float shadow1 = mix(1.0, ShadowCalculation(0.0001, fragLightSpace1, shadowTextures[1]), inShadow(fragLightSpace1) * (1-inShadow(fragLightSpace0)));
+    float shadow2 = mix(1.0, ShadowCalculation(0.0001, fragLightSpace2, shadowTextures[2]), inShadow(fragLightSpace2) * (1-inShadow(fragLightSpace1)));
+    float shadow3 = mix(1.0, ShadowCalculation(0.0001, fragLightSpace3, shadowTextures[3]), inShadow(fragLightSpace3) * (1-inShadow(fragLightSpace2)));
     float shadow = shadow0 * shadow1 * shadow2 * shadow3;
 	//float shadow = 1.0;
 	//float shadow = ShadowCalculation(0.1 / cascadeDistances[0], fragLightSpace0, shadowTextures[0]);

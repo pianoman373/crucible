@@ -49,7 +49,7 @@ GameObject &Scene::createObject(const Transform &transform, const std::string &n
     return *obj;
 }
 
-GameObject &Scene::createMeshObject(const Mesh &mesh, const Material &material, const Transform &transform,
+GameObject &Scene::createMeshObject(Mesh &mesh, Material &material, const Transform &transform,
                                            const std::string &name) {
     GameObject &obj = createObject(transform, name);
     obj.addComponent(new ModelComponent(mesh, material));
@@ -105,4 +105,12 @@ btDiscreteDynamicsWorld *Scene::getBulletWorld() {
 
 bool Scene::isPhysicsEnabled() const {
     return physicsEnabled;
+}
+
+int Scene::numObjects() {
+    return objects.size();
+}
+
+GameObject &Scene::getObject(int index) {
+    return *objects[index];
 }

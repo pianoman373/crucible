@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
+
 project(crucible)
 
 option(CRUCIBLE_BUILD_EXAMPLES "Build the Crucible example programs" ON)
@@ -36,6 +37,7 @@ file(GLOB PROJECT_SOURCES src/*.cpp
                           lib/imgui/imgui_widgets.cpp
                           lib/imgui/examples/imgui_impl_glfw.cpp
                           lib/imgui/examples/imgui_impl_opengl3.cpp
+                          foo.c
                           )
 
 file(GLOB PROJECT_HEADERS include/crucible/*.h
@@ -80,6 +82,17 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     set_target_properties(terrainDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
-add_executable(editor editor/main.cpp editor/GuiMain.cpp editor/GuiMain.hpp)
+
+file(GLOB EDITOR_SOURCES
+        editor/*.c
+        editor/*.cpp
+        )
+
+file(GLOB EDITOR_HEADERS
+        editor/*.h
+        editor/*.hpp
+        )
+
+add_executable(editor ${EDITOR_SOURCES} ${EDITOR_HEADERS})
 target_link_libraries(editor crucible)
 set_target_properties(editor PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")

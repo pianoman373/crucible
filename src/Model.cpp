@@ -95,6 +95,8 @@ void Model::importFile(std::string filename, bool loadTextures) {
 
         aiString materialName;
         aMaterial->Get(AI_MATKEY_NAME, materialName);
+
+        material.name = materialName.C_Str();
         materials.push_back(material);
     }
 

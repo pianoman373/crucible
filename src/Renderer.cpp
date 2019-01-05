@@ -144,8 +144,6 @@ void Renderer::renderDebugGui() {
 void Renderer::resize(int resolutionX, int resolutionY) {
 	resolution = vec2i(resolutionX, resolutionY);
 
-	std::cout << "resizing!" << std::endl;
-
 	HDRbuffer.destroy();
 	HDRbuffer.setup(resolution.x, resolution.y);
 	HDRbuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
@@ -296,11 +294,6 @@ void Renderer::render(const Model *model, const Transform *transform, const AABB
 	}
 }
 
-void Renderer::flush(const Camera &cam) {
-	Frustum f;
-	flush(cam, f, false);
-}
-
 void Renderer::renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling, Texture &gPosition,
 							  Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic) {
 	// render objects in scene into g-buffer
@@ -388,7 +381,7 @@ Texture Renderer::lightGbuffers(const Camera &cam, const Texture &gPosition, con
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);
 	glDepthFunc(GL_ALWAYS);
-	glDepthMask(GL_TRUE);
+    glDepthMask(GL_TRUE);
 
 	// render the g-buffers with the deferred shader
 	// ---------------------------------------------
@@ -481,18 +474,42 @@ Texture Renderer::lightGbuffers(const Camera &cam, const Texture &gPosition, con
 
     framebufferMesh.render();
 
-	glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
 
 	// render the skybox
 	// -----------------
 	renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
 
+
+    glDepthFunc(GL_LEQUAL);
+
 	return HDRbuffer.getAttachment(0);
 }
 
-// ------------------------------------------------------------------------
+void Renderer::flush(const Camera &cam) {
+	Frustum f;
+	flush(cam, f, false);
+}
+
 void Renderer::flush(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+	const Texture &t = flushToTexture(cam, f, doFrustumCulling);
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
+	passthroughShader.bind();
+	t.bind();
+	framebufferMesh.render();
+}
+
+const Texture &Renderer::flushToTexture(const Camera &cam) {
+	Frustum f;
+	return flushToTexture(cam, f, false);
+}
+
+// ------------------------------------------------------------------------
+const Texture &Renderer::flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
 	Texture gPosition;
 	Texture gNormal;
 	Texture gAlbedo;
@@ -503,23 +520,25 @@ void Renderer::flush(const Camera &cam, const Frustum &f, bool doFrustumCulling)
 
 	Texture final = postProcessor.postRender(cam, deferred, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
-	passthroughShader.bind();
+
+
+	HDRbuffer.bind();
+    passthroughShader.bind();
 	final.bind();
 	framebufferMesh.render();
 
-	// copy depth and stencil buffer
-	// -------------------------------
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, Window::getWindowSize().x, Window::getWindowSize().y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    // copy depth and stencil buffer
+    // -------------------------------
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, HDRbuffer.fbo);
+    glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+
+    // render debug tools
+    // ------------------
+    debug.flush(cam);
 
 
-	// render debug tools
-	// ------------------
-	debug.flush(cam);
 
 	static bool lastKeydown = false;
 	static bool debug = false;
@@ -534,6 +553,11 @@ void Renderer::flush(const Camera &cam, const Frustum &f, bool doFrustumCulling)
 
 	pointLights.clear();
 	renderQueue.clear();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
+
+	return HDRbuffer.getAttachment(0);
 }
 // ------------------------------------------------------------------------
 Cubemap Renderer::renderToProbe(const vec3 &position) {

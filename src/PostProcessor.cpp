@@ -119,9 +119,10 @@ void PostProcessor::resize() {
     vec2i resolution = Renderer::getResolution();
 
     // HDR framebuffer 0
-            HDRbuffer0.destroy();
+    HDRbuffer0.destroy();
     HDRbuffer0.setup(resolution.x, resolution.y);
     HDRbuffer0.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
+
     // HDR framebuffer 1
     HDRbuffer1.destroy();
     HDRbuffer1.setup(resolution.x, resolution.y);

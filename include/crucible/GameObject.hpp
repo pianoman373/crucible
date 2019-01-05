@@ -24,13 +24,17 @@ public:
 
 class ModelComponent : public Component {
 private:
-    const Mesh &mesh;
-    const Material &material;
+    Mesh &mesh;
+    Material &material;
 
 public:
-    ModelComponent(const Mesh &mesh, const Material &material);
+    ModelComponent(Mesh &mesh, Material &material);
 
     void render();
+
+    Mesh &getMesh();
+
+    Material &getMaterial();
 };
 
 class GameObject {

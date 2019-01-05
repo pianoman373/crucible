@@ -33,7 +33,7 @@ struct RendererSettings {
 	bool vignette = true;
 	bool tonemap = true;
 	bool bloom = true;
-	bool SSR = false;
+	bool SSR = true;
 	float bloomStrength = 0.05f;
 	bool ssao = true;
 	float ssaoRadius = 10.0f;
@@ -137,13 +137,12 @@ public:
     static Texture lightGbuffers(const Camera &cam, const Texture &gPosition, const Texture &gNormal,
                                  const Texture &gAlbedo, const Texture &gRoughnessMetallic);
 
-     /**
-      * Flush command with frustum culling disabled.
-      */
-      static void flush(const Camera &cam);
+	static Cubemap renderToProbe(const vec3 &position);
 
-      static Cubemap renderToProbe(const vec3 &position);
-
+	/**
+	* Flush command with frustum culling disabled.
+	*/
+	static void flush(const Camera &cam);
 
 	/**
      * In order to allow render to be called from anywhere at any time, render calls
@@ -151,6 +150,10 @@ public:
      * clears the buffer for the next time.
      */
     static void flush(const Camera &cam, const Frustum &f, bool doFrustumCulling = true);
+
+    static const Texture &flushToTexture(const Camera &cam);
+
+	static const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling = true);
 
     static void setSkyboxShader(const Shader &s);
 

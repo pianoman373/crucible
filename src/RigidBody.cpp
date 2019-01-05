@@ -19,7 +19,6 @@ RigidBody::RigidBody(Scene &scene, const Transform &transform, float mass) {
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, colShape, inertia);
     body = new btRigidBody(rbInfo);
 
-
     scene.getBulletWorld()->addRigidBody(body);
 }
 

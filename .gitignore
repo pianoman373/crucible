@@ -31,8 +31,11 @@
 # Cmake files
 *.txt.user*
 
-# Imgui files
+# Imgui filess
 imgui.ini
+
+# Editor config files
+editorConfig.json
 
 cmake-build-*
 build

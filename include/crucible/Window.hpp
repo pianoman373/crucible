@@ -13,7 +13,7 @@ public:
     static GLFWwindow *window;
 
 
-    static void create(const vec2i &resolution, const std::string &title, bool fullscreen);
+    static void create(const vec2i &resolution, const std::string &title, bool fullscreen, bool vsync=true);
 
     static bool isOpen();
 
@@ -38,4 +38,6 @@ public:
     static float getAspectRatio();
 
     static void setMouseGrabbed(bool grabbed);
+
+    static bool getMouseGrabbed();
 };

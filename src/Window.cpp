@@ -10,12 +10,11 @@
 
 GLFWwindow *Window::window;
 
-void Window::create(const vec2i &resolution, const std::string &title, bool fullscreen) {
+void Window::create(const vec2i &resolution, const std::string &title, bool fullscreen, bool vsync) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwSwapInterval(1);
 
     if (fullscreen) {
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
@@ -38,6 +37,8 @@ void Window::create(const vec2i &resolution, const std::string &title, bool full
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
+
+    glfwSwapInterval(vsync);
 	gladLoadGL();
 
     int width, height;
@@ -46,6 +47,11 @@ void Window::create(const vec2i &resolution, const std::string &title, bool full
 
     // Setup ImGui binding
     ImGui::CreateContext();
+#ifdef IMGUI_HAS_DOCK
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#endif
+
+    ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
 
     const char* glsl_version = "#version 130";
@@ -53,20 +59,14 @@ void Window::create(const vec2i &resolution, const std::string &title, bool full
 
     //ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-
-    ImGui::StyleColorsDark();
-
     glfwSetKeyCallback(window, Input::key_callback);
     glfwSetMouseButtonCallback(window, Input::mouse_button_callback);
     glfwSetCursorPosCallback(window, Input::cursor_callback);
     glfwSetCharCallback(window, Input::char_callback);
     glfwSetScrollCallback(window, Input::scroll_callback);
 
-    glfwSetCursorPos(window, 0, 0);
 
     Input::setWindowInstance(window);
-
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 bool Window::isOpen() {
@@ -84,13 +84,12 @@ void Window::begin() {
     glClearColor(0.0f ,0.0f , 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    Input::update();
+    glfwPollEvents();
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-
-    Input::update();
-    glfwPollEvents();
 }
 
 void Window::end() {
@@ -127,4 +126,8 @@ float Window::getAspectRatio() {
 
 void Window::setMouseGrabbed(bool grabbed) {
     glfwSetInputMode(window, GLFW_CURSOR, grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+}
+
+bool Window::getMouseGrabbed() {
+    return glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
 }

@@ -20,12 +20,20 @@ void Component::update(float delta) {
 
 }
 
-ModelComponent::ModelComponent(const Mesh &mesh, const Material &material): mesh(mesh), material(material) {
+ModelComponent::ModelComponent(Mesh &mesh, Material &material): mesh(mesh), material(material) {
 
 }
 
 void ModelComponent::render() {
     Renderer::render(mesh, material, this->getParent()->transform);
+}
+
+Mesh& ModelComponent::getMesh() {
+    return mesh;
+}
+
+Material& ModelComponent::getMaterial() {
+    return material;
 }
 
 GameObject::~GameObject() {

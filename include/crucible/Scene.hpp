@@ -24,7 +24,7 @@ public:
 
     GameObject &createObject(const Transform &transform, const std::string &name);
 
-    GameObject &createMeshObject(const Mesh &mesh, const Material &material, const Transform &transform,
+    GameObject &createMeshObject(Mesh &mesh, Material &material, const Transform &transform,
                                         const std::string &name);
 
     void render();
@@ -36,4 +36,8 @@ public:
     btDiscreteDynamicsWorld *getBulletWorld();
 
     bool isPhysicsEnabled() const;
+
+    int numObjects();
+
+    GameObject &getObject(int index);
 };

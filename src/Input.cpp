@@ -68,7 +68,6 @@ namespace Input {
     }
 
     void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-        //Client::scrollBlocks((int)yoffset);
         scroll = yoffset;
 
         if (cursor)

@@ -14,9 +14,6 @@ void Framebuffer::setup(int width, int height) {
 	unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 	glDrawBuffers(4, attachments);
 
-    // finally check if framebuffer is complete
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete!!!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
