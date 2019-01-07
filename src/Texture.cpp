@@ -7,10 +7,10 @@
 #include <stb_image.h>
 #include <glad/glad.h>
 
-void Texture::load(const std::string &file, bool pixelated) {
+void Texture::load(const Path &file, bool pixelated) {
     stbi_set_flip_vertically_on_load(false);
     int width, height, components;
-    unsigned char* image = stbi_load(file.c_str(), &width, &height, &components, STBI_rgb_alpha);
+    unsigned char* image = stbi_load(file.toString().c_str(), &width, &height, &components, STBI_rgb_alpha);
 
     glGenTextures(1, &id);
 
@@ -74,8 +74,8 @@ void Texture::destroy() {
 	id = 0;
 }
 
-void Cubemap::load(const std::string &file1, const std::string &file2, const std::string &file3,
-				   const std::string &file4, const std::string &file5, const std::string &file6) {
+void Cubemap::load(const Path &file1, const Path &file2, const Path &file3,
+				   const Path &file4, const Path &file5, const Path &file6) {
     stbi_set_flip_vertically_on_load(false);
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, id);
@@ -85,7 +85,7 @@ void Cubemap::load(const std::string &file1, const std::string &file2, const std
 
     //stbi_set_flip_vertically_on_load(false);
 
-    const char *files[] = {file1.c_str(), file2.c_str(), file3.c_str(), file4.c_str(), file5.c_str(), file6.c_str()};
+    const char *files[] = {file1.toString().c_str(), file2.toString().c_str(), file3.toString().c_str(), file4.toString().c_str(), file5.toString().c_str(), file6.toString().c_str()};
 
     //iterate over all 6 textures and send their raw data to the cubemap
     for (int i = 0; i < 6; i++) {
@@ -106,7 +106,7 @@ void Cubemap::load(const std::string &file1, const std::string &file2, const std
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 }
 
-void Cubemap::loadEquirectangular(const std::string &file, int resolution) {
+void Cubemap::loadEquirectangular(const Path &file, int resolution) {
 	unsigned int hdrTexture;
 	unsigned int envCubemap;
 
@@ -124,7 +124,7 @@ void Cubemap::loadEquirectangular(const std::string &file, int resolution) {
 
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrComponents;
-	float *data = stbi_loadf(file.c_str(), &width, &height, &nrComponents, 0);
+	float *data = stbi_loadf(file.toString().c_str(), &width, &height, &nrComponents, 0);
 	if (data)
 	{
 		glGenTextures(1, &hdrTexture);

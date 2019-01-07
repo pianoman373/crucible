@@ -25,12 +25,12 @@ Shader::Shader() {
 
 }
 
-void Shader::loadFile(const std::string &vertexPath, const std::string &fragmentPath) {
+void Shader::loadFile(const Path &vertexPath, const Path &fragmentPath) {
     // 1. Retrieve the vertex/fragment source code from filePath
 
     std::cout << "loading shaders: " << vertexPath << " and " << fragmentPath << std::endl;
 
-    std::string directory = vertexPath.substr(0, vertexPath.find_last_of("/\\"));
+    Path directory = vertexPath.getParent();
 
     std::ifstream vertexStream(vertexPath);
     std::ifstream fragmentStream(fragmentPath);

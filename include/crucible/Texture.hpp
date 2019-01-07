@@ -2,6 +2,7 @@
 
 #include <crucible/Math.hpp>
 #include <string>
+#include <crucible/Path.hpp>
 
 class Texture {
 private:
@@ -9,7 +10,7 @@ private:
 
 	std::string filepath;
 public:
-    void load(const std::string &file, bool pixelated=false);
+    void load(const Path &file, bool pixelated=false);
 
     void loadFromSingleColor(const vec4 &color);
 
@@ -29,10 +30,10 @@ private:
     unsigned int id;
 
 public:
-    void load(const std::string &file1, const std::string &file2, const std::string &file3, const std::string &file4,
-			  const std::string &file5, const std::string &file6);
+    void load(const Path &file1, const Path &file2, const Path &file3, const Path &file4,
+			  const Path &file5, const Path &file6);
 
-	void loadEquirectangular(const std::string &file, int resolution = 512);
+	void loadEquirectangular(const Path &file, int resolution = 512);
 
     void bind(unsigned int unit = 0) const;
 

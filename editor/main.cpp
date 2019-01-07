@@ -53,8 +53,7 @@ static void ShowExampleAppDockSpace(bool* p_open)
                 char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);
 
                 if (file != NULL) {
-                    std::string filename = file;
-                    Path::format(filename);
+                    Path filename = file;
 
                     json j;
                     std::ifstream o(filename);
@@ -62,7 +61,7 @@ static void ShowExampleAppDockSpace(bool* p_open)
 
                     Model *m = new Model();
 
-                    m->fromJson(j, Path::getWorkingDirectory(filename));
+                    m->fromJson(j, filename.getParent());
                 }
             }
             if (ImGui::MenuItem("Open Project")) {
@@ -159,8 +158,6 @@ static void ShowExampleAppDockSpace(bool* p_open)
                 char const *file = tinyfd_saveFileDialog("Open model file", "", 1, filterPatterns, "3d model file");
 
                 if (file != NULL) {
-                    std::string path = file;
-                    Path::format(path);
 
                     //json j = context.model.toJson(Path::getWorkingDirectory(path));
 
@@ -245,7 +242,6 @@ int main() {
     ScenePanel scene(context);
     PropertiesPanel properties(context);
     ProjectPanel project(context);
-
 
 
     while (Window::isOpen()) {

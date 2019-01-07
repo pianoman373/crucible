@@ -1,7 +1,6 @@
 #include <crucible/Model.hpp>
 #include <crucible/Renderer.hpp>
 #include <crucible/Resources.hpp>
-#include <crucible/Path.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -21,13 +20,12 @@ void Model::addSubmesh(const Mesh &mesh, const Material &material, const std::st
     nodes.push_back(node);
 }
 
-void Model::importFile(std::string filename, bool loadTextures) {
+void Model::importFile(const Path &filename, bool loadTextures) {
     clear();
 
     Assimp::Importer importer;
 
-    std::replace(filename.begin(), filename.end(), '\\', '/');
-    std::string workingDirectory = filename.substr(0, filename.find_last_of("/")) + "/";
+    Path workingDirectory = filename.getParent();
     const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices);
 
 
@@ -48,8 +46,7 @@ void Model::importFile(std::string filename, bool loadTextures) {
             aiString albedoFile;
             Texture albedo;
             aMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &albedoFile);
-            std::string albedoPath = workingDirectory + std::string(albedoFile.C_Str());
-            std::replace(albedoPath.begin(), albedoPath.end(), '\\', '/');
+            std::string albedoPath = workingDirectory.appendPath(albedoFile.C_Str());
             albedo = Resources::getTexture(albedoPath);
 
             material.setUniformBool("albedoTextured", true);
@@ -60,8 +57,7 @@ void Model::importFile(std::string filename, bool loadTextures) {
             aiString normalFile;
             Texture normal;
             aMaterial->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
-            std::string normalPath = workingDirectory + std::string(normalFile.C_Str());
-            std::replace(normalPath.begin(), normalPath.end(), '\\', '/');
+            std::string normalPath = workingDirectory.appendPath(normalFile.C_Str());
             normal.load(normalPath.c_str());
 
             material.setUniformBool("normalTextured", true);
@@ -72,8 +68,7 @@ void Model::importFile(std::string filename, bool loadTextures) {
             aiString metallicFile;
             Texture metallic;
             aMaterial->GetTexture(aiTextureType_SPECULAR, 0, &metallicFile);
-            std::string metallicPath = workingDirectory + std::string(metallicFile.C_Str());
-            std::replace(metallicPath.begin(), metallicPath.end(), '\\', '/');
+            std::string metallicPath = workingDirectory.appendPath(metallicFile.C_Str());
             metallic = Resources::getTexture(metallicPath);
 
             material.setUniformBool("metallicTextured", true);
@@ -84,8 +79,7 @@ void Model::importFile(std::string filename, bool loadTextures) {
             aiString roughnessFile;
             Texture roughness;
             aMaterial->GetTexture(aiTextureType_SHININESS, 0, &roughnessFile);
-            std::string roughnessPath = workingDirectory + std::string(roughnessFile.C_Str());
-            std::replace(roughnessPath.begin(), roughnessPath.end(), '\\', '/');
+            std::string roughnessPath = workingDirectory.appendPath(roughnessFile.C_Str());
             roughness = Resources::getTexture(roughnessPath);
 
             material.setUniformBool("roughnessTextured", true);
@@ -198,9 +192,8 @@ void Model::importFile(std::string filename, bool loadTextures) {
     }
 }
 
-void Model::openFile(std::string filename) {
-    Path::format(filename);
-    std::string workingDirectory  = Path::getWorkingDirectory(filename);
+void Model::openFile(const Path &filename) {
+    Path workingDirectory = filename.getParent();
 
     json j;
     std::ifstream o(filename);
@@ -210,7 +203,7 @@ void Model::openFile(std::string filename) {
     fromJson(j, workingDirectory);
 }
 
-void Model::fromJson(const json &j, const std::string &workingDirectory) {
+void Model::fromJson(const json &j, const Path &workingDirectory) {
 
     json jMaterials = j["materials"];
 
@@ -244,7 +237,7 @@ void Model::fromJson(const json &j, const std::string &workingDirectory) {
     }
 }
 
-json Model::toJson(const std::string &workingDirectory) const {
+json Model::toJson(const Path &workingDirectory) const {
    json j;
 
     for (int i = 0; i < nodes.size(); i++) {

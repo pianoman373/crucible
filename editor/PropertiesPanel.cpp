@@ -45,9 +45,7 @@ void PropertiesPanel::ImGuiMaterialEditTexture(std::string label, std::string id
         char const *file = tinyfd_openFileDialog("Open Texture", "", 0, NULL, "Texture file", 0);
 
         if (file != NULL) {
-            std::string sfile = std::string(file);
-            Path::format(sfile);
-            value.load(sfile.c_str());
+            value.load(Path(file));
         }
 
         mat.setUniformTexture(id, value, unit);

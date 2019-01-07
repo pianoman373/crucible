@@ -6,6 +6,7 @@
 #include <crucible/Math.hpp>
 #include <crucible/Shader.hpp>
 #include <crucible/Texture.hpp>
+#include <crucible/Path.hpp>
 
 #include <json.hpp>
 using nlohmann::json;
@@ -39,16 +40,16 @@ public:
     /**
      * Json serialization. Working directory is needed in order to output correct texture paths.
      */
-    void fromJson(const json &j, const std::string &workingDirectory);
+    void fromJson(const json &j, const Path &workingDirectory);
 
 	/**
      * Json serialization. Working directory is needed in order to output correct texture paths.
      */
-    json toJson(const std::string &workingDirectory) const;
+    json toJson(const Path &workingDirectory) const;
 
-    void loadFile(std::string file);
+    void loadFile(const Path &file);
 
-    void saveFile(const std::string &file) const;
+    void saveFile(const Path &file) const;
 
 	void setDefaultPBRUniforms();
 

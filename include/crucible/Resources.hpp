@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
 #include <crucible/Texture.hpp>
+#include <crucible/Path.hpp>
 
 namespace Resources {
-    const Texture &getTexture(const std::string &path);
+    const Texture &getTexture(const Path &path);
 }

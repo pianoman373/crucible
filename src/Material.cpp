@@ -1,7 +1,6 @@
 #include <crucible/Material.hpp>
 #include <crucible/Renderer.hpp>
 #include <crucible/Resources.hpp>
-#include <crucible/Path.hpp>
 
 #include <fstream>
 
@@ -34,7 +33,7 @@ void Material::setDefaultPBRUniforms() {
     setUniformBool("roughnessMetallicAlpha", false);
 }
 
-void Material::fromJson(const json &j, const std::string &workingDirectory) {
+void Material::fromJson(const json &j, const Path &workingDirectory) {
     setDefaultPBRUniforms();
     json uniforms = j["uniforms"];
 
@@ -55,7 +54,8 @@ void Material::fromJson(const json &j, const std::string &workingDirectory) {
         if (value.is_string()) {
             if (!value.get<std::string>().empty()) {
 
-                setUniformTexture(key, Resources::getTexture(Path::getFullPath(workingDirectory, value.get<std::string>())), textures);
+                setUniformTexture(key, Resources::getTexture(workingDirectory.appendPath(value.get<std::string>())), textures);
+
                 textures++;
             }
         }
@@ -70,7 +70,7 @@ void Material::fromJson(const json &j, const std::string &workingDirectory) {
     }
 }
 
-json Material::toJson(const std::string &workingDirectory) const {
+json Material::toJson(const Path &workingDirectory) const {
     json ret;
     json uniforms;
 
@@ -105,7 +105,8 @@ json Material::toJson(const std::string &workingDirectory) const {
 //        uniform.tex.bind(uniform.unit);
 //        shader.uniformInt(it.first, uniform.unit);
 
-        uniforms[it->first] = Path::getRelativePath(workingDirectory, it->second.tex.getFilepath());
+        uniforms[it->first] = Path(it->second.tex.getFilepath()).relativeTo(workingDirectory);
+
 
 //        std::cout << "working directory: " << workingDirectory << std::endl;
 //        std::cout << "raw path: " << it->second.tex.getFilepath() << std::endl;
@@ -118,9 +119,9 @@ json Material::toJson(const std::string &workingDirectory) const {
     return ret;
 }
 
-void Material::loadFile(std::string file) {
-    Path::format(file);
-    std::string wd = Path::getWorkingDirectory(file);
+void Material::loadFile(const Path &file) {
+
+    Path wd = file.getParent();
 
     json j;
     std::ifstream o(file);
@@ -129,9 +130,9 @@ void Material::loadFile(std::string file) {
     fromJson(j, wd);
 }
 
-void Material::saveFile(const std::string &file) const {
+void Material::saveFile(const Path &file) const {
     std::ofstream o(file);
-    o << std::setw(4) << toJson(Path::getWorkingDirectory(file)) << std::endl;
+    o << std::setw(4) << toJson(file.getParent()) << std::endl;
 }
 
 //<-----===== non normal =====----->//

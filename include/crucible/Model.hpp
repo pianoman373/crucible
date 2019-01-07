@@ -2,6 +2,7 @@
 
 #include <crucible/Mesh.hpp>
 #include <crucible/Material.hpp>
+#include <crucible/Path.hpp>
 
 #include <vector>
 #include <string>
@@ -19,13 +20,13 @@ public:
 
     void addSubmesh(const Mesh &mesh, const Material &material, const std::string &names="Untitled Submesh");
 
-    void importFile(std::string filename, bool loadTextures=true);
+    void importFile(const Path &filename, bool loadTextures=true);
 
-    void openFile(std::string filename);
+    void openFile(const Path &filename);
 
-    void fromJson(const json &j, const std::string &workingDirectory);
+    void fromJson(const json &j, const Path &workingDirectory);
 
-    json toJson(const std::string &workingDirectory) const;
+    json toJson(const Path &workingDirectory) const;
 
     void clear();
 };

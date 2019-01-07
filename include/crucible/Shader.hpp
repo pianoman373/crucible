@@ -2,6 +2,7 @@
 
 #include <string>
 #include <crucible/Math.hpp>
+#include <crucible/Path.hpp>
 
 class Shader
 {
@@ -15,7 +16,7 @@ public:
     // Constructor reads and builds the shader
     Shader();
 
-    void loadFile(const std::string &vertexPath, const std::string &fragmentPath);
+    void loadFile(const Path &vertexPath, const Path &fragmentPath);
 
     void load(std::string vertex, std::string fragment);
 
