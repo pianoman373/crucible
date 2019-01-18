@@ -3,6 +3,7 @@
 #include <crucible/Model.hpp>
 #include <crucible/Math.hpp>
 #include <crucible/Scene.hpp>
+#include <crucible/Path.hpp>
 
 #include <vector>
 #include <string>
@@ -11,12 +12,12 @@ class EditorContext {
 public:
     Scene scene;
 
-    int selectedObject = -1;
+    GameObject *selectedObject = nullptr;
 
     std::vector<Material*> materialCache;
     std::vector<Mesh*> meshCache;
 
-    std::string projectPath = "./";
+    Path projectPath = Path(false);
 
     void saveToConfig();
 

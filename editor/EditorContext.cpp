@@ -6,7 +6,7 @@
 void EditorContext::saveToConfig() {
     json j;
 
-    j["projectPath"] = projectPath;
+    j["projectPath"] = projectPath.toString();
 
     std::ofstream o("editorConfig.json");
 
@@ -22,7 +22,8 @@ void EditorContext::loadFromConfig() {
     if(!o.fail()){
         o >> j;
 
-        projectPath = j["projectPath"];
+        std::string p = j["projectPath"];
+        projectPath = Path(p);
     }
 
     o.close();

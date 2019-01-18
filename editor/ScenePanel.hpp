@@ -9,7 +9,9 @@ class ScenePanel {
 private:
     EditorContext &context;
 
-    void renderGrid();
+    int selection = -1;
+
+    void renderNode(GameObject &obj, int &i);
 
 public:
 

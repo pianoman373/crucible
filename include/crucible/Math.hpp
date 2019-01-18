@@ -812,6 +812,62 @@ struct quaternion {
         y = axis.y * sin(halfAngle);
         z = axis.z * sin(halfAngle);
     }
+
+    inline void setEuler(float yawZ, float pitchY, float rollX) {
+        float halfYaw = radians(yawZ) * 0.5f;
+        float halfPitch = radians(pitchY) * 0.5f;
+        float halfRoll = radians(rollX) * 0.5f;
+        float cosYaw = cos(halfYaw);
+        float sinYaw = sin(halfYaw);
+        float cosPitch = cos(halfPitch);
+        float sinPitch = sin(halfPitch);
+        float cosRoll = cos(halfRoll);
+        float sinRoll = sin(halfRoll);
+        x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;  //x
+        y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;   //y
+        z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;   //z
+        w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw ;  //formerly yzx
+    }
+
+    inline vec3 toEuler() {
+        float squ;
+        float sqx;
+        float sqy;
+        float sqz;
+        float sarg;
+        sqx = x * x;
+        sqy = y * y;
+        sqz = z * z;
+        squ = w * w;
+        sarg = -2.0f * (x * z - w * y);
+
+        float pitchY, rollX, yawZ;
+
+        // If the pitch angle is PI/2 or -PI/2, we can only compute
+        // the sum roll + yaw.  However, any combination that gives
+        // the right sum will produce the correct orientation, so we
+        // set rollX = 0 and compute yawZ.
+        if (sarg <= -0.99999f)
+        {
+            pitchY = -0.5f * 3.1415926535897932384626433832795029f;
+            rollX = 0.0f;
+            yawZ = 2.0f * atan2(x, -y);
+        }
+        else if (sarg >= 0.99999f)
+        {
+            pitchY = 0.5f * 3.1415926535897932384626433832795029f;
+            rollX = 0.0f;
+            yawZ = 2.0f * atan2(-x, y);
+        }
+        else
+        {
+            pitchY = asin(sarg);
+            rollX = atan2(2 * (y * z + w * x), squ - sqx - sqy + sqz);
+            yawZ = atan2(2 * (x * y + w * z), squ + sqx - sqy - sqz);
+        }
+
+        return vec3(degrees(rollX), degrees(pitchY), degrees(yawZ));
+    }
 };
 
 inline mat4 toMatrix(const quaternion &q)
@@ -910,3 +966,15 @@ struct Transform {
     quaternion rotation;
     vec3 scale;
 };
+
+inline Transform operator*(const Transform &lhs, const Transform &rhs) {
+    Transform t;
+
+    t.position = vec3(lhs.position.x + rhs.position.x*lhs.scale.x, lhs.position.y + rhs.position.y*lhs.scale.y, lhs.position.z + rhs.position.z*lhs.scale.z);
+    t.position = lhs.rotation * t.position;
+    //t.scale = vec3(lhs.scale.x*rhs.scale.x, lhs.scale.y*rhs.scale.y, lhs.scale.z*rhs.scale.z);
+
+    t.rotation = rhs.rotation * lhs.rotation;
+
+    return t;
+}

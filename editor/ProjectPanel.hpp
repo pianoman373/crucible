@@ -4,14 +4,16 @@
 #include <string>
 #include <stack>
 
+#include <crucible/Path.hpp>
+
 class ProjectPanel {
 private:
     EditorContext &context;
 
-    std::string path = "";
+    Path path = Path(false);
     int selectedItem = -1;
 
-    std::stack<std::string> previousDirs;
+    std::stack<Path> previousDirs;
 
 public:
 

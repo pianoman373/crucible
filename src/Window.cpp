@@ -8,6 +8,14 @@
 #include <examples/imgui_impl_glfw.h>
 #include <examples/imgui_impl_opengl3.h>
 
+//Enable the dedicated GPU on Nvidia Optimus systems
+#ifdef _WIN32
+#include <windows.h>
+extern "C" {
+__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+#endif
+
 GLFWwindow *Window::window;
 
 void Window::create(const vec2i &resolution, const std::string &title, bool fullscreen, bool vsync) {

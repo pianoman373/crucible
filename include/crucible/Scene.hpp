@@ -24,8 +24,7 @@ public:
 
     GameObject &createObject(const Transform &transform, const std::string &name);
 
-    GameObject &createMeshObject(Mesh &mesh, Material &material, const Transform &transform,
-                                        const std::string &name);
+    GameObject &createMeshObject(Mesh &mesh, Material &material, const Transform &transform, const std::string &name);
 
     void render();
 

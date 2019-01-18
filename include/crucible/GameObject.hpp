@@ -41,21 +41,30 @@ class GameObject {
 private:
     std::vector<Component*> components;
     std::string name;
-    Scene &scene;
     RigidBody *rb;
+
+    GameObject *parent = nullptr;
+    std::vector<GameObject*> children;
 
 public:
     Transform transform;
+    Transform worldTransform;
 
     ~GameObject();
 
-    GameObject(Scene &scene, const Transform &transform, const std::string &name);
+    GameObject(const Transform &transform, const std::string &name);
+
+    GameObject &createChild(const Transform &transform, const std::string &name);
+
+    int getNumChildren();
+
+    GameObject &getChild(int index);
 
     void render();
 
     void update(float delta);
 
-    RigidBody *addRigidBody(float mass);
+    RigidBody *addRigidBody(float mass, Scene &scene);
 
     RigidBody *getRigidBody();
 

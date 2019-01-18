@@ -65,12 +65,11 @@ static void ShowExampleAppDockSpace(bool* p_open)
                 }
             }
             if (ImGui::MenuItem("Open Project")) {
-                char const *folder = tinyfd_selectFolderDialog("Open Project Folder", context.projectPath.c_str());
+                char const *folder = tinyfd_selectFolderDialog("Open Project Folder", context.projectPath.toString().c_str());
 
                 std::cout << folder << std::endl;
 
-                context.projectPath = folder;
-                context.projectPath += "/";
+                context.projectPath = Path(std::string(folder) + "/");
             }
             if (ImGui::MenuItem("Import", "Ctrl+I")) {
                 char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);

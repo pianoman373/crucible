@@ -43,14 +43,13 @@ Scene::~Scene() {
 }
 
 GameObject &Scene::createObject(const Transform &transform, const std::string &name) {
-    GameObject *obj = new GameObject(*this, transform, name);
+    GameObject *obj = new GameObject(transform, name);
     objects.push_back(obj);
 
     return *obj;
 }
 
-GameObject &Scene::createMeshObject(Mesh &mesh, Material &material, const Transform &transform,
-                                           const std::string &name) {
+GameObject &Scene::createMeshObject(Mesh &mesh, Material &material, const Transform &transform, const std::string &name) {
     GameObject &obj = createObject(transform, name);
     obj.addComponent(new ModelComponent(mesh, material));
 

@@ -25,7 +25,7 @@ ModelComponent::ModelComponent(Mesh &mesh, Material &material): mesh(mesh), mate
 }
 
 void ModelComponent::render() {
-    Renderer::render(mesh, material, this->getParent()->transform);
+    Renderer::render(mesh, material, this->getParent()->worldTransform);
 }
 
 Mesh& ModelComponent::getMesh() {
@@ -47,15 +47,30 @@ GameObject::~GameObject() {
     }
 }
 
-GameObject::GameObject(Scene &scene, const Transform &transform, const std::string &name): scene(scene) {
+GameObject::GameObject(const Transform &transform, const std::string &name) {
     this->transform = transform;
     this->name = name;
     this->rb = nullptr;
 
 }
 
-RigidBody *GameObject::addRigidBody(float mass) {
-    this->rb = new RigidBody(this->scene, this->transform, mass);
+GameObject& GameObject::createChild(const Transform &transform, const std::string &name) {
+    GameObject *child = new GameObject(transform, name);
+    child->parent = this;
+
+    children.push_back(child);
+}
+
+int GameObject::getNumChildren() {
+    return children.size();
+}
+
+GameObject& GameObject::getChild(int index) {
+    return *children[index];
+}
+
+RigidBody *GameObject::addRigidBody(float mass, Scene &scene) {
+    this->rb = new RigidBody(scene, this->transform, mass);
 
     return this->rb;
 }
@@ -78,8 +93,20 @@ Component *GameObject::getComponent(int index) {
 }
 
 void GameObject::render() {
+    if (parent == nullptr) {
+        worldTransform = transform;
+    }
+    else {
+        worldTransform = parent->worldTransform * transform;
+    }
+
+
     for (int i = 0; i < components.size(); i++) {
         components[i]->render();
+    }
+
+    for (int i = 0; i < children.size(); i++) {
+        children[i]->render();
     }
 }
 
@@ -92,6 +119,9 @@ void GameObject::update(float delta) {
 
     for (int i = 0; i < components.size(); i++) {
         components[i]->update(delta);
+    }
+    for (int i = 0; i < children.size(); i++) {
+        children[i]->update(delta);
     }
 }
 

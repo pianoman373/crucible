@@ -23,7 +23,7 @@ void ProjectPanel::renderContents() {
         }
 
         ImGui::SameLine();
-        ImGui::Text((context.projectPath + path).c_str());
+        ImGui::Text(context.projectPath.appendPath(path).toString().c_str());
 
         ImGui::Separator();
 
@@ -32,7 +32,7 @@ void ProjectPanel::renderContents() {
 
         tinydir_dir dir;
         int i;
-        tinydir_open_sorted(&dir, (context.projectPath + path).c_str());
+        tinydir_open_sorted(&dir, (context.projectPath.appendPath(path)).toString().c_str());
 
         for (i = 0; i < dir.n_files; i++) {
             tinydir_file file;
@@ -47,8 +47,7 @@ void ProjectPanel::renderContents() {
                     selectedItem = i;
 
                     if (ImGui::IsMouseDoubleClicked(0)) {
-                        previousDirs.push(path);
-                        path += file.name + std::string("/");
+                        path.appendFolder(file.name);
                     }
                 }
             }

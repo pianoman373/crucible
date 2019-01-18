@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <crucible/Path.hpp>
 #include <tinyfiledialogs.h>
+#include <btBulletDynamicsCommon.h>
 
 bool PropertiesPanel::ImGuiMaterialEditBool(std::string label, std::string id, Material &mat) {
     bool &val = mat.getUniformBool(id);
@@ -114,22 +115,35 @@ PropertiesPanel::PropertiesPanel(EditorContext &context): context(context) {
 void PropertiesPanel::renderContents() {
     if (ImGui::Begin("Properties"))
     {
-        if (context.selectedObject >= 0) {
-            GameObject &obj = context.scene.getObject(context.selectedObject);
+        if (context.selectedObject != nullptr) {
+            GameObject *obj = context.selectedObject;
+
 
             char newText[256];
-            strncpy(newText, obj.getName().c_str(), sizeof(newText));
+            strncpy(newText, obj->getName().c_str(), sizeof(newText));
             ImGui::InputText("Material Name", newText, 256);
-            obj.setName(newText);
+            obj->setName(newText);
 
-            ImGui::DragFloat3("Position", &obj.transform.position.x, 0.1f);
-            ImGui::DragFloat3("Scale", &obj.transform.scale.x, 0.1f);
+            ImGui::DragFloat3("Position", &obj->transform.position.x, 0.1f);
+            ImGui::DragFloat3("Scale", &obj->transform.scale.x, 0.1f);
+
+            static vec3 euler;
+            static GameObject *lastObj = obj;
+
+            if (lastObj != obj) {
+                euler = obj->transform.rotation.toEuler();
+                lastObj = obj;
+            }
+
+            ImGui::DragFloat3("Rotation", &euler.x, 0.1f);
+
+            obj->transform.rotation = quaternion(vec3(0.0f, 0.0f, 1.0f), radians(euler.z)) * quaternion(vec3(0.0f, 1.0f, 0.0f), radians(euler.y)) * quaternion(vec3(1.0f, 0.0f, 0.0f), radians(euler.x));
 
             ImGui::Separator();
 
             if (ImGui::CollapsingHeader("Material"))
             {
-                renderMaterial(obj.getComponent<ModelComponent>()->getMaterial());
+                renderMaterial(obj->getComponent<ModelComponent>()->getMaterial());
             }
         }
 
