@@ -21,6 +21,11 @@ option(BUILD_OPENGL3_DEMOS OFF)
 option(BUILD_UNIT_TESTS OFF)
 add_subdirectory(lib/bullet)
 
+include_directories(lib/embed-resource)
+add_subdirectory(lib/embed-resource)
+
+embed_resources(MyResources src/shaders/test.glsl)
+
 include_directories(
                     include/
                     lib/GLFW/include/
@@ -44,13 +49,13 @@ file(GLOB PROJECT_HEADERS include/crucible/*.h
 						  include/crucible/*.hpp
 						  )
 
-add_compile_definitions(GLFW_INCLUDE_NONE
-                ASSIMP_BUILD_BOOST_WORKAROUND
-                PROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"
-				GLFW_STATIC
-				SFML_STATIC
-                IMGUI_IMPL_OPENGL_LOADER_GLAD)
-add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+add_definitions(-DGLFW_INCLUDE_NONE
+        -DASSIMP_BUILD_BOOST_WORKAROUND
+        -DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"
+        -DGLFW_STATIC
+        -DSFML_STATIC
+        -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
+add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${MyResources})
 
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp BulletDynamics BulletCollision LinearMath)

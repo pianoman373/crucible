@@ -336,7 +336,8 @@ Path Path::getProgramWorkingDirectory() {
         if (getcwd(cwd, sizeof(cwd)) != NULL)
             return Path(cwd);
 
-        return 0;
+        Path p("/");
+        return p;
 #endif
 }
 
