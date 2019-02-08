@@ -24,7 +24,9 @@ add_subdirectory(lib/bullet)
 include_directories(lib/embed-resource)
 add_subdirectory(lib/embed-resource)
 
-embed_resources(MyResources src/shaders/test.glsl)
+file(GLOB PROJECT_SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/shaders/*)
+
+embed_resources(MyResources ${PROJECT_SHADERS})
 
 include_directories(
                     include/

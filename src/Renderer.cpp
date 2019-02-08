@@ -9,12 +9,13 @@
 #include <crucible/Primitives.hpp>
 #include <crucible/Math.hpp>
 #include <crucible/Model.hpp>
-#include <crucible/InternalShaders.hpp>
 #include <crucible/Util.hpp>
 #include <crucible/Input.hpp>
 #include <crucible/IBL.hpp>
 #include <crucible/DebugRenderer.hpp>
 #include <crucible/Profiler.hpp>
+
+#include <Resource.h>
 
 #include <imgui.h>
 #include <stack>
@@ -175,21 +176,21 @@ void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int r
 		shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
 		shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
 		shadowBuffer3.attachShadow(shadow_resolution, shadow_resolution);
-		ShadowShader.load(InternalShaders::shadow_vsh, InternalShaders::shadow_fsh);
+		ShadowShader.load(LOAD_RESOURCE(src_shaders_shadow_vsh).data(), LOAD_RESOURCE(src_shaders_shadow_fsh).data());
 	}
 
-	standardShader.load(InternalShaders::standard_vsh, InternalShaders::standard_fsh);
-	eq2cubeShader.load(InternalShaders::cubemap_vsh, InternalShaders::eq2cube_fsh);
-	cubemapShader.load(InternalShaders::cubemap_vsh, InternalShaders::cubemap_fsh);
-	irradianceShader.load(InternalShaders::cubemap_vsh, InternalShaders::irradiance_fsh);
-	prefilterShader.load(InternalShaders::cubemap_vsh, InternalShaders::prefilter_fsh);
-	outlineShader.load(InternalShaders::outline_vsh, InternalShaders::outline_fsh);
-	passthroughShader.loadPostProcessing(InternalShaders::passthrough_glsl);
+	standardShader.load(LOAD_RESOURCE(src_shaders_standard_vsh).data(), LOAD_RESOURCE(src_shaders_standard_fsh).data());
+	eq2cubeShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_eq2cube_fsh).data());
+	cubemapShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_cubemap_fsh).data());
+	irradianceShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_irradiance_fsh).data());
+	prefilterShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_prefilter_fsh).data());
+	outlineShader.load(LOAD_RESOURCE(src_shaders_outline_vsh).data(), LOAD_RESOURCE(src_shaders_outline_fsh).data());
+	passthroughShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_passthrough_glsl).data());
 
 
-	brdfShader.loadPostProcessing(InternalShaders::brdf_glsl);
-	deferredShader.loadPostProcessing(InternalShaders::deferred_glsl);
-	deferredAmbientShader.loadPostProcessing(InternalShaders::deferred_ambient_glsl);
+	brdfShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_brdf_glsl).data());
+	deferredShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_glsl).data());
+	deferredAmbientShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_ambient_glsl).data());
 
 	skyboxShader = cubemapShader;
 
@@ -626,7 +627,7 @@ Cubemap Renderer::renderToProbe(const vec3 &position) {
 		Texture gRoughnessMetallic;
 
 		Camera cam;
-		cam.dimensions = {resolution, resolution};
+		cam.dimensions = {(float)resolution, (float)resolution};
 		cam.position = position;
 
 		cam.direction = forwards[i];

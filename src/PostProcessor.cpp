@@ -1,7 +1,8 @@
 #include <crucible/PostProcessor.hpp>
 #include <crucible/Renderer.hpp>
 #include <crucible/Window.hpp>
-#include <crucible/InternalShaders.hpp>
+
+#include <Resource.h>
 
 #include <glad/glad.h>
 
@@ -70,12 +71,16 @@ void PostProcessor::doBloom(const Texture &deferred) {
 
 
 void PostProcessor::init() {
-    tonemapShader.loadPostProcessing(InternalShaders::tonemap_glsl);
-    fxaaShader.loadPostProcessing(InternalShaders::fxaa_glsl);
-    gaussianBlurShader.loadPostProcessing(InternalShaders::gaussianBlur_glsl);
-    ssaoShader.loadPostProcessing(InternalShaders::ssao_glsl);
-    ssaoBlurShader.loadPostProcessing(InternalShaders::ssaoBlur_glsl);
-    ssrShader.loadPostProcessing(InternalShaders::SSR_glsl);
+    tonemapShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_tonemap_glsl).data());
+    fxaaShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_fxaa_glsl).data());
+    gaussianBlurShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_gaussianBlur_glsl).data());
+
+    //Resource text = LOAD_RESOURCE(src_shaders_ssao_glsl);
+    ssaoShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssao_glsl).data());
+
+
+    ssaoBlurShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssaoBlur_glsl).data());
+    ssrShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssr_glsl).data());
 
     //setup SSAO
     std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between 0.0 - 1.0

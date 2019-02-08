@@ -1,5 +1,6 @@
 #include <crucible/Shader.hpp>
-#include <crucible/InternalShaders.hpp>
+
+#include <Resource.h>
 
 #include <glad/glad.h>
 #include <fstream>
@@ -16,7 +17,7 @@ std::string str_replace( std::string const & in, std::string const & from, std::
 void loadLibraries(std::string &in) {
     //allow 5 levels of recursion
     for (int i = 0; i < 5; i++) {
-        in = str_replace(in, "#include <lighting>", InternalShaders::lighting_glsl);
+        in = str_replace(in, "#include <lighting>", LOAD_RESOURCE(src_shaders_lighting_glsl).data());
     }
 }
 
@@ -111,7 +112,7 @@ void Shader::load(std::string vertex, std::string fragment) {
     if(!success)
     {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl << vertex << std::endl;
     }
 
     unsigned int fragmentShader;
@@ -124,7 +125,7 @@ void Shader::load(std::string vertex, std::string fragment) {
     if(!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl << fragment << std::endl;
     }
 
     this->id = glCreateProgram();
@@ -156,7 +157,22 @@ void main()
     outColor = vec4(postProcess(fTexCoord), 1.0);
 }
 )";
-    load(InternalShaders::postProcessing_vsh, fullShader);
+    load(R"(
+#version 330 core
+layout (location = 0) in vec3 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 2) in vec2 vTexCoord;
+layout (location = 3) in vec3 vTangent;
+
+out vec2 fTexCoord;
+
+void main()
+{
+    fTexCoord = vTexCoord;
+    gl_Position = vec4(vPosition, 1.0);
+}
+)", fullShader);
+
 }
 
 std::string Shader::readShader(std::ifstream &file, std::string directory) {

@@ -1,11 +1,12 @@
 #include <crucible/DebugRenderer.hpp>
 #include <crucible/Renderer.hpp>
-#include <crucible/InternalShaders.hpp>
 
 #include <glad/glad.h>
 
+#include <Resource.h>
+
 void DebugRenderer::init() {
-    debugShader.load(InternalShaders::debug_vsh, InternalShaders::debug_fsh);
+    debugShader.load(LOAD_RESOURCE(src_shaders_debug_vsh).data(), LOAD_RESOURCE(src_shaders_debug_fsh).data());
 }
 
 void DebugRenderer::renderDebugLine(const vec3 &v1, const vec3 &v2, const vec3 &color) {

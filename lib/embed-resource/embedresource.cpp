@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <string>
 
 using namespace std;
 
@@ -41,6 +42,7 @@ int main(int argc, char** argv)
             lineCount = 0;
         }
     }
+    ofs << "0x00 ";
 
 
     ofs << "};" << endl;
