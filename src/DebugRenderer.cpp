@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-#include <Resource.h>
+#include <crucible/Resource.h>
 
 void DebugRenderer::init() {
     debugShader.load(LOAD_RESOURCE(src_shaders_debug_vsh).data(), LOAD_RESOURCE(src_shaders_debug_fsh).data());

@@ -1,6 +1,6 @@
 #include <crucible/Shader.hpp>
 
-#include <Resource.h>
+#include <crucible/Resource.h>
 
 #include <glad/glad.h>
 #include <fstream>

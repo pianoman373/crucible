@@ -2,7 +2,7 @@
 #include <crucible/Renderer.hpp>
 #include <crucible/Window.hpp>
 
-#include <Resource.h>
+#include <crucible/Resource.h>
 
 #include <glad/glad.h>
 

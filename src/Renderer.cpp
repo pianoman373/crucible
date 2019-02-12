@@ -15,7 +15,7 @@
 #include <crucible/DebugRenderer.hpp>
 #include <crucible/Profiler.hpp>
 
-#include <Resource.h>
+#include <crucible/Resource.h>
 
 #include <imgui.h>
 #include <stack>

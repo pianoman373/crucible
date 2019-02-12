@@ -1,6 +1,33 @@
 cmake_minimum_required(VERSION 3.0)
 
+function(embed_resources out_var)
+    set(result)
+    foreach(in_f ${ARGN})
+        file(RELATIVE_PATH src_f ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${in_f})
+        set(out_f "${PROJECT_BINARY_DIR}/${in_f}.c")
+        set(out_f_dir)
+        get_filename_component(out_f_dir ${out_f} DIRECTORY)
+
+        add_custom_command(OUTPUT ${out_f}
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${out_f_dir}
+                COMMAND embed-resource ${out_f} ${src_f}
+                DEPENDS ${in_f}
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                COMMENT "Building binary file for embedding ${out_f}"
+                VERBATIM)
+        list(APPEND result "${out_f}")
+    endforeach()
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+add_executable(embed-resource embedresource.cpp)
+
 project(crucible)
+
+find_package(Vulkan)
+message(STATUS "Vulkan FOUND = ${Vulkan_FOUND}")
+message(STATUS "Vulkan Include = ${Vulkan_INCLUDE_DIR}")
+message(STATUS "Vulkan Lib = ${Vulkan_LIBRARY}")
 
 option(CRUCIBLE_BUILD_EXAMPLES "Build the Crucible example programs" ON)
 
@@ -21,9 +48,6 @@ option(BUILD_OPENGL3_DEMOS OFF)
 option(BUILD_UNIT_TESTS OFF)
 add_subdirectory(lib/bullet)
 
-include_directories(lib/embed-resource)
-add_subdirectory(lib/embed-resource)
-
 file(GLOB PROJECT_SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/shaders/*)
 
 embed_resources(MyResources ${PROJECT_SHADERS})
@@ -35,6 +59,7 @@ include_directories(
                     lib/assimp/include/
                     lib/stb/
                     lib/imgui/
+                    ${Vulkan_INCLUDE_DIR}
                     )
 
 file(GLOB PROJECT_SOURCES src/*.cpp
@@ -60,9 +85,9 @@ add_definitions(-DGLFW_INCLUDE_NONE
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${MyResources})
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp BulletDynamics BulletCollision LinearMath)
+    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp BulletDynamics BulletCollision LinearMath ${Vulkan_LIBRARY})
 elseif(UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} GL assimp BulletDynamics BulletCollision LinearMath)
+    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} GL assimp BulletDynamics BulletCollision LinearMath ${Vulkan_LIBRARY})
 endif(WIN32)
 
 if(MSVC)
@@ -83,6 +108,10 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     add_executable(NBodyDemo examples/NBodyDemo.cpp)
     target_link_libraries(NBodyDemo crucible)
     set_target_properties(NBodyDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
+    add_executable(VulkanDemo examples/VulkanDemo.cpp)
+    target_link_libraries(VulkanDemo crucible)
+    set_target_properties(VulkanDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
     add_executable(terrainDemo examples/TerrainDemo.cpp examples/SimplexNoise.cpp examples/SimplexNoise.hpp)
     target_link_libraries(terrainDemo crucible)
