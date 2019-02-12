@@ -10,10 +10,10 @@ function(embed_resources out_var)
 
         add_custom_command(OUTPUT ${out_f}
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${out_f_dir}
-                COMMAND embed-resource ${out_f} ${src_f}
+                COMMAND embed-resource ${out_f} ${in_f}
                 DEPENDS ${in_f}
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                COMMENT "Building binary file for embedding ${out_f}"
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                COMMENT "Building binary file for embedding ${out_f} from ${in_f}"
                 VERBATIM)
         list(APPEND result "${out_f}")
     endforeach()
