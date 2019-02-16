@@ -2,9 +2,7 @@
 
 #include <crucible/Math.hpp>
 #include <crucible/Texture.hpp>
-#include <crucible/Camera.hpp>
 #include <crucible/Mesh.hpp>
-#include <crucible/Shader.hpp>
 #include <crucible/Font.hpp>
 
 struct Sprite {
