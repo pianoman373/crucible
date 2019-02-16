@@ -128,6 +128,13 @@ struct vector4 {
     T z;
     T w;
 
+    vector4(T v) {
+        this->x = v;
+        this->y = v;
+        this->z = v;
+        this->w = v;
+    }
+
     vector4(T x, T y, T z, T w) {
         this->x = x;
         this->y = y;

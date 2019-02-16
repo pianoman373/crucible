@@ -22,6 +22,10 @@ endfunction()
 
 add_executable(embed-resource embedresource.cpp)
 
+
+
+
+
 project(crucible)
 
 find_package(Vulkan)
@@ -80,7 +84,6 @@ add_definitions(-DGLFW_INCLUDE_NONE
         -DASSIMP_BUILD_BOOST_WORKAROUND
         -DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"
         -DGLFW_STATIC
-        -DSFML_STATIC
         -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${MyResources})
 

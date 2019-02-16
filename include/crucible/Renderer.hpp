@@ -50,6 +50,7 @@ public:
 
 	static Mesh cubemapMesh;
 	static Mesh framebufferMesh;
+	static Mesh spriteMesh;
 
 	static Shader standardShader;
 	static Shader eq2cubeShader;
@@ -59,6 +60,7 @@ public:
 	static Shader brdfShader;
 	static Shader outlineShader;
 	static Shader passthroughShader;
+	static Shader spriteShader;
 
 	static Cubemap environment;
 	static Cubemap irradiance;

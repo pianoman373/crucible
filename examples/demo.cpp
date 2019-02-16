@@ -6,6 +6,8 @@
 #include <crucible/RigidBody.hpp>
 #include <crucible/Bone.hpp>
 #include <crucible/Stopwatch.hpp>
+#include <crucible/GuiRenderer.hpp>
+#include <crucible/Font.hpp>
 #include <imgui.h>
 
 class CharacterController : public Component {
@@ -155,6 +157,9 @@ int main() {
     Material mirror;
     mirror.setPBRUniforms(vec3(1.0f), 0.0f, 1.0f);
 
+    Texture crate;
+    crate.load("resources/crate.png");
+
 	bool keyDown = false;
 
 	std::vector<vec3> lightPositions;
@@ -202,6 +207,9 @@ int main() {
     }
 
     Transform characterTransform = Transform(vec3(5.0f, 0.0f, 0.0f), quaternion(), vec3(0.3f));
+
+    Font font;
+    font.loadFromFile("resources/arial.ttf", 24.0f);
 
 
     while (Window::isOpen()) {

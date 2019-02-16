@@ -65,6 +65,7 @@ DebugRenderer Renderer::debug;
 
 Mesh Renderer::cubemapMesh;
 Mesh Renderer::framebufferMesh;
+Mesh Renderer::spriteMesh;
 
 Shader Renderer::standardShader;
 Shader Renderer::eq2cubeShader;
@@ -74,6 +75,7 @@ Shader Renderer::prefilterShader;
 Shader Renderer::brdfShader;
 Shader Renderer::outlineShader;
 Shader Renderer::passthroughShader;
+Shader Renderer::spriteShader;
 
 Cubemap Renderer::environment;
 Cubemap Renderer::irradiance;
@@ -186,17 +188,22 @@ void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int r
 	prefilterShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_prefilter_fsh).data());
 	outlineShader.load(LOAD_RESOURCE(src_shaders_outline_vsh).data(), LOAD_RESOURCE(src_shaders_outline_fsh).data());
 	passthroughShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_passthrough_glsl).data());
+    spriteShader.load(LOAD_RESOURCE(src_shaders_sprite_vsh).data(), LOAD_RESOURCE(src_shaders_sprite_fsh).data());
 
 
 	brdfShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_brdf_glsl).data());
 	deferredShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_glsl).data());
 	deferredAmbientShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_ambient_glsl).data());
 
+
+
+
 	skyboxShader = cubemapShader;
 
 	Primitives::skybox(skyboxMesh);
 	Primitives::framebuffer(framebufferMesh);
 	Primitives::skybox(cubemapMesh);
+    Primitives::sprite(spriteMesh);
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -511,6 +518,9 @@ const Texture &Renderer::flushToTexture(const Camera &cam) {
 
 // ------------------------------------------------------------------------
 const Texture &Renderer::flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+
 	Texture gPosition;
 	Texture gNormal;
 	Texture gAlbedo;
@@ -557,6 +567,11 @@ const Texture &Renderer::flushToTexture(const Camera &cam, const Frustum &f, boo
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
+
+    glDisable(GL_DEPTH_TEST);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	return HDRbuffer.getAttachment(0);
 }

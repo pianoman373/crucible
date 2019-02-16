@@ -12,6 +12,8 @@ private:
 public:
     void load(const Path &file, bool pixelated=false);
 
+    void load(const unsigned char *data, int width, int height, bool pixelated=false);
+
     void loadFromSingleColor(const vec4 &color);
 
     void bind(unsigned int unit = 0) const;
@@ -23,6 +25,8 @@ public:
 	std::string getFilepath() const;
 
 	void destroy();
+
+	static void bindNull(unsigned int unit = 0);
 };
 
 class Cubemap {

@@ -1,16 +1,16 @@
 #version 330 core
 
 uniform sampler2D sprite;
-uniform vec3 cameraPos;
 uniform vec4 uvOffsets;
+uniform vec4 color;
+uniform float textureStrength;
 
-in vec3 fTangent;
 in vec2 fTexCoord;
 
 out vec4 outColor;
 
 void main() {
-	outColor = texture(sprite, (fTexCoord * uvOffsets.zw) + uvOffsets.xy);
+	outColor = mix(vec4(1.0), texture(sprite, (fTexCoord * (uvOffsets.zw - uvOffsets.xy)) + uvOffsets.xy), textureStrength) * color;
 
     if (outColor.w < 0.01) {
         discard;

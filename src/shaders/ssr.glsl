@@ -131,7 +131,9 @@ vec3 postProcess(vec2 texCoord) {
     vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 
-    float ReflectionMultiplier = screenEdgefactor * frontFacingFactor;
+    float roughnessCutoffFactor = smoothstep(0.7, 1.0, 1-roughness);
+
+    float ReflectionMultiplier = screenEdgefactor * frontFacingFactor * roughnessCutoffFactor;
 
     if (coords.z - viewPos.z > 1.0) {
         ReflectionMultiplier = 0.0;
@@ -163,7 +165,7 @@ vec3 postProcess(vec2 texCoord) {
     //return texture(deferred, coords.xy).rgb;
 
 
-    if (length(texture(gPosition, texCoord).rgb) > 0.0 && roughness < 0.25) {
+    if (length(texture(gPosition, texCoord).rgb) > 0.0) {
         return texture(deferred, texCoord).rgb + (SSR*F);
     }
     else {

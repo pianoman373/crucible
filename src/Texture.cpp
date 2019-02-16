@@ -12,31 +12,37 @@ void Texture::load(const Path &file, bool pixelated) {
     int width, height, components;
     unsigned char* image = stbi_load(file.toString().c_str(), &width, &height, &components, STBI_rgb_alpha);
 
+    load(image, width, height, pixelated);
+
+    stbi_image_free(image);
+
+    filepath = file;
+}
+
+void Texture::load(const unsigned char *data, int width, int height, bool pixelated) {
+    stbi_set_flip_vertically_on_load(false);
+
     glGenTextures(1, &id);
 
     glBindTexture(GL_TEXTURE_2D, id);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	if (pixelated) {
-		glGenerateMipmap(GL_TEXTURE_2D);
+    if (pixelated) {
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 5);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-	}
-	else {
-		glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 5);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+    }
+    else {
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
-	}
-
-    stbi_image_free(image);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
+    }
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    filepath = file;
 }
 
 void Texture::loadFromSingleColor(const vec4 &color) {
@@ -72,6 +78,11 @@ void Texture::destroy() {
 	glDeleteTextures(1, &id);
 	filepath = "";
 	id = 0;
+}
+
+void Texture::bindNull(unsigned int unit) {
+    glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Cubemap::load(const Path &file1, const Path &file2, const Path &file3,
