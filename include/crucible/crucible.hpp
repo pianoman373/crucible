@@ -18,6 +18,5 @@
 #include <crucible/Texture.hpp>
 #include <crucible/Camera.hpp>
 #include <crucible/Util.hpp>
-#include <crucible/Profiler.hpp>
 #include <crucible/IBL.hpp>
 #include <crucible/Resources.hpp>

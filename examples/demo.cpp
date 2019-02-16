@@ -5,7 +5,6 @@
 #include <crucible/Scene.hpp>
 #include <crucible/RigidBody.hpp>
 #include <crucible/Bone.hpp>
-#include <crucible/Stopwatch.hpp>
 #include <crucible/GuiRenderer.hpp>
 #include <crucible/Font.hpp>
 #include <imgui.h>

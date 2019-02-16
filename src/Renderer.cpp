@@ -13,7 +13,6 @@
 #include <crucible/Input.hpp>
 #include <crucible/IBL.hpp>
 #include <crucible/DebugRenderer.hpp>
-#include <crucible/Profiler.hpp>
 
 #include <crucible/Resource.h>
 
