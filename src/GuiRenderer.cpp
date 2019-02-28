@@ -29,7 +29,7 @@ void GuiRenderer::renderSprite(vec2 position, vec2 size, vec4 uvs, vec4 color, c
 
 }
 
-void GuiRenderer::renderSprite(vec2 position, vec2 size, vec4 uvs, vec4 color) {
+void GuiRenderer::renderSprite(vec2 position, vec2 size, vec4 color) {
     Renderer::spriteShader.bind();
     vec2i res = Window::getWindowSize();
 
@@ -45,7 +45,6 @@ void GuiRenderer::renderSprite(vec2 position, vec2 size, vec4 uvs, vec4 color) {
     Renderer::spriteShader.uniformMat4("model", model);
     Renderer::spriteShader.uniformMat4("view", view);
     Renderer::spriteShader.uniformMat4("projection", projection);
-    Renderer::spriteShader.uniformVec4("uvOffsets", uvs);
     Renderer::spriteShader.uniformVec4("color", color);
     Renderer::spriteShader.uniformFloat("textureStrength", 0.0f);
     Texture::bindNull();

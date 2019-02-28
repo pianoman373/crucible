@@ -28,10 +28,10 @@ add_executable(embed-resource embedresource.cpp)
 
 project(crucible)
 
-find_package(Vulkan)
-message(STATUS "Vulkan FOUND = ${Vulkan_FOUND}")
-message(STATUS "Vulkan Include = ${Vulkan_INCLUDE_DIR}")
-message(STATUS "Vulkan Lib = ${Vulkan_LIBRARY}")
+#find_package(Vulkan)
+#message(STATUS "Vulkan FOUND = ${Vulkan_FOUND}")
+#message(STATUS "Vulkan Include = ${Vulkan_INCLUDE_DIR}")
+#message(STATUS "Vulkan Lib = ${Vulkan_LIBRARY}")
 
 option(CRUCIBLE_BUILD_EXAMPLES "Build the Crucible example programs" ON)
 
@@ -63,7 +63,7 @@ include_directories(
                     lib/assimp/include/
                     lib/stb/
                     lib/imgui/
-                    ${Vulkan_INCLUDE_DIR}
+#                    ${Vulkan_INCLUDE_DIR}
                     )
 
 file(GLOB PROJECT_SOURCES src/*.cpp
@@ -88,9 +88,9 @@ add_definitions(-DGLFW_INCLUDE_NONE
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${MyResources})
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp BulletDynamics BulletCollision LinearMath ${Vulkan_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp BulletDynamics BulletCollision LinearMath)
 elseif(UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} GL assimp BulletDynamics BulletCollision LinearMath ${Vulkan_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} GL assimp BulletDynamics BulletCollision LinearMath)
 endif(WIN32)
 
 if(MSVC)

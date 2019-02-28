@@ -445,7 +445,6 @@ inline vector4<T> vector4<T>::operator-()
 }
 
 
-
 //-------mat4 operations--------//
 
 template <typename T>
@@ -984,4 +983,17 @@ inline Transform operator*(const Transform &lhs, const Transform &rhs) {
     t.rotation = rhs.rotation * lhs.rotation;
 
     return t;
+}
+
+
+namespace std
+{
+    template<>
+    struct hash<vec2i>
+    {
+        size_t operator()(const vec2i& vect) const noexcept
+        {
+            return vect.x ^ vect.y;
+        }
+    };
 }
