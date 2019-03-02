@@ -30,8 +30,8 @@ struct RenderCall {
 
 // private variables
 // -----------------
-static const float cascadeDistances[4] = { 10.0f, 40.0f, 100.0f, 500.0f };
-static const float cascadeDepths[4] = { 500.0f, 500.0f, 500.0f, 500.0f };
+static const float cascadeDistances[4] = { 20.0f, 60.0f, 150.0f, 400.0f };
+static const float cascadeDepths[4] = { 400.0f, 400.0f, 400.0f, 400.0f };
 static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f, 1.3f, 1.0f) * 5.0f };
 
 static std::vector<RenderCall> renderQueue;
@@ -313,10 +313,8 @@ void Renderer::renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustu
 
 	for (RenderCall call : renderQueue) {
 		if (doFrustumCulling) {
-			if (call.aabb) {
-				if (!f.isBoxInside(*call.aabb)) {
-					continue;
-				}
+			if (!f.isBoxInside(*call.aabb)) {
+				continue;
 			}
 		}
 
@@ -373,12 +371,14 @@ Texture Renderer::lightGbuffers(const Camera &cam, const Texture &gPosition, con
 
 	// render scene multiple times to shadow buffers
 	if (shadows) {
-		glDisable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
 		renderShadow(shadowBuffer0, lightSpaceMatrix0, shadowFrustum0, false);
 		renderShadow(shadowBuffer1, lightSpaceMatrix1, shadowFrustum1, false);
 		renderShadow(shadowBuffer2, lightSpaceMatrix2, shadowFrustum2, false);
 		renderShadow(shadowBuffer3, lightSpaceMatrix3, shadowFrustum3, false);
-		glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
+		//glEnable(GL_CULL_FACE);
 	}
 
 	HDRbuffer.bind();

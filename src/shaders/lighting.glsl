@@ -144,20 +144,58 @@ vec2( 0.19984126, 0.78641367 ),
 vec2( 0.14383161, -0.14100790 )
 );
 // ----------------------------------------------------------------------------
-float ShadowCalculationPCF(float bias, vec4 fragPosLightSpace, sampler2DShadow shadowMap)
+float ShadowCalculationPCF(float bias, vec4 fragPosLightSpace, sampler2D shadowMap)
 {
-float visibility = 1.0;
-for (int i=0;i<8;i++){
-    int index = i;
-    visibility -= (1.0/8.0)*(1.0-texture( shadowMap, vec3(fragPosLightSpace.xy + poissonDisk[index]/1000.0, (fragPosLightSpace.z)/fragPosLightSpace.w-bias) ));
-}
-return clamp(visibility, 0, 1);
+//    float visibility = 1.0;
+//    for (int i=0;i<8;i++){
+//        int index = i;
+//        visibility -= (1.0/8.0)*(1.0-texture( shadowMap, vec3(fragPosLightSpace.xy + poissonDisk[index]/1000.0, (fragPosLightSpace.z)/fragPosLightSpace.w-bias) ));
+//    }
+//    //return clamp(visibility, 0, 1);
+//    return distance;
+
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth- bias > closestDepth  ? 1.0 : 0.0;
+
+    float distance = clamp((currentDepth-closestDepth)*250.0, 0.0, 2.0);
+
+    for (int i=0;i<8;i++){
+        int index = i;
+
+        float closestDepthN = texture(shadowMap, projCoords.xy + (poissonDisk[index]/1000.0)*distance).r;
+        float currentDepthN = projCoords.z;
+
+        shadow += currentDepthN- bias > closestDepthN  ? 1.0 : 0.0;
+    }
+    shadow /= 9.0;
+
+
+    return 1.0-shadow;
 }
 // ----------------------------------------------------------------------------
-float ShadowCalculation(float bias, vec4 fragPosLightSpace, sampler2DShadow shadowMap)
+float ShadowCalculation(float bias, vec4 fragPosLightSpace, sampler2D shadowMap)
 {
-float visibility = 1.0;
-visibility -= (1.0-texture( shadowMap, vec3(fragPosLightSpace.xy, (fragPosLightSpace.z)/fragPosLightSpace.w-bias) ));
-return clamp(visibility, 0, 1);
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth- bias > closestDepth  ? 1.0 : 0.0;
+
+    return 1.0-shadow;
+//
+//float visibility = 1.0;
+//visibility -= (1.0-texture(shadowMap, vec3(fragPosLightSpace.xy, (fragPosLightSpace.z)/fragPosLightSpace.w-bias) ));
+//return clamp(visibility, 0, 1);
 }
 #endif
