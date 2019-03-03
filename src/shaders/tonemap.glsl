@@ -3,6 +3,7 @@ uniform sampler2D bloom1;
 uniform sampler2D bloom2;
 uniform sampler2D deferred;
 uniform sampler2D ssaoTexture;
+uniform sampler2D gPosition;
 
 uniform bool vignette;
 uniform bool tonemap;
@@ -10,6 +11,9 @@ uniform bool bloom;
 uniform bool ssao;
 
 uniform float bloomStrength;
+uniform float fogInner;
+uniform float fogOuter;
+uniform vec3 camPosition;
 
 vec3 aces(vec3 col, float exposure)
 {
@@ -55,5 +59,10 @@ vec3 postProcess(vec2 texCoord) {
         color *= vign;
     }
 
-	return color;
+    float fogStrength = length(texture(gPosition, texCoord).rgb);
+    fogStrength = smoothstep(fogInner, fogOuter, fogStrength);
+
+    vec3 fogColor = vec3(0.7,0.74,0.82)*1.15;
+
+	return mix(color, fogColor, fogStrength);
 }

@@ -287,6 +287,7 @@ Texture PostProcessor::postRender(const Camera &cam, const Texture &deferred, co
     }
 
     ssaoBufferBlur.getAttachment(0).bind(4);
+    gPosition.bind(5);
 
     tonemapShader.bind();
     tonemapShader.uniformBool("vignette", Renderer::settings.vignette);
@@ -294,11 +295,15 @@ Texture PostProcessor::postRender(const Camera &cam, const Texture &deferred, co
     tonemapShader.uniformBool("bloom", Renderer::settings.bloom);
     tonemapShader.uniformBool("ssao", Renderer::settings.ssao);
     tonemapShader.uniformFloat("bloomStrength", Renderer::settings.bloomStrength);
+    tonemapShader.uniformFloat("fogInner", Renderer::settings.fogInner);
+    tonemapShader.uniformFloat("fogOuter", Renderer::settings.fogOuter);
     tonemapShader.uniformInt("bloom0", 0);
     tonemapShader.uniformInt("bloom1", 1);
     tonemapShader.uniformInt("bloom2", 2);
     tonemapShader.uniformInt("deferred", 3);
     tonemapShader.uniformInt("ssaoTexture", 4);
+    tonemapShader.uniformInt("gPosition", 5);
+    tonemapShader.uniformVec3("camPosition", cam.position);
 
     Renderer::framebufferMesh.render();
 

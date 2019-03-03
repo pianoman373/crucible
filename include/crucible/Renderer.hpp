@@ -38,6 +38,8 @@ struct RendererSettings {
 	bool ssao = true;
 	float ssaoRadius = 10.0f;
 	int ssaoKernelSize = 8;
+	float fogInner = 100.0f;
+	float fogOuter = 150.0f;
 };
 
 class Renderer {
