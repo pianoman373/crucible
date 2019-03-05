@@ -158,6 +158,15 @@ public:
      * @return This process's working directory.
      */
     static Path getProgramWorkingDirectory();
+
+    /**
+     * Returns a list of paths pointing to the files and folders contained within the given path.
+     *
+     * @param path Path to search.
+     *
+     * @param directoryOnly Forces the output to be directories only.
+     */
+    static std::vector<Path> listDirectory(const Path &path, bool directoryOnly=false);
 };
 
 std::ostream &operator<<(std::ostream &os, const Path &m);

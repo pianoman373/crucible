@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <tinydir.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -339,6 +340,34 @@ Path Path::getProgramWorkingDirectory() {
         Path p("/");
         return p;
 #endif
+}
+
+std::vector<Path> Path::listDirectory(const Path &path, bool directoryOnly) {
+    std::vector<Path> ret;
+
+    tinydir_dir dir;
+    int i;
+    tinydir_open_sorted(&dir, path.toString().c_str());
+
+    for (i = 0; i < dir.n_files; i++) {
+        tinydir_file file;
+        tinydir_readfile_n(&dir, &file, i);
+
+        if (file.name[0] == '.') {
+            continue;
+        }
+
+        if (file.is_dir) {
+            ret.push_back(Path(file.name));
+        }
+        else if (!directoryOnly) {
+            ret.push_back(Path(file.name));
+        }
+    }
+
+    tinydir_close(&dir);
+
+    return ret;
 }
 
 std::ostream &operator<<(std::ostream &os, const Path &m) {

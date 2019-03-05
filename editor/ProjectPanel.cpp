@@ -1,5 +1,5 @@
 #include "ProjectPanel.hpp"
-#include "tinydir.h"
+#include <tinydir.h>
 
 #include <imgui.h>
 
