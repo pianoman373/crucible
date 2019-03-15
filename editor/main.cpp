@@ -215,12 +215,7 @@ static void ShowExampleAppDockSpace(bool* p_open)
     }
 }
 
-#include "Resource.h"
-
 int main() {
-    Resource text = LOAD_RESOURCE(src_shaders_test_glsl);
-    std::cout << std::string(text.data(), text.size()) << std::endl;
-
     return 0;
 
 

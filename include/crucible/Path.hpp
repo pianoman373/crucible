@@ -29,6 +29,8 @@ public:
         return toString();
     }
 
+    Path();
+
 
     /**
      * Constructs an empty Path object that points to either the filesystem root, or a relative root (known as "./")

@@ -120,6 +120,22 @@ void Renderer::renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum
 
 
 		ShadowShader.bind();
+
+        if (c.bones) {
+            ShadowShader.uniformBool("doAnimation", true);
+
+            std::vector<mat4> skinningMatrices = c.bones->getSkinningTransforms();
+
+            for (int i = 0; i < skinningMatrices.size(); i++) {
+                mat4 trans = skinningMatrices.at(i);
+
+                ShadowShader.uniformMat4("bones["+std::to_string(i)+"]", trans);
+            }
+        }
+        else {
+            ShadowShader.uniformBool("doAnimation", false);
+        }
+
 		ShadowShader.uniformMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 		ShadowShader.uniformMat4("model", c.transform->getMatrix());

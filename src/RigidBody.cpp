@@ -67,14 +67,14 @@ RigidBody *RigidBody::addBoxCollider(const vec3 &origin, const vec3 &halfExtents
     t.setOrigin(btVector3(origin.x,origin.y,origin.z));
     colShape->addChildShape(t, new btBoxShape(btVector3(halfExtents.x,halfExtents.y,halfExtents.z)));
 
-    if (mass > 0.0f) {
+    /*if (mass > 0.0f) {
         btVector3 inertia(0,0,0);
         btScalar masses[colShape->getNumChildShapes()] = { mass/colShape->getNumChildShapes()};
         colShape->calculatePrincipalAxisTransform(masses,t,inertia);
 
         body->setMassProps(mass, inertia);
         body->updateInertiaTensor();
-    }
+    }*/
 
     return this;
 }
@@ -85,14 +85,14 @@ RigidBody *RigidBody::addSphereCollider(const vec3 &origin, float radius) {
     t.setOrigin(btVector3(origin.x,origin.y,origin.z));
     colShape->addChildShape(t, new btSphereShape(radius));
 
-    if (mass > 0.0f) {
+    /*if (mass > 0.0f) {
         btVector3 inertia(0,0,0);
         btScalar masses[colShape->getNumChildShapes()] = { mass/colShape->getNumChildShapes()};
         colShape->calculatePrincipalAxisTransform(masses,t,inertia);
 
         body->setMassProps(mass, inertia);
         body->updateInertiaTensor();
-    }
+    }*/
 
 
     return this;
@@ -104,14 +104,14 @@ RigidBody *RigidBody::addCylinderCollider(const vec3 &origin, float radius, floa
     t.setOrigin(btVector3(origin.x,origin.y,origin.z));
     colShape->addChildShape(t, new btCylinderShape(btVector3(radius, height, radius)));
 
-    if (mass > 0.0f) {
+    /*if (mass > 0.0f) {
         btVector3 inertia(0,0,0);
         btScalar masses[colShape->getNumChildShapes()] = { mass/colShape->getNumChildShapes()};
         colShape->calculatePrincipalAxisTransform(masses,t,inertia);
 
         body->setMassProps(mass, inertia);
         body->updateInertiaTensor();
-    }
+    }*/
 
     return this;
 }
@@ -136,14 +136,14 @@ RigidBody *RigidBody::addMeshCollider(const vec3 &origin, const Mesh &mesh, cons
     t.setOrigin(btVector3(origin.x,origin.y,origin.z));
     colShape->addChildShape(t, ms);
 
-    if (mass > 0.0f) {
+    /*if (mass > 0.0f) {
         btVector3 inertia(0,0,0);
         btScalar masses[colShape->getNumChildShapes()] = { mass/colShape->getNumChildShapes()};
         colShape->calculatePrincipalAxisTransform(masses,t,inertia);
 
         body->setMassProps(mass, inertia);
         body->updateInertiaTensor();
-    }
+    }*/
 
     return this;
 }

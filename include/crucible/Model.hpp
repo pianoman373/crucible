@@ -20,8 +20,6 @@ public:
 
     void addSubmesh(const Mesh &mesh, const Material &material, const std::string &names="Untitled Submesh");
 
-    void importFile(const Path &filename, bool loadTextures=true);
-
     void openFile(const Path &filename);
 
     void fromJson(const json &j, const Path &workingDirectory);

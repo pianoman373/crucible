@@ -7,15 +7,35 @@
 #include <crucible/Bone.hpp>
 #include <crucible/GuiRenderer.hpp>
 #include <crucible/Font.hpp>
+#include <crucible/AssimpFile.hpp>
 #include <imgui.h>
 
 class CharacterController : public Component {
     Camera &cam;
     GameObject &gun;
 
+    Bone root;
+    Bone bindPos;
+    Model character;
+    Animation animation;
+    Transform modelTransform;
+
 public:
     CharacterController(Camera &cam, GameObject &gun): cam(cam), gun(gun) {
 
+    }
+
+    void init() {
+        AssimpFile characterFile("resources/character-running.fbx");
+        character = characterFile.getModel();
+        character.materials[0].setPBRUniforms(Resources::getTexture("resources/Character Texture.png"), 0.7f, 0.0f);
+
+        modelTransform  = Transform(vec3(0.0f, 0.0f, 0.0f), quaternion(vec3(0.0f, 1.0f, 0.0f), 0.1f), vec3(0.2f));
+
+        root = characterFile.getSkeletonNew();
+        bindPos = root;
+
+        animation = characterFile.getAnimation();
     }
 
     void update(float delta) {
@@ -63,7 +83,7 @@ public:
         getParent()->getRigidBody()->setVelocity(movement);
 
         //camera control
-        float distance = 0.0f;
+        float distance = 3.0f;
 
         static vec2 lastMousePos;
         Window::setMouseGrabbed(Input::isMouseButtonDown(1));
@@ -89,6 +109,28 @@ public:
         // gun control
         gun.transform.position = this->getParent()->transform.position + gunOffset;
         gun.transform.rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(rotX + 180.0f)) * quaternion(vec3(1.0f, 0.0f, 0.0f), radians(rotY));
+
+        modelTransform.position = this->getParent()->transform.position - vec3(0.0f, 1.5f, 0.0f);
+
+        vec3 vel = getParent()->getRigidBody()->getVelocity();
+        vel.y = 0.0f;
+
+        if (length(vel) > 0.2f) {
+            float angle = degrees(atan2(vel.x, vel.z));
+
+
+            quaternion target;
+            target.setEuler(0.0f, angle, 0.0f);
+
+            animation.animateLooped(ImGui::GetIO().DeltaTime, root);
+        }
+        else {
+            root = bindPos;
+        }
+    }
+
+    void render() {
+        Renderer::render(character.nodes[0].mesh, character.materials[0], modelTransform, root);
     }
 };
 
@@ -100,18 +142,12 @@ int main() {
 
 	Cubemap cubemap;
 	cubemap.loadEquirectangular("resources/canyon.hdr");
-
     Renderer::environment = cubemap;
     IBL::generateIBLmaps(vec3(), Renderer::irradiance, Renderer::specular);
-
-
 	Renderer::setSun({ vec3(1.05f, -1.2f, -1.3f), vec3(10.0f, 10.0f, 10.0f) });
 
 	Mesh cube;
 	Primitives::cube(cube);
-
-	Mesh sphere;
-	Primitives::sphere(sphere, 32, 32);
 
 	Mesh torus0;
 	Primitives::torus(torus0, 2.0f, 0.5f, 64, 64);
@@ -122,18 +158,17 @@ int main() {
     Mesh torus2;
     Primitives::torus(torus2, 4.0f, 0.5f, 64, 64);
 
-	Model shaderBall;
-	shaderBall.importFile("resources/shaderball.fbx", false);
 
-	Model environment;
-	environment.importFile("resources/environment.fbx");
+    AssimpFile shaderBallFile("resources/shaderball.fbx");
+	Model shaderBall = shaderBallFile.getModel();
+
+	AssimpFile environmentFile("resources/environment.fbx");
+	Model environment = environmentFile.getModel();
 
 	Model gunModel;
 	gunModel.openFile("resources/Rifle/rifle.crmodel");
 
-	Model character;
-	character.importFile("resources/Character Running.fbx");
-	character.materials[0].setPBRUniforms(Resources::getTexture("resources/Character Texture.png"), 0.7f, 0.0f);
+
 
 	Material wood;
 	wood.loadFile("resources/wood.crmaterial");
@@ -153,15 +188,7 @@ int main() {
     Material checker;
     checker.loadFile("resources/checkerboard.crmaterial");
 
-    Material mirror;
-    mirror.setPBRUniforms(vec3(1.0f), 0.0f, 1.0f);
-
-    Texture crate;
-    crate.load("resources/crate.png");
-
 	bool keyDown = false;
-
-	std::vector<vec3> lightPositions;
 
     Scene scene;
     scene.setupPhysicsWorld();
@@ -192,29 +219,18 @@ int main() {
 
     bool first = true;
 
-    Bone root("resources/Character Running.fbx", "Torso");
-
-    std::vector<Transform> transforms;
-
-    int amount = 50;
-    float size = 20.0f;
-    for (int x = 0; x < amount; x++) {
-        for (int z = 0; z < amount; z++) {
-            ///Renderer::render(&cube, &checker, , quaternion(), vec3(0.1f)));
-            //transforms.push_back(Transform(vec3(((float)x / (float)amount) * size, 3.0f, ((float)z / (float)amount) * size), quaternion(), vec3(0.1f)));
-        }
-    }
-
-    Transform characterTransform = Transform(vec3(5.0f, 0.0f, 0.0f), quaternion(), vec3(0.3f));
-
     Font font;
     font.loadFromFile("resources/arial.ttf", 24.0f);
 
+    float time = 0.0f;
+
 
     while (Window::isOpen()) {
-        root.children[0].children[0].rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(180.0f)) * quaternion(normalize(vec3(5.2f, 1.0f, 0.1f)), sin(Window::getTime())*0.5f);
-        root.children[0].children[2].rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(180.0f)) * quaternion(normalize(vec3(5.2f, 1.0f, 0.1f)), radians(180.0f) + cos(Window::getTime()));
-        root.children[0].children[2].children[0].rotation = quaternion(normalize(vec3(1.0f, 0.0f, 0.0f)), cos(Window::getTime())+1.0f);
+//        root.find("Neck").rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(180.0f)) * quaternion(normalize(vec3(5.2f, 1.0f, 0.1f)), sin(Window::getTime())*0.5f);
+//        root.children[0].children[2].rotation = quaternion(vec3(0.0f, 1.0f, 0.0f), radians(180.0f)) * quaternion(normalize(vec3(5.2f, 1.0f, 0.1f)), radians(180.0f) + cos(Window::getTime()));
+//        root.children[0].children[2].children[0].rotation = quaternion(normalize(vec3(1.0f, 0.0f, 0.0f)), cos(Window::getTime())+1.0f);
+
+        time += ImGui::GetIO().DeltaTime;
 
         Window::begin();
         cam.dimensions = {(float)Window::getWindowSize().x, (float)Window::getWindowSize().y};
@@ -222,7 +238,6 @@ int main() {
         if (!(lastResolution == Window::getWindowSize())) {
             Renderer::resize(Window::getWindowSize().x, Window::getWindowSize().y);
         }
-
         lastResolution = Window::getWindowSize();
 
         if (keyDown) {
@@ -241,6 +256,8 @@ int main() {
 			}
         }
 
+
+
         quaternion q0 = quaternion(vec3(1.0f, 0.0f, 0.0f), Window::getTime());
         quaternion q1 = normalize(q0 * quaternion(vec3(0.0f, 1.0f, 0.0f), Window::getTime()*2.0f));
         quaternion q2 = normalize(q1 * quaternion(vec3(1.0f, 0.0f, 0.0f), Window::getTime()*3.0f));
@@ -257,16 +274,12 @@ int main() {
             first = false;
         }
 
-        Renderer::render(character.nodes[0].mesh, character.materials[0], characterTransform, root);
 
-        for (int i = 0; i < transforms.size(); i++) {
-            Renderer::render(cube, checker, transforms[i]);
-        }
 
-        root.debugDraw();
+        mat4 trans;
+        trans = translate(trans, vec3(0.0f, 5.0f, 0.0f));
 
         Renderer::flush(cam);
-
         Window::end();
     }
 }

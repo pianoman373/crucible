@@ -17,50 +17,26 @@ Bone::Bone(const std::string &name, vec3 position, quaternion rotation) {
     this->startingRotation = rotation;
 }
 
-static void processNode(Bone &b, aiNode *node) {
-    for (int i = 0; i < node->mNumChildren; i++) {
-        aiNode *child = node->mChildren[i];
-
-        aiVector3D position;
-        aiQuaternion rotation;
-
-        child->mTransformation.DecomposeNoScaling(rotation, position);
-
-        std::cout << child->mName.C_Str() << std::endl;
-
-        Bone &childBone = b.addChild(Bone(child->mName.C_Str(), vec3(position.x, position.y, position.z), quaternion(rotation.w, rotation.x, rotation.y, rotation.z)));
-
-        processNode(childBone, child);
-    }
-}
-
-Bone::Bone(const std::string &filename, const std::string &root) {
-    Assimp::Importer importer;
-
-    const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices);
-
-    aiNode *rootNode = scene->mRootNode->FindNode(root.c_str());
-
-    aiVector3D position;
-    aiQuaternion rotation;
-
-    rootNode->mTransformation.DecomposeNoScaling(rotation, position);
-
-    this->name = rootNode->mName.C_Str();
-    this->position = vec3(position.x, position.y, position.z);
-    this->startingPosition = this->position;
-    this->rotation = quaternion(rotation.w, rotation.x, rotation.y, rotation.z);
-    this->startingRotation = this->rotation;
-
-    processNode(*this, rootNode);
-
-
-}
-
 Bone &Bone::addChild(Bone b) {
     children.push_back(b);
 
     return children.back();
+}
+
+Bone *Bone::find(const std::string &name) {
+    if (this->name == name) {
+        return this;
+    }
+
+    for (int i = 0; i < children.size(); i++) {
+        Bone *b = children[i].find(name);
+
+        if (b) {
+            return b;
+        }
+    }
+
+    return nullptr;
 }
 
 mat4 Bone::getLocalTransform() const {

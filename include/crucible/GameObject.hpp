@@ -17,6 +17,8 @@ public:
 
     GameObject *getParent() const;
 
+    virtual void init();
+
     virtual void render();
 
     virtual void update(float delta);

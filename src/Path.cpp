@@ -33,6 +33,12 @@ static std::vector<std::string> split(const std::string &s, char delim) {
 }
 // ------------------------------------------------------------------------------------------------
 
+Path::Path() {
+    this->absolute = true;
+    drive = 0;
+    isFolder = true;
+}
+
 Path::Path(bool absolute) {
     this->absolute = absolute;
     drive = 0;

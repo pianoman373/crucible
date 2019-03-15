@@ -21,9 +21,9 @@ public:
 
     Bone(const std::string &name, const vec3 position, quaternion rotation);
 
-    Bone(const std::string &filename, const std::string &root);
-
     Bone &addChild(Bone b);
+
+    Bone *find(const std::string &name);
 
     mat4 getLocalTransform() const;
 

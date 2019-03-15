@@ -532,6 +532,15 @@ inline float lerp(float a, float b, float f)
 }
 
 template <typename T>
+inline vector3<T> lerp(vector3<T> a, vector3<T> b, T f) {
+    return vector3<T>(
+            lerp(a.x, b.x, f),
+            lerp(a.y, b.y, f),
+            lerp(a.z, b.z, f)
+            );
+}
+
+template <typename T>
 inline matrix4<T> translate(const matrix4<T> &mat, const vector3<T> &vec) {
     matrix4<T> temp;
 
@@ -874,6 +883,8 @@ struct quaternion {
 
         return vec3(degrees(rollX), degrees(pitchY), degrees(yawZ));
     }
+
+    quaternion operator-();
 };
 
 inline mat4 toMatrix(const quaternion &q)
@@ -898,6 +909,16 @@ inline mat4 toMatrix(const quaternion &q)
 inline float dot(const quaternion& lhs, const quaternion& rhs)
 {
     return lhs.w*rhs.w + lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
+}
+
+inline quaternion quaternion::operator-()
+{
+    return quaternion( -w, -x, -y, -z );
+}
+
+inline quaternion operator+(const quaternion& lhs, const quaternion& rhs)
+{
+    return quaternion(lhs.w + rhs.w, lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 
 inline quaternion operator*(const quaternion& lhs, const float scalar)
@@ -950,6 +971,85 @@ inline quaternion normalize(const quaternion& quat)
     const float l = length(quat);
     return quat * (1.0f / l);
 
+}
+
+inline quaternion slerp(quaternion v0, quaternion v1, float t) {
+    // Only unit quaternions are valid rotations.
+    // Normalize to avoid undefined behavior.
+    normalize(v0);
+    normalize(v1);
+
+    // Compute the cosine of the angle between the two vectors.
+    float d = dot(v0, v1);
+
+    // If the dot product is negative, slerp won't take
+    // the shorter path. Note that v1 and -v1 are equivalent when
+    // the negation is applied to all four components. Fix by
+    // reversing one quaternion.
+    if (d < 0.0f) {
+        v1 = -v1;
+        d = -d;
+    }
+
+    const float DOT_THRESHOLD = 0.9995;
+    if (d > DOT_THRESHOLD) {
+        // If the inputs are too close for comfort, linearly interpolate
+        // and normalize the result.
+
+        quaternion result = v0 + t*(v1 + -v0);
+        normalize(result);
+        return result;
+    }
+
+    // Since d is in range [0, DOT_THRESHOLD], acos is safe
+    float theta_0 = acos(d);        // theta_0 = angle between input vectors
+    float theta = theta_0*t;          // theta = angle between v0 and result
+    float sin_theta = sin(theta);     // compute this value only once
+    float sin_theta_0 = sin(theta_0); // compute this value only once
+
+    float s0 = cos(theta) - d * sin_theta / sin_theta_0;  // == sin(theta_0 - theta) / sin(theta_0)
+    float s1 = sin_theta / sin_theta_0;
+
+    return (s0 * v0) + (s1 * v1);
+}
+
+inline quaternion rotationBetweenVectors(vec3 start, vec3 dest){
+    start = normalize(start);
+    dest = normalize(dest);
+
+    float cosTheta = dot(start, dest);
+    vec3 rotationAxis;
+
+    if (cosTheta < -1 + 0.001f){
+        // special case when vectors in opposite directions:
+        // there is no "ideal" rotation axis
+        // So guess one; any will do as long as it's perpendicular to start
+        rotationAxis = cross(vec3(0.0f, 0.0f, 1.0f), start);
+        if (length(rotationAxis) < 0.01 ) // bad luck, they were parallel, try again!
+            rotationAxis = cross(vec3(1.0f, 0.0f, 0.0f), start);
+
+        rotationAxis = normalize(rotationAxis);
+        return quaternion(rotationAxis, radians(180.0f));
+    }
+
+    rotationAxis = cross(start, dest);
+
+    float s = sqrt( (1+cosTheta)*2 );
+    float invs = 1 / s;
+
+    return quaternion(
+            s * 0.5f,
+            rotationAxis.x * invs,
+            rotationAxis.y * invs,
+            rotationAxis.z * invs
+    );
+
+}
+
+inline quaternion RotateTowards(quaternion q1, quaternion q2, float maxAngle ){
+    float mixFactor = maxAngle / dot(q1, q2);
+
+    return slerp(q1, q2, mixFactor);
 }
 
 struct Transform {

@@ -12,6 +12,10 @@ GameObject *Component::getParent() const {
     return this->parent;
 }
 
+void Component::init() {
+
+}
+
 void Component::render() {
 
 }
@@ -59,6 +63,8 @@ GameObject& GameObject::createChild(const Transform &transform, const std::strin
     child->parent = this;
 
     children.push_back(child);
+
+	return *child;
 }
 
 int GameObject::getNumChildren() {
@@ -82,6 +88,8 @@ RigidBody *GameObject::getRigidBody() {
 void GameObject::addComponent(Component *c) {
     this->components.push_back(c);
     c->setParent(this);
+
+    c->init();
 }
 
 int GameObject::getNumComponents() {

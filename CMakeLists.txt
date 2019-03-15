@@ -96,7 +96,7 @@ endif(WIN32)
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++14 -Wa,-mbig-obj")
 endif()
 
 source_group("Sources" FILES ${PROJECT_SOURCES})
@@ -105,6 +105,7 @@ source_group("Headers" FILES ${PROJECT_HEADERS})
 
 if (CRUCIBLE_BUILD_EXAMPLES)
     add_executable(demo examples/demo.cpp)
+    add_dependencies(demo crucible)
     target_link_libraries(demo crucible)
     set_target_properties(demo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
