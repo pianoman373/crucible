@@ -1,14 +1,16 @@
 #pragma once
 
-#include "EditorContext.hpp"
+
 #include <string>
 #include <stack>
 
 #include <crucible/Path.hpp>
 
+class PrefabView;
+
 class ProjectPanel {
 private:
-    EditorContext &context;
+    PrefabView &view;
 
     Path path = Path(false);
     int selectedItem = -1;
@@ -17,7 +19,7 @@ private:
 
 public:
 
-    ProjectPanel(EditorContext &context);
+    ProjectPanel(PrefabView &view);
 
     void renderContents();
 };

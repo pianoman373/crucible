@@ -151,10 +151,12 @@ void Renderer::renderDebugGui() {
 	if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImVec2(0, 0), 0.3f,
 					 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
 					 ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+		            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
 					ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
+
+    ImGui::ShowDemoWindow();
 }
 
 // public functions

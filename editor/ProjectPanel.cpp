@@ -1,15 +1,15 @@
 #include "ProjectPanel.hpp"
+#include "PrefabView.hpp"
 #include <tinydir.h>
 
 #include <imgui.h>
 
-ProjectPanel::ProjectPanel(EditorContext &context): context(context) {
+ProjectPanel::ProjectPanel(PrefabView &view): view(view) {
 
 }
 
-
 void ProjectPanel::renderContents() {
-    if (ImGui::Begin("Project"))
+    if (ImGui::Begin("Project", nullptr))
     {
         if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
             if (previousDirs.size() > 0) {
@@ -23,7 +23,7 @@ void ProjectPanel::renderContents() {
         }
 
         ImGui::SameLine();
-        ImGui::Text(context.projectPath.appendPath(path).toString().c_str());
+        ImGui::Text(view.context.projectPath.appendPath(path).toString().c_str());
 
         ImGui::Separator();
 
@@ -32,7 +32,7 @@ void ProjectPanel::renderContents() {
 
         tinydir_dir dir;
         int i;
-        tinydir_open_sorted(&dir, (context.projectPath.appendPath(path)).toString().c_str());
+        tinydir_open_sorted(&dir, (view.context.projectPath.appendPath(path)).toString().c_str());
 
         for (i = 0; i < dir.n_files; i++) {
             tinydir_file file;
@@ -47,7 +47,9 @@ void ProjectPanel::renderContents() {
                     selectedItem = i;
 
                     if (ImGui::IsMouseDoubleClicked(0)) {
-                        path.appendFolder(file.name);
+                        previousDirs.push(path);
+
+                        path = path.appendFolder(file.name);
                     }
                 }
             }

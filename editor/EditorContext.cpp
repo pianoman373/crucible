@@ -3,6 +3,10 @@
 #include <json.hpp>
 #include <fstream>
 
+EditorContext::EditorContext() {
+
+}
+
 void EditorContext::saveToConfig() {
     json j;
 

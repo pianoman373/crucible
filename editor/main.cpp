@@ -11,9 +11,11 @@
 
 #include "EditorContext.hpp"
 #include "ViewportPanel.hpp"
-#include "ScenePanel.hpp"
+#include "HeirarchyPanel.hpp"
 #include "PropertiesPanel.hpp"
 #include "ProjectPanel.hpp"
+#include "View.hpp"
+#include "PrefabView.hpp"
 
 static EditorContext context;
 
@@ -22,7 +24,55 @@ static Texture cubemapRaw;
 
 static bool showGraphicsSettings = false;
 
-static void ShowExampleAppDockSpace(bool* p_open)
+static int selectedView = 0;
+static std::vector<View*> views;
+
+
+static bool context1Open = true;
+static bool context2Open = true;
+
+static void renderMenuBar() {
+    if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Open Project", "Ctrl+O")) {
+            char const *folder = tinyfd_selectFolderDialog("Open Project Folder", context.projectPath.toString().c_str());
+
+            std::cout << folder << std::endl;
+
+            context.projectPath = Path(std::string(folder) + "/");
+        }
+        if (ImGui::MenuItem("Import", "Ctrl+I")) {
+            char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);
+
+            if (file != NULL) {
+
+            }
+        }
+        if (ImGui::MenuItem("Save", "Ctrl+S")) {
+//            char const *filterPatterns[1] = {"*.crmodel"};
+//            char const *file = tinyfd_saveFileDialog("Open model file", "", 1, filterPatterns, "3d model file");
+//
+//            if (file != NULL) {
+//
+//                //json j = context.model.toJson(Path::getWorkingDirectory(path));
+//
+//                //std::ofstream o(file);
+//                //o << std::setw(4) << j << std::endl;
+//            }
+        }
+
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("WIP")) {}
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("View")) {
+//        ImGui::MenuItem("Graphics settings", NULL, &showGraphicsSettings);
+        ImGui::EndMenu();
+    }
+}
+
+static void ShowApplication()
 {
     static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None;
 
@@ -40,7 +90,7 @@ static void ShowExampleAppDockSpace(bool* p_open)
     window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("DockSpace Demo", p_open, window_flags);
+    ImGui::Begin("DockSpace Demo", nullptr, window_flags);
     ImGui::PopStyleVar(3);
 
     ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
@@ -48,133 +98,31 @@ static void ShowExampleAppDockSpace(bool* p_open)
 
     if (ImGui::BeginMenuBar())
     {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Open", "Ctrl+O")) {
-                char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);
+        renderMenuBar();
 
-                if (file != NULL) {
-                    Path filename = file;
+        if (ImGui::BeginTabBar("TopTab")) {
 
-                    json j;
-                    std::ifstream o(filename);
-                    o >> j;
+            if (ImGui::BeginTabItem("View 1", &context1Open)) {
 
-                    Model *m = new Model();
+                selectedView = 0;
 
-                    m->fromJson(j, filename.getParent());
-                }
-            }
-            if (ImGui::MenuItem("Open Project")) {
-                char const *folder = tinyfd_selectFolderDialog("Open Project Folder", context.projectPath.toString().c_str());
-
-                std::cout << folder << std::endl;
-
-                context.projectPath = Path(std::string(folder) + "/");
-            }
-            if (ImGui::MenuItem("Import", "Ctrl+I")) {
-                char const *file = tinyfd_openFileDialog("Open model file", "", 0, NULL, "3d model file", 0);
-
-                if (file != NULL) {
-                    Assimp::Importer importer;
-
-                    const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices);
-
-
-                    if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-                    {
-                        std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-                    }
-
-                    for (int i = 0; i < scene->mNumMaterials; i++) {
-                        aiMaterial *aMaterial = scene->mMaterials[i];
-
-                        Material *material = new Material();
-
-                        material->setShader(Renderer::standardShader);
-                        material->setDefaultPBRUniforms();
-
-                        aiString materialName;
-                        aMaterial->Get(AI_MATKEY_NAME, materialName);
-
-                        material->name = materialName.C_Str();
-
-                        //context.materialCache.push_back(material);
-                    }
-
-                    for (int i = 0; i < scene->mNumMeshes; i++) {
-                        aiMesh *aMesh = scene->mMeshes[i];
-
-                        Mesh *mesh = new Mesh();
-
-                        mesh->positions.resize(aMesh->mNumVertices);
-                        mesh->normals.resize(aMesh->mNumVertices);
-                        mesh->indices.resize(aMesh->mNumFaces * 3);
-                        mesh->tangents.resize(aMesh->mNumVertices);
-
-                        if (aMesh->mNumUVComponents > 0) {
-                            mesh->uvs.resize(aMesh->mNumVertices);
-                        }
-
-                        for (unsigned int i = 0; i < aMesh->mNumVertices; ++i) {
-                            mesh->positions[i] = vec3(aMesh->mVertices[i].x, aMesh->mVertices[i].y, aMesh->mVertices[i].z);
-                            mesh->normals[i] = vec3(aMesh->mNormals[i].x, aMesh->mNormals[i].y, aMesh->mNormals[i].z);
-                            mesh->tangents[i] = vec3(aMesh->mTangents[i].x, aMesh->mTangents[i].y, aMesh->mTangents[i].z);
-
-                            if (isnan(mesh->tangents[i].x) || isnan(mesh->tangents[i].y) ||  isnan(mesh->tangents[i].z)) {
-                                mesh->tangents[i] = {0.0f, 0.0f, 0.0f};
-                            }
-
-                            if (aMesh->mTextureCoords[0]) {
-                                mesh->uvs[i] = vec2(aMesh->mTextureCoords[0][i].x, aMesh->mTextureCoords[0][i].y);
-                            }
-                        }
-
-                        for (unsigned int f = 0; f < aMesh->mNumFaces; ++f) {
-                            for (unsigned int i = 0; i < 3; ++i) {
-                                mesh->indices[f * 3 + i] = aMesh->mFaces[f].mIndices[i];
-                            }
-                        }
-
-                        mesh->generate();
-
-                        context.meshCache.push_back(mesh);
-
-
-                        Material *material = new Material();
-
-                        material->setShader(Renderer::standardShader);
-                        material->setDefaultPBRUniforms();
-                        material->name = aMesh->mName.C_Str();
-
-                        context.materialCache.push_back(material);
-
-                        context.scene.createMeshObject(*mesh, *material, Transform(), aMesh->mName.C_Str());
-                    }
-                }
-            }
-            if (ImGui::MenuItem("Save", "Ctrl+S")) {
-                char const *filterPatterns[1] = {"*.crmodel"};
-                char const *file = tinyfd_saveFileDialog("Open model file", "", 1, filterPatterns, "3d model file");
-
-                if (file != NULL) {
-
-                    //json j = context.model.toJson(Path::getWorkingDirectory(path));
-
-                    //std::ofstream o(file);
-                    //o << std::setw(4) << j << std::endl;
-                }
+                ImGui::EndTabItem();
             }
 
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Edit")) {
-            if (ImGui::MenuItem("WIP")) {}
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("View")) {
-            ImGui::MenuItem("Graphics settings", NULL, &showGraphicsSettings);
-            ImGui::EndMenu();
-        }
+            if (ImGui::BeginTabItem("View 2", &context2Open)) {
+                selectedView = 1;
+
+                ImGui::EndTabItem();
+            }
+
+
+            ImGui::EndTabBar();
+        };
+
+
+
+
+
 
         ImGui::EndMenuBar();
     }
@@ -216,9 +164,6 @@ static void ShowExampleAppDockSpace(bool* p_open)
 }
 
 int main() {
-    return 0;
-
-
     context.loadFromConfig();
 
     Window::create({ 1280, 720 }, "test", false, false);
@@ -239,10 +184,10 @@ int main() {
 
     Renderer::setSun({ vec3(1.05f, -1.2f, -1.3f), vec3(10.0f, 10.0f, 10.0f) });
 
-    ViewportPanel viewport(context);
-    ScenePanel scene(context);
-    PropertiesPanel properties(context);
-    ProjectPanel project(context);
+    views.push_back(new PrefabView(context));
+    views.push_back(new PrefabView(context));
+
+
 
 
     while (Window::isOpen()) {
@@ -251,11 +196,14 @@ int main() {
         bool p_open = true;
 
 
-        ShowExampleAppDockSpace(&p_open);
-        viewport.renderContents();
-        scene.renderContents();
-        properties.renderContents();
-        project.renderContents();
+        ShowApplication();
+
+//        if (selectedContext == 0) {
+//            context.renderContents();
+//        }
+
+        views[selectedView]->render();
+
 
         Window::end();
     }

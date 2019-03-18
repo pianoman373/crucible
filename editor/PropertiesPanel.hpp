@@ -1,11 +1,14 @@
 #pragma once
 
-#include "EditorContext.hpp"
+#include <string>
+#include <crucible/Material.hpp>
+#include <crucible/Math.hpp>
 
+class PrefabView;
 
 class PropertiesPanel {
 private:
-    EditorContext &context;
+    PrefabView &view;
 
     bool ImGuiMaterialEditBool(std::string label, std::string id, Material &mat);
 
@@ -19,7 +22,7 @@ private:
 
 public:
 
-    PropertiesPanel(EditorContext &context);
+    PropertiesPanel(PrefabView &view);
 
     void renderContents();
 };

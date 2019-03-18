@@ -1,4 +1,5 @@
 #include "ViewportPanel.hpp"
+#include "PrefabView.hpp"
 
 #include <imgui.h>
 #include <crucible/Window.hpp>
@@ -6,11 +7,7 @@
 #include <crucible/Renderer.hpp>
 
 
-static void orbitCamera(Camera &cam) {
-    static vec3 camDirection = normalize(vec3(0.0f, 0.3f, 1.0f));
-    static float camDistance = 10.0f;
-    static vec3 camOffset = vec3();
-
+void ViewportPanel::orbitCamera(Camera &cam) {
     cam.position = (camDirection * camDistance) + camOffset;
     cam.direction = normalize(camOffset - cam.position);
 
@@ -28,13 +25,12 @@ static void orbitCamera(Camera &cam) {
     static vec2 lastMousePos;
 
     if (Input::isMouseButtonDown(1)) {
-
         vec2 offset = Input::getCursorPos() - lastMousePos;
         float xOffset = -offset.x / 10.0f;
         float yOffset = offset.y / 10.0f;
 
 
-        //vertical
+       //vertical
         mat4 vmat;
         vmat = rotate(vmat, cam.getRight(), -yOffset);
 
@@ -70,7 +66,7 @@ void ViewportPanel::renderGrid() {
     }
 }
 
-ViewportPanel::ViewportPanel(EditorContext &context) : context(context) {
+ViewportPanel::ViewportPanel(PrefabView &view) : view(view) {
     orbitCamera(cam); // run once to set starting camera position
 
 }
@@ -99,7 +95,7 @@ void ViewportPanel::renderContents() {
 
         cam.dimensions = {width, height};
 
-        context.scene.render();
+        view.scene.render();
         renderGrid();
 
         const Texture &t = Renderer::flushToTexture(cam);

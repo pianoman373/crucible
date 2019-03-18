@@ -60,12 +60,12 @@ Bone AssimpFile::getSkeleton(std::string root) {
 Bone AssimpFile::getSkeletonNew() {
     Bone bone;
 
-    aiNode *rootNode = scene->mRootNode->FindNode(scene->mMeshes[0]->mBones[0]->mName);
+    aiNode *rootNode = scene->mRootNode->FindNode("root");
 
     aiVector3D position;
     aiQuaternion rotation;
 
-    std::cout << rootNode->mName.C_Str() << std::endl;
+    //std::cout << rootNode->mName.C_Str() << std::endl;
 
     rootNode->mTransformation.DecomposeNoScaling(rotation, position);
 
@@ -189,6 +189,8 @@ Model AssimpFile::getModel(bool loadTextures) {
             for (int i = 0; i < aMesh->mNumBones; i++) {
                 aiBone *bone = aMesh->mBones[i];
 
+                std::cout << bone->mName.C_Str() << std::endl;
+
                 for (int j = 0; j < bone->mNumWeights; j++) {
                     aiVertexWeight weight = bone->mWeights[j];
 
@@ -247,7 +249,7 @@ Model AssimpFile::getModel(bool loadTextures) {
 }
 
 Animation AssimpFile::getAnimation() {
-    aiAnimation* anim = scene->mAnimations[0];
+    aiAnimation* anim = scene->mAnimations[1];
 
 
     Animation ret;
@@ -263,7 +265,7 @@ Animation AssimpFile::getAnimation() {
 
 
         auto &keyframes = ret.keyframes[nodeAnim->mNodeName.C_Str()];
-//
+
 //        std::cout << anim->mChannels[i]->mNodeName.C_Str() << std::endl;
 //
 //        std::cout << nodeAnim->mNumPositionKeys << std::endl;

@@ -1,9 +1,12 @@
 #include "PropertiesPanel.hpp"
+#include "PrefabView.hpp"
 
 #include <imgui.h>
 #include <crucible/Path.hpp>
 #include <tinyfiledialogs.h>
 #include <btBulletDynamicsCommon.h>
+
+#include <crucible/GameObject.hpp>
 
 bool PropertiesPanel::ImGuiMaterialEditBool(std::string label, std::string id, Material &mat) {
     bool &val = mat.getUniformBool(id);
@@ -108,15 +111,15 @@ void PropertiesPanel::renderMaterial(Material &mat) {
 }
 
 
-PropertiesPanel::PropertiesPanel(EditorContext &context): context(context) {
+PropertiesPanel::PropertiesPanel(PrefabView &view): view(view) {
 
 }
 
 void PropertiesPanel::renderContents() {
     if (ImGui::Begin("Properties"))
     {
-        if (context.selectedObject != nullptr) {
-            GameObject *obj = context.selectedObject;
+        if (view.selectedObject != nullptr) {
+            GameObject *obj = view.selectedObject;
 
 
             char newText[256];

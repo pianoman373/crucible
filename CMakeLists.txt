@@ -69,6 +69,7 @@ include_directories(
 file(GLOB PROJECT_SOURCES src/*.cpp
                           src/*.c
                           lib/imgui/imgui.cpp
+                          lib/imgui/imgui_demo.cpp
                           lib/imgui/imgui_draw.cpp
                           lib/imgui/imgui_widgets.cpp
                           lib/imgui/examples/imgui_impl_glfw.cpp

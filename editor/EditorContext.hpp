@@ -8,18 +8,20 @@
 #include <vector>
 #include <string>
 
+
 class EditorContext {
 public:
-    Scene scene;
-
-    GameObject *selectedObject = nullptr;
 
     std::vector<Material*> materialCache;
     std::vector<Mesh*> meshCache;
 
     Path projectPath = Path(false);
 
+    EditorContext();
+
     void saveToConfig();
 
     void loadFromConfig();
+
+    void renderContents();
 };

@@ -131,6 +131,8 @@ public:
 
     void render() {
         Renderer::render(character.nodes[0].mesh, character.materials[0], modelTransform, root);
+
+        root.debugDraw(mat4());
     }
 };
 
