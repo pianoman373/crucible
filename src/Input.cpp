@@ -62,11 +62,14 @@ namespace Input {
     }
 
     void cursor_callback(GLFWwindow* window, double x, double y) {
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+
         last_xpos = xpos;
         last_ypos = ypos;
 
         xpos = x;
-        ypos = y;
+        ypos = height - y;
     }
 
     void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
