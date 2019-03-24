@@ -75,6 +75,7 @@ Shader Renderer::brdfShader;
 Shader Renderer::outlineShader;
 Shader Renderer::passthroughShader;
 Shader Renderer::spriteShader;
+Shader Renderer::textShader;
 
 Cubemap Renderer::environment;
 Cubemap Renderer::irradiance;
@@ -206,6 +207,7 @@ void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int r
 	outlineShader.load(LOAD_RESOURCE(src_shaders_outline_vsh).data(), LOAD_RESOURCE(src_shaders_outline_fsh).data());
 	passthroughShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_passthrough_glsl).data());
     spriteShader.load(LOAD_RESOURCE(src_shaders_sprite_vsh).data(), LOAD_RESOURCE(src_shaders_sprite_fsh).data());
+    textShader.load(LOAD_RESOURCE(src_shaders_text_vsh).data(), LOAD_RESOURCE(src_shaders_text_fsh).data());
 
 
 	brdfShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_brdf_glsl).data());

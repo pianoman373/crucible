@@ -220,7 +220,6 @@ int main() {
     vec2i lastResolution = Window::getWindowSize();
 
     bool first = true;
-
     Font font;
     font.loadFromFile("resources/arial.ttf", 24.0f);
 
@@ -282,6 +281,15 @@ int main() {
         trans = translate(trans, vec3(0.0f, 5.0f, 0.0f));
 
         Renderer::flush(cam);
+
+        vec2i size = font.getTextSize("Hello World!");
+        vec2i windowSize = Window::getWindowSize();
+        GuiRenderer::renderSprite({(windowSize.x/2.0f) - (size.x/2.0f), 100.0f}, {(float)size.x, (float)size.y}, {1.0f, 0.0f, 0.0f, 1.0f});
+
+        GuiRenderer::renderText({Window::getWindowSize().x/2.0f - size.x/2.0f, 100.0f}, "Hello World!", font, vec4(1.0f));
+
+
+
         Window::end();
     }
 }

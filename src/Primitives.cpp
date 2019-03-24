@@ -125,25 +125,23 @@ void Primitives::sphere(Mesh &m, unsigned int xSegments, unsigned int ySegments)
 
 void Primitives::sprite(Mesh &m) {
 	m.positions = std::vector<vec3>{
-	    { 1.0f,  1.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
 		{ 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-
-
-
-        { 0.0f, 0.0f, 0.0f },
-		{ 0.0f,  1.0f, 0.0f },
 		{ 1.0f,  1.0f, 0.0f },
+
+		{ 1.0f,  1.0f, 0.0f },
+		{ 0.0f,  1.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f }
+
 	};
 	m.uvs = std::vector<vec2>{
-	    { 1.0f, 1.0f },
+		{ 0.0f, 0.0f },
 		{ 1.0f, 0.0f },
-        { 0.0f, 0.0f },
+		{ 1.0f, 1.0f },
 
-
-        { 0.0f, 0.0f },
+		{ 1.0f, 1.0f },
 		{ 0.0f, 1.0f },
-        { 1.0f, 1.0f },
+		{ 0.0f, 0.0f },
 	};
 
     m.generate();

@@ -63,6 +63,7 @@ public:
 	static Shader outlineShader;
 	static Shader passthroughShader;
 	static Shader spriteShader;
+	static Shader textShader;
 
 	static Cubemap environment;
 	static Cubemap irradiance;

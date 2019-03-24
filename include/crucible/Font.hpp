@@ -2,23 +2,33 @@
 
 #include <string>
 #include <crucible/Texture.hpp>
-#include "stb_truetype.h"
 
-class Sprite;
+#include <map>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+struct Character {
+    Texture tex;
+    vec2i size;       // Size of glyph
+    vec2i bearing;    // Offset from baseline to left/top of glyph
+    int advance;    // Offset to advance to next glyph
+};
 
 class Font {
 private:
-    Texture texture;
-    stbtt_bakedchar *cdata;
+    float fontSize;
 
 public:
+    std::map<unsigned char, Character> characters;
+
+
+
     Font();
 
     ~Font();
 
-    void loadFromFile(std::string path, float fontSize);
+    void loadFromFile(const std::string &path, float fontSize);
 
-    const Texture &getTexture() const;
-
-    std::vector<Sprite> getSprites(const std::string &message, vec4 color) const;
+    vec2i getTextSize(const std::string &text) const;
 };

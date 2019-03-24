@@ -12,7 +12,7 @@ private:
 public:
     void load(const Path &file, bool pixelated=false);
 
-    void load(const unsigned char *data, int width, int height, bool pixelated=false);
+    void load(const unsigned char *data, int width, int height, bool pixelated=false, bool singleChannel=false);
 
     void loadFromSingleColor(const vec4 &color);
 
