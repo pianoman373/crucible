@@ -65,7 +65,7 @@ void GuiRenderer::renderText(vec2 position, const std::string &text, const Font 
         const Character &ch = font.characters.at(*textRaw);
 
         float xpos = x + ch.bearing.x * scale;
-        float ypos = y - (ch.size.y - ch.bearing.y) * scale;
+        float ypos = y - (ch.size.y - ch.bearing.y) + font.descender * scale;
 
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;

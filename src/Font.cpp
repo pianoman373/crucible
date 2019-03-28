@@ -11,8 +11,6 @@ Font::~Font() {
 }
 
 void Font::loadFromFile(const std::string &path, float fontSize) {
-    this->fontSize = fontSize;
-
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
@@ -45,6 +43,10 @@ void Font::loadFromFile(const std::string &path, float fontSize) {
         this->characters.insert(std::pair<char, Character>(c, character));
     }
 
+    this->fontSize = (face->size->metrics.ascender >> 6) - (face->size->metrics.descender >> 6);
+    this->descender = -(face->size->metrics.descender >> 6);
+
+
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 }
@@ -56,10 +58,11 @@ vec2i Font::getTextSize(const std::string &text) const {
         const Character &ch = characters.at(text[i]);
 
 
-        size.x += ch.bearing.x;
+//        size.x += ch.bearing.x;
+       size.x += (ch.advance >> 6);
 
         if (i != text.size() - 1) {
-            size.x += (ch.advance >> 6);
+
         }
     }
 

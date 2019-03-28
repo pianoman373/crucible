@@ -20,6 +20,8 @@ private:
     float fontSize;
 
 public:
+    float descender;
+
     std::map<unsigned char, Character> characters;
 
 

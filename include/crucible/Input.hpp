@@ -1,6 +1,7 @@
 #pragma once
 
 #include <crucible/Math.hpp>
+#include <functional>
 
 
 class GLFWwindow;
@@ -163,4 +164,8 @@ namespace Input {
 
 	/** Internally used by Window. **/
 	void update();
+
+	void registerKeyPressedCallback(std::function<void(int)> callback);
+
+	void registerCharPressedCallback(std::function<void(unsigned int)> callback);
 }

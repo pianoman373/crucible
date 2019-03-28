@@ -19,6 +19,10 @@ static GLFWwindow* window;
 static bool cursor = true;
 static float scroll = 0;
 
+
+static std::function<void(int)> keyPressedCallback;
+static std::function<void(unsigned int)> charPressedCallback;
+
 namespace Input {
 	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
         if (action != GLFW_REPEAT) {
@@ -39,11 +43,17 @@ namespace Input {
 
         if (cursor)
             ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mode);
+
+        if (keyPressedCallback && action == GLFW_PRESS)
+            keyPressedCallback(key);
 	}
 
     void char_callback(GLFWwindow *window, unsigned int codepoint) {
         if (cursor)
             ImGui_ImplGlfw_CharCallback(window, codepoint);
+
+        if (charPressedCallback)
+            charPressedCallback(codepoint);
     }
 
     void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
@@ -110,6 +120,15 @@ namespace Input {
     bool isMouseGrabbed() {
         return !cursor;
     }
+
+
+    void registerKeyPressedCallback(std::function<void(int)> callback) {
+	    keyPressedCallback = callback;
+	}
+
+    void registerCharPressedCallback(std::function<void(unsigned int)> callback) {
+	    charPressedCallback = callback;
+	}
 }
 
 void Input::update() {
