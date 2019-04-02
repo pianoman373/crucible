@@ -18,20 +18,21 @@ void main()
 {
 	vec4 viewPos;
 
-    if (doAnimation) {
-        vec4 totalLocalPos = vec4(0.0);
+    // if (doAnimation) {
+    //     vec4 totalLocalPos = vec4(0.0);
 
-        for(int i=0;i<4;i++){
-            mat4 jointTransform = bones[vBoneIDs[i]];
-            vec4 posePosition = jointTransform * vec4(vPosition, 1.0);
-            totalLocalPos += posePosition * (vBoneWeights[i] + 0.000000001);
-        }
+    //     for(int i=0;i<4;i++){
+    //         mat4 jointTransform = bones[vBoneIDs[i]];
+    //         vec4 posePosition = jointTransform * vec4(vPosition, 1.0);
+    //         totalLocalPos += posePosition * (vBoneWeights[i] + 0.000000001);
+    //     }
 
-        viewPos = lightSpaceMatrix * model * totalLocalPos;
-    }
-    else {
-    	viewPos = lightSpaceMatrix * model * vec4(vPosition, 1.0f);
-    }
+    //     viewPos = lightSpaceMatrix * model * totalLocalPos;
+    // }
+    // else {
+
+    // }
+    viewPos = lightSpaceMatrix * model * vec4(vPosition, 1.0f);
 
     gl_Position = viewPos;
 }

@@ -27,24 +27,25 @@ void main()
 
     mat3 normalMatrix = transpose(inverse(mat3(view * model)));
 
-    if (doAnimation) {
-        vec4 totalLocalPos = vec4(0.0);
-        vec3 totalLocalNormal = vec3(0.0);
+    // if (doAnimation) {
+    //     vec4 totalLocalPos = vec4(0.0);
+    //     vec3 totalLocalNormal = vec3(0.0);
 
-        for(int i=0;i<4;i++){
-            mat4 jointTransform = bones[vBoneIDs[i]];
-            vec4 posePosition = jointTransform * vec4(vPosition, 1.0);
-            totalLocalPos += posePosition * (vBoneWeights[i] + 0.000000001);
-            totalLocalNormal += vec3(jointTransform * vec4(normalize(vNormal), 0.0)) * (vBoneWeights[i] + 0.000000001);
-        }
+    //     for(int i=0;i<4;i++){
+    //         mat4 jointTransform = bones[vBoneIDs[i]];
+    //         vec4 posePosition = jointTransform * vec4(vPosition, 1.0);
+    //         totalLocalPos += posePosition * (vBoneWeights[i] + 0.000000001);
+    //         totalLocalNormal += vec3(jointTransform * vec4(normalize(vNormal), 0.0)) * (vBoneWeights[i] + 0.000000001);
+    //     }
 
-        viewPos = view * model * totalLocalPos;
-        fNormal = normalMatrix * totalLocalNormal;
-    }
-    else {
-        viewPos = view * model * vec4(vPosition, 1.0);
-        fNormal = normalMatrix * normalize(vNormal);
-    }
+    //     viewPos = view * model * totalLocalPos;
+    //     fNormal = normalMatrix * totalLocalNormal;
+    // }
+    // else {
+        
+    // }
+    viewPos = view * model * vec4(vPosition, 1.0);
+    fNormal = normalMatrix * normalize(vNormal);
 
     fPosition = viewPos.xyz;
 
