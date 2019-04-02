@@ -192,6 +192,11 @@ void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int r
 
 
 	if (shadows) {
+	    shadowBuffer0.setup(shadow_resolution, shadow_resolution);
+        shadowBuffer1.setup(shadow_resolution, shadow_resolution);
+        shadowBuffer2.setup(shadow_resolution, shadow_resolution);
+        shadowBuffer3.setup(shadow_resolution, shadow_resolution);
+
 		shadowBuffer0.attachShadow(shadow_resolution, shadow_resolution);
 		shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
 		shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
@@ -379,10 +384,11 @@ void Renderer::renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustu
 
 Texture Renderer::lightGbuffers(const Camera &cam, const Texture &gPosition, const Texture &gNormal,
 								const Texture &gAlbedo, const Texture &gRoughnessMetallic) {
-	mat4 lightSpaceMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
-	mat4 lightSpaceMatrix1 = shadowMatrix(cascadeDistances[1], cam, cascadeDepths[1]);
-	mat4 lightSpaceMatrix2 = shadowMatrix(cascadeDistances[2], cam, cascadeDepths[2]);
-	mat4 lightSpaceMatrix3 = shadowMatrix(cascadeDistances[3], cam, cascadeDepths[3]);
+
+	mat4 shadowMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
+	mat4 shadowMatrix1 = shadowMatrix(cascadeDistances[1], cam, cascadeDepths[1]);
+	mat4 shadowMatrix2 = shadowMatrix(cascadeDistances[2], cam, cascadeDepths[2]);
+	mat4 shadowMatrix3 = shadowMatrix(cascadeDistances[3], cam, cascadeDepths[3]);
 
 	Frustum shadowFrustum0 = shadowFrustum(cascadeDistances[0], cam, cascadeDepths[0]);
 	Frustum shadowFrustum1 = shadowFrustum(cascadeDistances[1], cam, cascadeDepths[1]);
@@ -393,10 +399,10 @@ Texture Renderer::lightGbuffers(const Camera &cam, const Texture &gPosition, con
 	if (shadows) {
 		//glDisable(GL_CULL_FACE);
 		//glCullFace(GL_FRONT);
-		renderShadow(shadowBuffer0, lightSpaceMatrix0, shadowFrustum0, false);
-		renderShadow(shadowBuffer1, lightSpaceMatrix1, shadowFrustum1, false);
-		renderShadow(shadowBuffer2, lightSpaceMatrix2, shadowFrustum2, false);
-		renderShadow(shadowBuffer3, lightSpaceMatrix3, shadowFrustum3, false);
+		renderShadow(shadowBuffer0, shadowMatrix0, shadowFrustum0, false);
+		renderShadow(shadowBuffer1, shadowMatrix1, shadowFrustum1, false);
+		renderShadow(shadowBuffer2, shadowMatrix2, shadowFrustum2, false);
+		renderShadow(shadowBuffer3, shadowMatrix3, shadowFrustum3, false);
 		//glCullFace(GL_BACK);
 		//glEnable(GL_CULL_FACE);
 	}
@@ -451,10 +457,10 @@ Texture Renderer::lightGbuffers(const Camera &cam, const Texture &gPosition, con
 		deferredShader.uniformInt("shadowTextures[2]", 10);
 		deferredShader.uniformInt("shadowTextures[3]", 11);
 
-		deferredShader.uniformMat4("lightSpaceMatrix[0]", lightSpaceMatrix0);
-		deferredShader.uniformMat4("lightSpaceMatrix[1]", lightSpaceMatrix1);
-		deferredShader.uniformMat4("lightSpaceMatrix[2]", lightSpaceMatrix2);
-		deferredShader.uniformMat4("lightSpaceMatrix[3]", lightSpaceMatrix3);
+		deferredShader.uniformMat4("lightSpaceMatrix[0]", shadowMatrix0);
+		deferredShader.uniformMat4("lightSpaceMatrix[1]", shadowMatrix1);
+		deferredShader.uniformMat4("lightSpaceMatrix[2]", shadowMatrix2);
+		deferredShader.uniformMat4("lightSpaceMatrix[3]", shadowMatrix3);
 
 		deferredShader.uniformFloat("cascadeDistances[0]", cascadeDistances[0]);
 		deferredShader.uniformFloat("cascadeDistances[1]", cascadeDistances[1]);

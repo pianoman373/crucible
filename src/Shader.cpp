@@ -27,10 +27,6 @@ Shader::Shader() {
 }
 
 void Shader::loadFile(const Path &vertexPath, const Path &fragmentPath) {
-    // 1. Retrieve the vertex/fragment source code from filePath
-
-    std::cout << "loading shaders: " << vertexPath << " and " << fragmentPath << std::endl;
-
     Path directory = vertexPath.getParent();
 
     std::ifstream vertexStream(vertexPath);
@@ -38,66 +34,40 @@ void Shader::loadFile(const Path &vertexPath, const Path &fragmentPath) {
 
     std::string vertexCode = readShader(vertexStream, directory);
     std::string fragmentCode = readShader(fragmentStream, directory);
-    loadLibraries(vertexCode);
-    loadLibraries(fragmentCode);
+
 
     vertexStream.close();
     fragmentStream.close();
 
-    const char* vShaderCode = vertexCode.c_str();
-    const char* fShaderCode = fragmentCode.c_str();
-
-    //shaders
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vShaderCode, NULL);
-    glCompileShader(vertexShader);
-
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if(!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fShaderCode, NULL);
-    glCompileShader(fragmentShader);
-
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-    if(!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    this->id = glCreateProgram();
-
-    glAttachShader(this->id, vertexShader);
-    glAttachShader(this->id, fragmentShader);
-    glLinkProgram(this->id);
-
-    glGetProgramiv(this->id, GL_LINK_STATUS, &success);
-    if(!success) {
-        glGetProgramInfoLog(this->id, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    load(vertexCode, fragmentCode);
 }
 
-void Shader::load(std::string vertex, std::string fragment) {
+void Shader::loadFile(const Path &vertexPath, const Path &fragmentPath, const Path &geometryPath) {
+    Path directory = vertexPath.getParent();
+
+    std::ifstream vertexStream(vertexPath);
+    std::ifstream fragmentStream(fragmentPath);
+    std::ifstream geometryStream(geometryPath);
+
+    std::string vertexCode = readShader(vertexStream, directory);
+    std::string fragmentCode = readShader(fragmentStream, directory);
+    std::string geometryCode = readShader(geometryStream, directory);
+
+
+    vertexStream.close();
+    fragmentStream.close();
+    geometryStream.close();
+
+    load(vertexCode, fragmentCode, geometryCode);
+}
+
+void Shader::load(std::string vertex, std::string fragment, std::string geometry) {
     loadLibraries(vertex);
     loadLibraries(fragment);
 
     const char* vShaderCode = vertex.c_str();
     const char* fShaderCode = fragment.c_str();
+    const char* fGeometryCode = geometry.c_str();
 
     //shaders
     unsigned int vertexShader;
@@ -128,10 +98,22 @@ void Shader::load(std::string vertex, std::string fragment) {
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl << fragment << std::endl;
     }
 
+    unsigned int geometryShader;
+
+    if (!geometry.empty()) {
+        geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geometryShader, 1, &fGeometryCode, NULL);
+        glCompileShader(geometryShader);
+    }
+
     this->id = glCreateProgram();
 
     glAttachShader(this->id, vertexShader);
     glAttachShader(this->id, fragmentShader);
+    if (!geometry.empty()) {
+        glAttachShader(this->id, geometryShader);
+    }
+
     glLinkProgram(this->id);
 
     glGetProgramiv(this->id, GL_LINK_STATUS, &success);

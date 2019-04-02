@@ -18,7 +18,9 @@ public:
 
     void loadFile(const Path &vertexPath, const Path &fragmentPath);
 
-    void load(std::string vertex, std::string fragment);
+    void loadFile(const Path &vertexPath, const Path &fragmentPath, const Path &geometryPath);
+
+    void load(std::string vertex, std::string fragment, std::string geometry="");
 
     void loadPostProcessing(std::string shader);
 

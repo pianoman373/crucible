@@ -11,6 +11,7 @@ uniform mat4 bones[100];
 
 uniform bool doAnimation;
 
+uniform int index;
 uniform mat4 lightSpaceMatrix;
 uniform mat4 model;
 
@@ -27,7 +28,7 @@ void main()
     //         totalLocalPos += posePosition * (vBoneWeights[i] + 0.000000001);
     //     }
 
-    //     viewPos = lightSpaceMatrix * model * totalLocalPos;
+    //     viewPos = lightSpaceMatrices[index] * model * totalLocalPos;
     // }
     // else {
 
