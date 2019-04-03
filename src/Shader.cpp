@@ -3,8 +3,6 @@
 #include <crucible/Resource.h>
 
 #include <glad/glad.h>
-#include <fstream>
-#include <sstream>
 
 #include <string>
 #include <regex>
@@ -24,41 +22,6 @@ void loadLibraries(std::string &in) {
 
 Shader::Shader() {
 
-}
-
-void Shader::loadFile(const Path &vertexPath, const Path &fragmentPath) {
-    Path directory = vertexPath.getParent();
-
-    std::ifstream vertexStream(vertexPath);
-    std::ifstream fragmentStream(fragmentPath);
-
-    std::string vertexCode = readShader(vertexStream, directory);
-    std::string fragmentCode = readShader(fragmentStream, directory);
-
-
-    vertexStream.close();
-    fragmentStream.close();
-
-    load(vertexCode, fragmentCode);
-}
-
-void Shader::loadFile(const Path &vertexPath, const Path &fragmentPath, const Path &geometryPath) {
-    Path directory = vertexPath.getParent();
-
-    std::ifstream vertexStream(vertexPath);
-    std::ifstream fragmentStream(fragmentPath);
-    std::ifstream geometryStream(geometryPath);
-
-    std::string vertexCode = readShader(vertexStream, directory);
-    std::string fragmentCode = readShader(fragmentStream, directory);
-    std::string geometryCode = readShader(geometryStream, directory);
-
-
-    vertexStream.close();
-    fragmentStream.close();
-    geometryStream.close();
-
-    load(vertexCode, fragmentCode, geometryCode);
 }
 
 void Shader::load(std::string vertex, std::string fragment, std::string geometry) {
@@ -157,32 +120,7 @@ void main()
 
 }
 
-std::string Shader::readShader(std::ifstream &file, std::string directory) {
-    std::string source, line;
-    while (std::getline(file, line))
-    {
-        std::string prefix = "#include \"";
-        if(line.substr(0, prefix.size()) == prefix) {
-            //::cout << "found include" << std::endl;
 
-            if (line.substr(line.size() - 1) == "\"") {
-                //std::cout << line.substr(prefix.size(), (line.size() - 1) - prefix.size()) << std::endl;
-
-                std::string includePath = directory + "/" + line.substr(prefix.size(), (line.size() - 1) - prefix.size());
-                std::ifstream includeFile(includePath);
-                if (includeFile.is_open())
-                {
-                    source += readShader(includeFile, directory);
-                }
-                includeFile.close();
-            }
-        }
-        else {
-            source += line + "\n";
-        }
-    }
-    return source;
-}
 
 void Shader::bind() const {
     glUseProgram(this->id);

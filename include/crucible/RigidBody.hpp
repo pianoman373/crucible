@@ -4,6 +4,10 @@
 
 #include <vector>
 
+class btDefaultMotionState;
+class btCompoundShape;
+class btRigidBody;
+
 class RigidBody {
 private:
     btDefaultMotionState* motionState;

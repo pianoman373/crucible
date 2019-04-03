@@ -47,10 +47,6 @@ public:
      */
     json toJson(const Path &workingDirectory) const;
 
-    void loadFile(const Path &file);
-
-    void saveFile(const Path &file) const;
-
 	void setDefaultPBRUniforms();
 
     //all combinations of textures vs floats etc

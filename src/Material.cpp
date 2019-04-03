@@ -119,22 +119,6 @@ json Material::toJson(const Path &workingDirectory) const {
     return ret;
 }
 
-void Material::loadFile(const Path &file) {
-
-    Path wd = file.getParent();
-
-    json j;
-    std::ifstream o(file);
-    o >> j;
-
-    fromJson(j, wd);
-}
-
-void Material::saveFile(const Path &file) const {
-    std::ofstream o(file);
-    o << std::setw(4) << toJson(file.getParent()) << std::endl;
-}
-
 //<-----===== non normal =====----->//
 
 void Material::setPBRUniforms(const vec3 &albedo, float roughness, float metallic) {

@@ -1,10 +1,14 @@
 #pragma once
 
 #include <crucible/GameObject.hpp>
-#include <btBulletDynamicsCommon.h>
 #include <vector>
 
 class CrucibleBulletDebugDraw;
+class btDefaultCollisionConfiguration;
+class btCollisionDispatcher;
+class btBroadphaseInterface;
+class btSequentialImpulseConstraintSolver;
+class btDiscreteDynamicsWorld;
 
 class Scene {
 private:

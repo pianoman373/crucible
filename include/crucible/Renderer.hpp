@@ -82,6 +82,8 @@ private:
 public:
 	static void resize(int resolutionX, int resolutionY);
 
+	static void matchWindowResolution(float scale=1.0f);
+
     /**
      * Sets up vital shaders and variables only once at startup.
      */

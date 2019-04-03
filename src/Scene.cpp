@@ -1,6 +1,8 @@
 #include <crucible/Scene.hpp>
 #include <crucible/Renderer.hpp>
 
+#include <btBulletDynamicsCommon.h>
+
 // debug draw ---------------------------------
 class CrucibleBulletDebugDraw: public btIDebugDraw{
     int m_debugMode;

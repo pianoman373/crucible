@@ -9,7 +9,6 @@
 #include <crucible/Primitives.hpp>
 #include <crucible/Math.hpp>
 #include <crucible/Model.hpp>
-#include <crucible/Util.hpp>
 #include <crucible/Input.hpp>
 #include <crucible/IBL.hpp>
 #include <crucible/DebugRenderer.hpp>
@@ -181,6 +180,12 @@ void Renderer::resize(int resolutionX, int resolutionY) {
 	postProcessor.resize();
 }
 
+void Renderer::matchWindowResolution(float scale) {
+	if (!(resolution == vec2i(Window::getWindowSize().x * scale, Window::getWindowSize().y * scale))) {
+		resize(Window::getWindowSize().x * scale, Window::getWindowSize().y * scale);
+	}
+}
+
 // ------------------------------------------------------------------------
 void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int resolutionY) {
 	resolution = vec2i(resolutionX, resolutionY);
@@ -224,10 +229,10 @@ void Renderer::init(bool doShadows, int shadowResolution, int resolutionX, int r
 
 	skyboxShader = cubemapShader;
 
-	Primitives::skybox(skyboxMesh);
-	Primitives::framebuffer(framebufferMesh);
-	Primitives::skybox(cubemapMesh);
-    Primitives::sprite(spriteMesh);
+	skyboxMesh = Primitives::skybox();
+	framebufferMesh = Primitives::framebuffer();
+	cubemapMesh = Primitives::skybox();
+	spriteMesh = Primitives::sprite();
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);

@@ -5,9 +5,6 @@
 
 #include <map>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
 struct Character {
     Texture tex;
     vec2i size;       // Size of glyph

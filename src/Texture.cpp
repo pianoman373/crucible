@@ -2,24 +2,10 @@
 #include <crucible/Renderer.hpp>
 #include <crucible/Mesh.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-
 #include <stb_image.h>
 #include <glad/glad.h>
 
-void Texture::load(const Path &file, bool pixelated) {
-    stbi_set_flip_vertically_on_load(false);
-    int width, height, components;
-    unsigned char* image = stbi_load(file.toString().c_str(), &width, &height, &components, STBI_rgb_alpha);
-
-    load(image, width, height, pixelated);
-
-    stbi_image_free(image);
-
-    filepath = file;
-}
-
-void Texture::load(const unsigned char *data, int width, int height, bool pixelated, bool singleChannel) {
+void Texture::load(const unsigned char *data, int width, int height, bool pixelated, bool singleChannel, const std::string &filepath) {
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
 

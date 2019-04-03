@@ -1,5 +1,6 @@
 #include <crucible/Camera.hpp>
 #include <crucible/Window.hpp>
+#include <crucible/Input.hpp>
 
 Camera::Camera() {
 
@@ -47,4 +48,70 @@ mat4 Camera::getProjection() const {
 
         return perspective(fov, size.x / size.y, 0.1f, 10000.0f);
     }
+}
+
+void Camera::updateSpaceCamera(float speed) {
+    static vec2 lastMousePos;
+    Window::setMouseGrabbed(Input::isMouseButtonDown(1));
+
+    if (Input::isMouseButtonDown(1)) {
+        vec3 right = getRight();
+        float deltaSpeed = speed * Window::deltaTime();
+
+        if (Input::isKeyDown(Input::KEY_A))
+            position = position - right * deltaSpeed;
+
+        if (Input::isKeyDown(Input::KEY_D))
+            position = position + right * deltaSpeed;
+
+        if (Input::isKeyDown(Input::KEY_W))
+            position = position + direction * deltaSpeed;
+
+        if (Input::isKeyDown(Input::KEY_S))
+            position = position - direction * deltaSpeed;
+
+        if (Input::isKeyDown(Input::KEY_R))
+            position = position + up * deltaSpeed;
+
+        if (Input::isKeyDown(Input::KEY_F))
+            position = position - up * deltaSpeed;
+
+
+        //rotation
+        vec2 offset = Input::getCursorPos() - lastMousePos;
+        float xOffset = -offset.x / 10.0f;
+        float yOffset = offset.y / 10.0f;
+        float zOffset = 0.0f;
+
+        if (Input::isKeyDown(Input::KEY_Q)) {
+            zOffset -= 45.0f * Window::deltaTime();
+        }
+        if (Input::isKeyDown(Input::KEY_E)) {
+            zOffset += 45.0f * Window::deltaTime();
+        }
+
+        //vertical
+        mat4 mat;
+        mat = rotate(mat, right, -yOffset);
+        vec4 vec = mat * vec4(direction, 1.0f);
+        direction = normalize(vec3(vec));
+
+        //horizontal
+        mat = mat4();
+        mat = rotate(mat, up, xOffset);
+        vec4 vecj = mat * vec4(direction, 1.0f);
+        direction = normalize(vec3(vecj));
+
+        mat = mat4();
+        mat = rotate(mat, direction, zOffset);
+        vec4 veck = mat * vec4(right, 1.0f);
+        right = normalize(vec3(veck));
+
+        up = normalize(cross(right, direction));
+    }
+    lastMousePos = Input::getCursorPos();
+}
+
+void Camera::matchWindowResolution() {
+    dimensions = {(float)Window::getWindowSize().x, (float)Window::getWindowSize().y};
 }

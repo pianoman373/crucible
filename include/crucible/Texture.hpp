@@ -6,13 +6,12 @@
 
 class Texture {
 private:
-    unsigned int id;
+    unsigned int id = 0;
 
 	std::string filepath;
 public:
-    void load(const Path &file, bool pixelated=false);
 
-    void load(const unsigned char *data, int width, int height, bool pixelated=false, bool singleChannel=false);
+    void load(const unsigned char *data, int width, int height, bool pixelated=false, bool singleChannel=false, const std::string &filepath="");
 
     void loadFromSingleColor(const vec4 &color);
 
@@ -31,7 +30,7 @@ public:
 
 class Cubemap {
 private:
-    unsigned int id;
+    unsigned int id = 0;
 
 public:
     void load(const Path &file1, const Path &file2, const Path &file3, const Path &file4,

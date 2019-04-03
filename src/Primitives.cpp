@@ -1,7 +1,9 @@
 #include <crucible/Primitives.hpp>
 
 //taken from https://github.com/JoeyDeVries/Cell
-void Primitives::torus(Mesh &m, float r1, float r2, int numSteps1, int numSteps2) {
+Mesh Primitives::torus(float r1, float r2, int numSteps1, int numSteps2) {
+	Mesh m;
+
     // NOTE(Joey): we generate an additional minor ring segment as we can't
     // directly connect to the first minor ring as the last set of vertices
     // require unique texture coordinates.
@@ -82,9 +84,13 @@ void Primitives::torus(Mesh &m, float r1, float r2, int numSteps1, int numSteps2
         }
     }
     m.generate();
+
+    return m;
 }
 
-void Primitives::sphere(Mesh &m, unsigned int xSegments, unsigned int ySegments) {
+Mesh Primitives::sphere(unsigned int xSegments, unsigned int ySegments) {
+	Mesh m;
+
 	float PI = 3.141592;
 	float TAU = PI * 2;
 
@@ -121,9 +127,13 @@ void Primitives::sphere(Mesh &m, unsigned int xSegments, unsigned int ySegments)
 	}
 
 	m.generate();
+
+	return m;
 }
 
-void Primitives::sprite(Mesh &m) {
+Mesh Primitives::sprite() {
+	Mesh m;
+
 	m.positions = std::vector<vec3>{
 		{ 0.0f, 0.0f, 0.0f },
 		{ 1.0f, 0.0f, 0.0f },
@@ -145,9 +155,13 @@ void Primitives::sprite(Mesh &m) {
 	};
 
     m.generate();
+
+    return m;
 }
 
-void Primitives::framebuffer(Mesh &m) {
+Mesh Primitives::framebuffer() {
+	Mesh m;
+
 	m.positions = std::vector<vec3>{
 		{ -1.0f, -1.0f, 0.0f },
 		{ 1.0f, -1.0f, 0.0f },
@@ -170,9 +184,13 @@ void Primitives::framebuffer(Mesh &m) {
 	};
 
 	m.generate();
+
+	return m;
 }
 
-void Primitives::cube(Mesh &m, float scale, float width, float height, float depth) {
+Mesh Primitives::cube(float scale, float width, float height, float depth) {
+	Mesh m;
+
     m.positions = std::vector<vec3> {
 			{ 0.5f*width,  0.5f*height, -0.5f*depth},
 			{ 0.5f*width, -0.5f*height, -0.5f*depth},
@@ -350,102 +368,14 @@ void Primitives::cube(Mesh &m, float scale, float width, float height, float dep
 			{ -1.0f,  0.0f,  0.0f},
 	};
 
-	m.boneIDs = std::vector<vec4i> {
-			{1, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-
-
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{0, 0, 0, 0},
-
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{1, 0, 0, 0},
-
-
-			{0, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-
-
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-
-
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-			{1, 0, 0, 0},
-	};
-
-	m.boneWeights = std::vector<vec4>{
-			{ 1.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-            { 0.0f,  0.0f, 0.0f, 0.0f},
-
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-            { 1.0f,  0.0f, 0.0f, 0.0f},
-	};
-
     m.generate();
+
+    return m;
 }
 
-void Primitives::skybox(Mesh &m) {
+Mesh Primitives::skybox() {
+	Mesh m;
+
     m.positions = std::vector<vec3> {
             {-0.5f, -0.5f, -0.5f},
             {0.5f,  -0.5f, -0.5f},
@@ -498,4 +428,6 @@ void Primitives::skybox(Mesh &m) {
     };
 
     m.generate();
+
+    return m;
 }

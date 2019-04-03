@@ -39,4 +39,8 @@ public:
     mat4 getView() const;
 
     mat4 getProjection() const;
+
+    void updateSpaceCamera(float speed);
+
+    void matchWindowResolution();
 };

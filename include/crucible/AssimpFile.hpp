@@ -2,7 +2,6 @@
 
 #include <crucible/Bone.hpp>
 #include <crucible/Model.hpp>
-#include <assimp/Importer.hpp>
 #include <crucible/Animation.hpp>
 
 class Path;
@@ -12,24 +11,21 @@ class aiNode;
 class AssimpFile {
 private:
     const aiScene* scene = nullptr;
-    Assimp::Importer importer;
-
-    Path workingDirectory;
-
 
     void processNode(Bone &b, aiNode *node);
 
 public:
+    AssimpFile();
 
-    AssimpFile(const Path &path);
+    AssimpFile(const aiScene *scene);
 
     ~AssimpFile();
 
-    Bone getSkeleton(std::string rootNode);
+    Bone getSkeleton();
 
-    Bone getSkeletonNew();
+    Mesh getMesh(int index=0);
 
-    Model getModel(bool loadTextures=false);
+    int numMeshes();
 
     Animation getAnimation();
 };

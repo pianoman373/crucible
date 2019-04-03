@@ -1,6 +1,10 @@
 #include <crucible/Font.hpp>
 
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+
 #include <fstream>
 #include <glad/glad.h>
 

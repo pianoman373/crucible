@@ -10,15 +10,9 @@ private:
     // The program ID
     unsigned int id;
 
-    std::string readShader(std::ifstream &file, std::string directory);
-
 public:
     // Constructor reads and builds the shader
     Shader();
-
-    void loadFile(const Path &vertexPath, const Path &fragmentPath);
-
-    void loadFile(const Path &vertexPath, const Path &fragmentPath, const Path &geometryPath);
 
     void load(std::string vertex, std::string fragment, std::string geometry="");
 

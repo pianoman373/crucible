@@ -117,9 +117,9 @@ RigidBody *RigidBody::addCylinderCollider(const vec3 &origin, float radius, floa
 }
 
 RigidBody *RigidBody::addMeshCollider(const vec3 &origin, const Mesh &mesh, const vec3 &scale) {
-    btTriangleMesh *tm = new btTriangleMesh();
-
     if (mesh.indices.size() > 0) {
+        btTriangleMesh *tm = new btTriangleMesh();
+
         for (int i = 0; i < mesh.indices.size(); i += 3) {
             vec3 v1 = mesh.positions[mesh.indices[i]] * scale;
             vec3 v2 = mesh.positions[mesh.indices[i+1]] * scale;
@@ -127,14 +127,16 @@ RigidBody *RigidBody::addMeshCollider(const vec3 &origin, const Mesh &mesh, cons
 
             tm->addTriangle(btVector3(v1.x, v1.y, v1.z), btVector3(v2.x, v2.y, v2.z), btVector3(v3.x, v3.y, v3.z));
         }
+
+        btBvhTriangleMeshShape *ms = new btBvhTriangleMeshShape(tm, false);
+
+        btTransform t;  //position and rotation
+        t.setIdentity();
+        t.setOrigin(btVector3(origin.x,origin.y,origin.z));
+        colShape->addChildShape(t, ms);
     }
 
-    btBvhTriangleMeshShape *ms = new btBvhTriangleMeshShape(tm, false);
 
-    btTransform t;  //position and rotation
-    t.setIdentity();
-    t.setOrigin(btVector3(origin.x,origin.y,origin.z));
-    colShape->addChildShape(t, ms);
 
     /*if (mass > 0.0f) {
         btVector3 inertia(0,0,0);

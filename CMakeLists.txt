@@ -28,11 +28,6 @@ add_executable(embed-resource embedresource.cpp)
 
 project(crucible)
 
-#find_package(Vulkan)
-#message(STATUS "Vulkan FOUND = ${Vulkan_FOUND}")
-#message(STATUS "Vulkan Include = ${Vulkan_INCLUDE_DIR}")
-#message(STATUS "Vulkan Lib = ${Vulkan_LIBRARY}")
-
 option(CRUCIBLE_BUILD_EXAMPLES "Build the Crucible example programs" ON)
 
 option(GLFW_BUILD_DOCS OFF)
@@ -66,7 +61,6 @@ include_directories(
                     lib/stb/
                     lib/imgui/
                     lib/freetype/include/
-#                    ${Vulkan_INCLUDE_DIR}
                     )
 
 file(GLOB PROJECT_SOURCES src/*.cpp
@@ -77,7 +71,6 @@ file(GLOB PROJECT_SOURCES src/*.cpp
                           lib/imgui/imgui_widgets.cpp
                           lib/imgui/examples/imgui_impl_glfw.cpp
                           lib/imgui/examples/imgui_impl_opengl3.cpp
-                          foo.c
                           )
 
 file(GLOB PROJECT_HEADERS include/crucible/*.h
@@ -92,21 +85,15 @@ add_definitions(-DGLFW_INCLUDE_NONE
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${MyResources})
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} opengl32 assimp BulletDynamics BulletCollision LinearMath freetype)
+    target_link_libraries(${PROJECT_NAME} assimp glfw ${GLFW_LIBRARIES} opengl32 BulletDynamics BulletCollision LinearMath freetype)
 elseif(UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} GL assimp BulletDynamics BulletCollision LinearMath freetype)
+    target_link_libraries(${PROJECT_NAME} assimp glfw ${GLFW_LIBRARIES} GL BulletDynamics BulletCollision LinearMath freetype)
 endif(WIN32)
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-
-
-    if(WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++14 -static -Wa,-mbig-obj")
-    elseif(UNIX AND NOT APPLE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++14 -Wa")
-    endif(WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++14")
 endif()
 
 source_group("Sources" FILES ${PROJECT_SOURCES})
@@ -114,22 +101,10 @@ source_group("Headers" FILES ${PROJECT_HEADERS})
 
 
 if (CRUCIBLE_BUILD_EXAMPLES)
-    add_executable(demo examples/demo.cpp)
-    add_dependencies(demo crucible)
-    target_link_libraries(demo crucible)
-    set_target_properties(demo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-
-    add_executable(NBodyDemo examples/NBodyDemo.cpp)
-    target_link_libraries(NBodyDemo crucible)
-    set_target_properties(NBodyDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-
-    add_executable(VulkanDemo examples/VulkanDemo.cpp)
-    target_link_libraries(VulkanDemo crucible)
-    set_target_properties(VulkanDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-
-    add_executable(terrainDemo examples/TerrainDemo.cpp examples/SimplexNoise.cpp examples/SimplexNoise.hpp)
-    target_link_libraries(terrainDemo crucible)
-    set_target_properties(terrainDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    add_executable(SceneRendering examples/SceneRendering.cpp)
+    add_dependencies(SceneRendering crucible)
+    target_link_libraries(SceneRendering crucible)
+    set_target_properties(SceneRendering PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 
