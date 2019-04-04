@@ -41,6 +41,7 @@ imgui.ini
 
 # Editor config files
 editorConfig.json
+CMakeSettings.json
 
 cmake-build-*
 build
