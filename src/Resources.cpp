@@ -26,6 +26,7 @@ static Assimp::Importer importer;
 
 static std::map<std::string, Texture> textureRegistry;
 static std::map<std::string, Shader> shaderRegistry;
+static std::map<std::string, Shader> postProcessingShaderRegistry;
 static std::map<std::string, AssimpFile> assimpFileRegistry;
 static std::map<std::string, Material> materialRegistry;
 
@@ -241,6 +242,36 @@ namespace Resources {
             shaderRegistry.insert(std::make_pair(key, shader));
         }
         return shaderRegistry.at(key);
+    }
+
+    Shader &getPostProcessingShader(const Path &path) {
+        std::string key = path.toString();
+
+        if (postProcessingShaderRegistry.find(key) == postProcessingShaderRegistry.end()) {
+            std::cout << "loading post processing shader: " << path << std::endl;
+
+            Shader shader;
+            Path directory = path.getParent();
+
+            std::ifstream stream(path);
+
+            if (stream.is_open()) {
+                std::string code = readShader(stream, directory);
+
+
+                stream.close();
+
+                shader.loadPostProcessing(code);
+            }
+            else {
+                std::cerr << "error loading post processing shader: " << path << std::endl;
+            }
+
+
+
+            postProcessingShaderRegistry.insert(std::make_pair(key, shader));
+        }
+        return postProcessingShaderRegistry.at(key);
     }
 
     AssimpFile &getAssimpFile(const Path &path) {
