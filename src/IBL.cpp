@@ -3,6 +3,7 @@
 #include <crucible/Renderer.hpp>
 #include <crucible/Mesh.hpp>
 #include <crucible/Texture.hpp>
+#include <crucible/Resources.hpp>
 
 #include <glad/glad.h>
 
@@ -52,20 +53,20 @@ namespace IBL {
         glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
 
-        Renderer::irradianceShader.bind();
-        Renderer::irradianceShader.uniformMat4("projection", captureProjection);
+        Resources::irradianceShader.bind();
+        Resources::irradianceShader.uniformMat4("projection", captureProjection);
        environment.bind();
 
         glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
         for (unsigned int i = 0; i < 6; ++i)
         {
-            Renderer::irradianceShader.uniformMat4("view", captureViews[i]);
+            Resources::irradianceShader.uniformMat4("view", captureViews[i]);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            Renderer::cubemapMesh.render();
+            Resources::cubemapMesh.render();
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -88,9 +89,9 @@ namespace IBL {
         // generate mipmaps for the cubemap so OpenGL automatically allocates the required memory.
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-        Renderer::prefilterShader.bind();
-        Renderer::prefilterShader.uniformInt("environmentMap", 0);
-        Renderer::prefilterShader.uniformMat4("projection", captureProjection);
+        Resources::prefilterShader.bind();
+        Resources::prefilterShader.uniformInt("environmentMap", 0);
+        Resources::prefilterShader.uniformMat4("projection", captureProjection);
         glActiveTexture(GL_TEXTURE0);
         environment.bind();
 
@@ -106,15 +107,15 @@ namespace IBL {
             glViewport(0, 0, mipWidth, mipHeight);
 
             float roughness = (float)mip / (float)(maxMipLevels - 1);
-            Renderer::prefilterShader.uniformFloat("roughness", roughness);
+            Resources::prefilterShader.uniformFloat("roughness", roughness);
             for (unsigned int i = 0; i < 6; ++i)
             {
-                Renderer::prefilterShader.uniformMat4("view", captureViews[i]);
+                Resources::prefilterShader.uniformMat4("view", captureViews[i]);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                Renderer::cubemapMesh.render();
+                Resources::cubemapMesh.render();
             }
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

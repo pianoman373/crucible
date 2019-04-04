@@ -6,13 +6,6 @@
 
 class PostProcessor {
 private:
-    Shader tonemapShader;
-    Shader fxaaShader;
-    Shader gaussianBlurShader;
-    Shader ssaoShader;
-    Shader ssaoBlurShader;
-    Shader ssrShader;
-
     Framebuffer HDRbuffer0;
     Framebuffer HDRbuffer1;
     Framebuffer bloomBuffer0;
@@ -32,6 +25,18 @@ private:
     void doBloom(const Texture &deferred);
 
 public:
+    bool fxaa = true;
+    bool vignette = true;
+    bool tonemap = true;
+    bool bloom = true;
+    bool SSR = true;
+    float bloomStrength = 0.05f;
+    bool ssao = true;
+    float ssaoRadius = 10.0f;
+    int ssaoKernelSize = 8;
+    float fogInner = 100.0f;
+    float fogOuter = 150.0f;
+
     void init();
 
     void resize();

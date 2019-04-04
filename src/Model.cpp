@@ -40,7 +40,7 @@ void Model::fromJson(const json &j, const Path &workingDirectory) {
 
         Material mat;
 
-        mat.setShader(Renderer::standardShader);
+        mat.setShader(Resources::standardShader);
         mat.setDefaultPBRUniforms();
         mat.fromJson(jMaterial, workingDirectory);
 

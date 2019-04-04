@@ -9,7 +9,6 @@
 
 class DebugRenderer {
 private:
-    Shader debugShader;
     Mesh debugRendererMesh;
 
     std::vector<vec3> positions;

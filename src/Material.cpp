@@ -11,7 +11,7 @@ Material::Material() {
 }
 
 void Material::setDefaultPBRUniforms() {
-    this->shader = Renderer::standardShader;
+    this->shader = Resources::standardShader;
 
     setUniformBool("albedoTextured", false);
     setUniformVec3("albedoColor", vec3(0.3f));

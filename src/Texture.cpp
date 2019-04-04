@@ -1,6 +1,7 @@
 #include <crucible/Texture.hpp>
 #include <crucible/Renderer.hpp>
 #include <crucible/Mesh.hpp>
+#include <crucible/Resources.hpp>
 
 #include <stb_image.h>
 #include <glad/glad.h>
@@ -168,8 +169,8 @@ void Cubemap::loadEquirectangular(const Path &file, int resolution) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// convert HDR equirectangular environment map to cubemap equivalent
-	Renderer::eq2cubeShader.bind();
-	Renderer::eq2cubeShader.uniformMat4("projection", captureProjection);
+	Resources::eq2cubeShader.bind();
+	Resources::eq2cubeShader.uniformMat4("projection", captureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
@@ -177,12 +178,12 @@ void Cubemap::loadEquirectangular(const Path &file, int resolution) {
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		Renderer::eq2cubeShader.uniformMat4("view", captureViews[i]);
+		Resources::eq2cubeShader.uniformMat4("view", captureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		Renderer::cubemapMesh.render(); // renders a 1x1 cube
+		Resources::cubemapMesh.render(); // renders a 1x1 cube
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

@@ -76,8 +76,6 @@ int main() {
     Renderer::init(true, 2048, 1280, 720);
 
 	Camera cam;
-	int thing;
-
 
 	Cubemap cubemap;
 	cubemap.loadEquirectangular("resources/canyon.hdr");

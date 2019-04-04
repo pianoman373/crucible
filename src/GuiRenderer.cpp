@@ -25,7 +25,7 @@ void GuiRenderer::renderSprite(vec2 position, vec2 size, vec4 uvs, vec4 color, c
     shader.uniformFloat("textureStrength", 1.0f);
     tex.bind();
 
-    Renderer::spriteMesh.render();
+    Resources::spriteMesh.render();
 
 }
 
@@ -50,7 +50,7 @@ void GuiRenderer::renderSprite(vec2 position, vec2 size, vec4 color, Shader &sha
     Texture::bindNull();
 
 
-    Renderer::spriteMesh.render();
+    Resources::spriteMesh.render();
 
 }
 
@@ -70,7 +70,7 @@ void GuiRenderer::renderText(vec2 position, const std::string &text, const Font 
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;
 
-        renderSprite({xpos, ypos}, {w, h}, {0.0f, 0.0f, 1.0f, 1.0f}, color, ch.tex, Renderer::textShader);
+        renderSprite({xpos, ypos}, {w, h}, {0.0f, 0.0f, 1.0f, 1.0f}, color, ch.tex, Resources::textShader);
 
         // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
         x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)

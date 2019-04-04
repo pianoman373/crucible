@@ -2,6 +2,10 @@
 #include <crucible/Shader.hpp>
 #include <crucible/Texture.hpp>
 #include <crucible/Path.hpp>
+#include <crucible/Resource.h>
+#include <crucible/Primitives.hpp>
+
+#include <glad/glad.h>
 
 #include <map>
 #include <string>
@@ -52,7 +56,100 @@ static std::string readShader(std::ifstream &file, std::string directory) {
     return source;
 }
 
+static void load() {
+    Resources::standardShader.load(LOAD_RESOURCE(src_shaders_standard_vsh).data(), LOAD_RESOURCE(src_shaders_standard_fsh).data());
+    Resources::eq2cubeShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_eq2cube_fsh).data());
+    Resources::cubemapShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_cubemap_fsh).data());
+    Resources::irradianceShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_irradiance_fsh).data());
+    Resources::prefilterShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_prefilter_fsh).data());
+    Resources::passthroughShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_passthrough_glsl).data());
+    Resources::spriteShader.load(LOAD_RESOURCE(src_shaders_sprite_vsh).data(), LOAD_RESOURCE(src_shaders_sprite_fsh).data());
+    Resources::textShader.load(LOAD_RESOURCE(src_shaders_text_vsh).data(), LOAD_RESOURCE(src_shaders_text_fsh).data());
+    Resources::ShadowShader.load(LOAD_RESOURCE(src_shaders_shadow_vsh).data(), LOAD_RESOURCE(src_shaders_shadow_fsh).data());
+    Resources::deferredShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_glsl).data());
+    Resources::deferredAmbientShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_ambient_glsl).data());
+    Resources::brdfShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_brdf_glsl).data());
+    Resources::debugShader.load(LOAD_RESOURCE(src_shaders_debug_vsh).data(), LOAD_RESOURCE(src_shaders_debug_fsh).data());
+
+    Resources::tonemapShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_tonemap_glsl).data());
+    Resources::fxaaShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_fxaa_glsl).data());
+    Resources::gaussianBlurShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_gaussianBlur_glsl).data());
+    Resources::ssaoShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssao_glsl).data());
+    Resources::ssaoBlurShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssaoBlur_glsl).data());
+    Resources::ssrShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssr_glsl).data());
+
+    Resources::framebufferMesh = Primitives::framebuffer();
+    Resources::cubemapMesh = Primitives::skybox();
+    Resources::spriteMesh = Primitives::sprite();
+
+
+    // create brdf texture
+    unsigned int brdfLUTTexture;
+    glGenTextures(1, &brdfLUTTexture);
+
+    // pre-allocate enough memory for the LUT texture.
+    glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    unsigned int captureFBO, captureRBO;
+    glGenFramebuffers(1, &captureFBO);
+    glGenRenderbuffers(1, &captureRBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+
+    glViewport(0, 0, 512, 512);
+    Resources::brdfShader.bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    Resources::framebufferMesh.render();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glDeleteFramebuffers(1, &captureFBO);
+    glDeleteRenderbuffers(1, &captureRBO);
+
+    Resources::brdf.setID(brdfLUTTexture);
+}
+
+
 namespace Resources {
+    Mesh cubemapMesh;
+    Mesh framebufferMesh;
+    Mesh spriteMesh;
+
+    Shader standardShader;
+    Shader eq2cubeShader;
+    Shader cubemapShader;
+    Shader irradianceShader;
+    Shader prefilterShader;
+    Shader brdfShader;
+    Shader passthroughShader;
+    Shader spriteShader;
+    Shader textShader;
+    Shader ShadowShader;
+    Shader deferredShader;
+    Shader deferredAmbientShader;
+    Shader debugShader;
+
+    Shader tonemapShader;
+    Shader fxaaShader;
+    Shader gaussianBlurShader;
+    Shader ssaoShader;
+    Shader ssaoBlurShader;
+    Shader ssrShader;
+
+    Texture brdf;
+
+    void loadDefaultResources() {
+        load();
+    }
+
     Texture &getTexture(const Path &path, bool pixelated) {
         if (textureRegistry.find(path) == textureRegistry.end()) {
             std::cout << "loading texture: " << path << std::endl;

@@ -2,11 +2,10 @@
 #include <crucible/Renderer.hpp>
 
 #include <glad/glad.h>
-
-#include <crucible/Resource.h>
+#include <crucible/Resources.hpp>
 
 void DebugRenderer::init() {
-    debugShader.load(LOAD_RESOURCE(src_shaders_debug_vsh).data(), LOAD_RESOURCE(src_shaders_debug_fsh).data());
+
 }
 
 void DebugRenderer::renderDebugLine(const vec3 &v1, const vec3 &v2, const vec3 &color) {
@@ -66,9 +65,9 @@ void DebugRenderer::flush(const Camera &cam) {
     positions.clear();
     colors.clear();
 
-    debugShader.bind();
-    debugShader.uniformMat4("view", cam.getView());
-    debugShader.uniformMat4("projection", cam.getProjection());
+    Resources::debugShader.bind();
+    Resources::debugShader.uniformMat4("view", cam.getView());
+    Resources::debugShader.uniformMat4("projection", cam.getProjection());
     debugRendererMesh.renderMode = GL_LINES;
     debugRendererMesh.render();
 }
