@@ -4,7 +4,7 @@ function(embed_resources out_var)
     set(result)
     foreach(in_f ${ARGN})
         file(RELATIVE_PATH src_f ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${in_f})
-        set(out_f "${PROJECT_BINARY_DIR}/${in_f}.c")
+        set(out_f "${PROJECT_BINARY_DIR}/${in_f}.cpp")
         set(out_f_dir)
         get_filename_component(out_f_dir ${out_f} DIRECTORY)
 

@@ -3,8 +3,8 @@
 #include <crucible/Math.hpp>
 #include <functional>
 
+typedef struct GLFWwindow GLFWwindow;
 
-class GLFWwindow;
 
 namespace Input {
 	/* Printable keys */

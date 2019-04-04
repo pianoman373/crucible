@@ -57,6 +57,7 @@ static std::string readShader(std::ifstream &file, std::string directory) {
     return source;
 }
 
+
 static void load() {
     Resources::standardShader.load(LOAD_RESOURCE(src_shaders_standard_vsh).data(), LOAD_RESOURCE(src_shaders_standard_fsh).data());
     Resources::eq2cubeShader.load(LOAD_RESOURCE(src_shaders_cubemap_vsh).data(), LOAD_RESOURCE(src_shaders_eq2cube_fsh).data());
@@ -78,6 +79,27 @@ static void load() {
     Resources::ssaoShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssao_glsl).data());
     Resources::ssaoBlurShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssaoBlur_glsl).data());
     Resources::ssrShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssr_glsl).data());
+
+    /*Resources::standardShader = Resources::getShader("src/shaders/standard.vsh", "src/shaders/standard.fsh");
+    Resources::eq2cubeShader = Resources::getShader("src/shaders/cubemap.vsh", "src/shaders/eq2cube.fsh");
+    Resources::cubemapShader = Resources::getShader("src/shaders/cubemap.vsh", "src/shaders/cubemap.fsh");
+    Resources::irradianceShader = Resources::getShader("src/shaders/cubemap.vsh", "src/shaders/irradiance.fsh");
+    Resources::prefilterShader = Resources::getShader("src/shaders/cubemap.vsh", "src/shaders/prefilter.fsh");
+    Resources::passthroughShader = Resources::getPostProcessingShader("src/shaders/passthrough.glsl");
+    Resources::spriteShader = Resources::getShader("src/shaders/sprite.vsh", "src/shaders/sprite.fsh");
+    Resources::textShader = Resources::getShader("src/shaders/text.vsh", "src/shaders/text.fsh");
+    Resources::ShadowShader = Resources::getShader("src/shaders/shadow.vsh", "src/shaders/shadow.fsh");
+    Resources::deferredShader = Resources::getPostProcessingShader("src/shaders/deferred.glsl");
+    Resources::deferredAmbientShader = Resources::getPostProcessingShader("src/shaders/deferred_ambient.glsl");
+    Resources::brdfShader = Resources::getPostProcessingShader("src/shaders/brdf.glsl");
+    Resources::debugShader = Resources::getShader("src/shaders/debug.vsh", "src/shaders/debug.fsh");
+
+    Resources::tonemapShader = Resources::getPostProcessingShader("src/shaders/tonemap.glsl");
+    Resources::fxaaShader = Resources::getPostProcessingShader("src/shaders/fxaa.glsl");
+    Resources::gaussianBlurShader = Resources::getPostProcessingShader("src/shaders/gaussianBlur.glsl");
+    Resources::ssaoShader = Resources::getPostProcessingShader("src/shaders/ssao.glsl");
+    Resources::ssaoBlurShader = Resources::getPostProcessingShader("src/shaders/ssaoBlur.glsl");
+    Resources::ssrShader = Resources::getPostProcessingShader("src/shaders/ssr.glsl");*/
 
     Resources::framebufferMesh = Primitives::framebuffer();
     Resources::cubemapMesh = Primitives::skybox();
