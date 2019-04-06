@@ -109,6 +109,19 @@ static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f,
 		c.mesh->render();
 	}
 }
+
+static GLuint queries[4]; // The unique query id
+static GLuint queryResults[4]; // Save the time, in nanoseconds
+
+static void beginQuery(int id) {
+    glGetQueryObjectuiv(queries[id], GL_QUERY_RESULT, &queryResults[id]);
+    glBeginQuery(GL_TIME_ELAPSED, queries[id]);
+}
+
+static void endQuery() {
+    glEndQuery(GL_TIME_ELAPSED);
+}
+
 // ------------------------------------------------------------------------
 static void renderDebugGui() {
 	float aspect = (float)resolution.x / (float)resolution.y;
@@ -119,11 +132,17 @@ static void renderDebugGui() {
 					 ImGuiWindowFlags_NoSavedSettings)) {
 		            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
 					ImGui::GetIO().Framerate);
+
+                    ImGui::Text("geometry: %.2f ms", queryResults[0]*0.000001f);
+                    ImGui::Text("shadow pass: %.2f ms", queryResults[1]*0.000001f);
+                    ImGui::Text("deferred lighting: %.2f ms", queryResults[2]*0.000001f);
+                    ImGui::Text("post processing: %.2f ms", queryResults[3]*0.000001f);
 		ImGui::End();
 	}
 
     ImGui::ShowDemoWindow();
 }
+
 
 namespace Renderer {
     vec3 ambient = vec3(0.01f);
@@ -148,6 +167,8 @@ namespace Renderer {
 
         shadows = doShadows;
         shadow_resolution = shadowResolution;
+
+        glGenQueries(4, queries);
 
 
         if (shadows) {
@@ -322,6 +343,8 @@ namespace Renderer {
         Frustum shadowFrustum2 = shadowFrustum(cascadeDistances[2], cam, cascadeDepths[2]);
         Frustum shadowFrustum3 = shadowFrustum(cascadeDistances[3], cam, cascadeDepths[3]);
 
+        beginQuery(1);
+
         // render scene multiple times to shadow buffers
         if (shadows) {
             //glDisable(GL_CULL_FACE);
@@ -333,6 +356,10 @@ namespace Renderer {
             //glCullFace(GL_BACK);
             //glEnable(GL_CULL_FACE);
         }
+
+        endQuery();
+
+        beginQuery(2);
 
         HDRbuffer.bind();
         glViewport(0, 0, resolution.x, resolution.y);
@@ -359,19 +386,9 @@ namespace Renderer {
         Resources::deferredShader.uniformInt("gRoughnessMetallic", 3);
         gRoughnessMetallic.bind(3);
 
-        Resources::deferredShader.uniformVec3("cameraPos", vec3());
         Resources::deferredShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
         Resources::deferredShader.uniformVec3("sun.color", sun.color);
         Resources::deferredShader.uniformMat4("view", cam.getView());
-
-        Resources::deferredShader.uniformInt("pointLightCount", (int) pointLights.size());
-        for (unsigned int i = 0; i < pointLights.size(); i++) {
-            Resources::deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
-                                                  vec3(vec4(pointLights[i].position, 1.0f) * cam.getView()));
-            Resources::deferredShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i].color);
-
-            Resources::deferredShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
-        }
 
         if (shadows) {
             shadowBuffer0.getAttachment(0).bind(8);
@@ -395,6 +412,47 @@ namespace Renderer {
             Resources::deferredShader.uniformFloat("cascadeDistances[3]", cascadeDistances[3]);
         }
         Resources::framebufferMesh.render();
+
+
+        // Render point light lighting to the buffer
+        // ---------------------------------------------
+        Resources::deferredPointShader.bind();
+
+        Resources::deferredPointShader.uniformInt("gPosition", 0);
+        gBuffer.getAttachment(0).bind(0);
+
+        Resources::deferredPointShader.uniformInt("gNormal", 1);
+        gBuffer.getAttachment(1).bind(1);
+
+        Resources::deferredPointShader.uniformInt("gAlbedo", 2);
+        gBuffer.getAttachment(2).bind(2);
+
+        Resources::deferredPointShader.uniformInt("gRoughnessMetallic", 3);
+        gBuffer.getAttachment(3).bind(3);
+
+        Resources::deferredPointShader.uniformInt("irradiance", 4);
+        irradiance.bind(4);
+        Resources::deferredPointShader.uniformInt("prefilter", 5);
+        specular.bind(5);
+        Resources::deferredPointShader.uniformInt("brdf", 6);
+        Resources::brdf.bind(6);
+
+        Resources::deferredPointShader.uniformInt("pointLightCount", (int) pointLights.size());
+        for (unsigned int i = 0; i < pointLights.size(); i++) {
+            Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
+                                                  vec3(vec4(pointLights[i].position, 1.0f) * cam.getView()));
+            Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i].color);
+
+            Resources::deferredPointShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
+        }
+
+        Resources::framebufferMesh.render();
+
+
+
+
+
+
 
 
 
@@ -434,6 +492,8 @@ namespace Renderer {
 
         Resources::framebufferMesh.render();
 
+        endQuery();
+
         glDisable(GL_BLEND);
         glDepthFunc(GL_LEQUAL);
 
@@ -453,6 +513,7 @@ namespace Renderer {
     }
 
     void flush(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+
         const Texture &t = flushToTexture(cam, f, doFrustumCulling);
 
 
@@ -470,6 +531,10 @@ namespace Renderer {
 
     // ------------------------------------------------------------------------
     const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+        
+        
+
+
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
 
@@ -478,11 +543,17 @@ namespace Renderer {
         Texture gAlbedo;
         Texture gRoughnessMetallic;
 
+        beginQuery(0);
         renderGbuffers(cam, f, doFrustumCulling, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+        endQuery();
+
+
+        
         Texture deferred = lightGbuffers(cam, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
 
+        beginQuery(3);
         Texture final = postProcessor.postRender(cam, deferred, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
-
+        endQuery();
 
 
         HDRbuffer.bind();

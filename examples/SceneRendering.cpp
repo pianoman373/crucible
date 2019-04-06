@@ -72,8 +72,11 @@ public:
 };
 
 int main() {
-	Window::create({ 1280, 720 }, "Crucible Demo", false, false);
+	Window::create({ 1280, 720 }, "Scene Rendering Demo", false, false);
     Renderer::init(true, 2048, 1280, 720);
+
+    Renderer::postProcessor.SSR = false;
+    //Renderer::postProcessor.ssao = false;
 
 	Camera cam;
 
@@ -160,8 +163,12 @@ int main() {
             IBL::generateIBLmaps(vec3(0.0f,  2.0f, 0.0f), Renderer::irradiance, Renderer::specular);
             first = false;
         }
+        
 
         Renderer::flush(cam);
+
+        
+
         Window::end();
     }
 }

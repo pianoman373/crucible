@@ -109,6 +109,11 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     add_dependencies(SceneRendering crucible)
     target_link_libraries(SceneRendering crucible)
     set_target_properties(SceneRendering PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
+    add_executable(LightSources examples/LightSources.cpp)
+    add_dependencies(LightSources crucible)
+    target_link_libraries(LightSources crucible)
+    set_target_properties(LightSources PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 
