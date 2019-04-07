@@ -8,7 +8,26 @@
 
 #include <random>
 
+
+static float gaussianDistribution (float x, float sigma)
+{
+    float d = x;
+    float n = 1.0f / (sqrt(2.0f * PI) * sigma);
+
+    return exp(-d*d/(2.0f * sigma * sigma)) * n;
+};
+
+static void uniformGaussians(const Shader &s, std::string name, int radius) {
+    for (int i = 0; i < radius; i++) {
+        s.uniformFloat(name + "[" + std::to_string(i) + "]", gaussianDistribution(i, 1.0f));
+    }
+
+    s.uniformInt(name + "_length", radius);
+}
+
 void PostProcessor::doBloom(const Texture &deferred) {
+    int blurRadius = 8;
+
     glViewport(0, 0, bloomBuffer0.getWidth(), bloomBuffer0.getHeight());
     bloomBuffer1.bind();
     Resources::passthroughShader.bind();
@@ -18,12 +37,14 @@ void PostProcessor::doBloom(const Texture &deferred) {
     bloomBuffer0.bind();
     Resources::gaussianBlurShader.bind();
     Resources::gaussianBlurShader.uniformBool("horizontal", true);
+    uniformGaussians(Resources::gaussianBlurShader, "weights", blurRadius);
     bloomBuffer1.getAttachment(0).bind();
     Resources::framebufferMesh.render();
 
     bloomBuffer1.bind();
     Resources::gaussianBlurShader.bind();
     Resources::gaussianBlurShader.uniformBool("horizontal", false);
+    uniformGaussians(Resources::gaussianBlurShader, "weights", blurRadius);
     bloomBuffer0.getAttachment(0).bind();
     Resources::framebufferMesh.render();
 
@@ -38,12 +59,14 @@ void PostProcessor::doBloom(const Texture &deferred) {
     bloomBuffer2.bind();
     Resources::gaussianBlurShader.bind();
     Resources::gaussianBlurShader.uniformBool("horizontal", true);
+    uniformGaussians(Resources::gaussianBlurShader, "weights", blurRadius);
     bloomBuffer3.getAttachment(0).bind();
     Resources::framebufferMesh.render();
 
     bloomBuffer3.bind();
     Resources::gaussianBlurShader.bind();
     Resources::gaussianBlurShader.uniformBool("horizontal", false);
+    uniformGaussians(Resources::gaussianBlurShader, "weights", blurRadius);
     bloomBuffer2.getAttachment(0).bind();
     Resources::framebufferMesh.render();
 
@@ -58,12 +81,14 @@ void PostProcessor::doBloom(const Texture &deferred) {
     bloomBuffer4.bind();
     Resources::gaussianBlurShader.bind();
     Resources::gaussianBlurShader.uniformBool("horizontal", true);
+    uniformGaussians(Resources::gaussianBlurShader, "weights", blurRadius);
     bloomBuffer5.getAttachment(0).bind();
     Resources::framebufferMesh.render();
 
     bloomBuffer5.bind();
     Resources::gaussianBlurShader.bind();
     Resources::gaussianBlurShader.uniformBool("horizontal", false);
+    uniformGaussians(Resources::gaussianBlurShader, "weights", blurRadius);
     bloomBuffer4.getAttachment(0).bind();
     Resources::framebufferMesh.render();
 }
@@ -125,40 +150,40 @@ void PostProcessor::resize() {
     //bloom framebuffers
     bloomBuffer0.destroy();
     bloomBuffer0.setup(resolution.x/2, resolution.y/2);
-    bloomBuffer0.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer0.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
     bloomBuffer1.destroy();
     bloomBuffer1.setup(resolution.x/2, resolution.y/2);
-    bloomBuffer1.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer1.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
 
     bloomBuffer2.destroy();
     bloomBuffer2.setup(resolution.x/8, resolution.y/8);
-    bloomBuffer2.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer2.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
     bloomBuffer3.destroy();
     bloomBuffer3.setup(resolution.x/8, resolution.y/8);
-    bloomBuffer3.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer3.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
 
     bloomBuffer4.destroy();
-    bloomBuffer4.setup(resolution.x/32, resolution.y/32);
-    bloomBuffer4.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer4.setup(resolution.x/16, resolution.y/16);
+    bloomBuffer4.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
     bloomBuffer5.destroy();
-    bloomBuffer5.setup(resolution.x/32, resolution.y/32);
-    bloomBuffer5.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    bloomBuffer5.setup(resolution.x/16, resolution.y/16);
+    bloomBuffer5.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
 
     ssrBlurBuffer0.destroy();
     ssrBlurBuffer0.setup(resolution.x/8, resolution.y/8);
-    ssrBlurBuffer0.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    ssrBlurBuffer0.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
 
     ssrBlurBuffer1.destroy();
     ssrBlurBuffer1.setup(resolution.x/8, resolution.y/8);
-    ssrBlurBuffer1.attachTexture(GL_RGBA16F, GL_RGB, GL_FLOAT);
+    ssrBlurBuffer1.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
 
     ssaoBuffer.destroy();
     ssaoBuffer.setup(resolution.x, resolution.y);
-    ssaoBuffer.attachTexture(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+    ssaoBuffer.attachTexture(GL_RED, GL_RED, GL_UNSIGNED_BYTE);
 
     ssaoBufferBlur.destroy();
     ssaoBufferBlur.setup(resolution.x, resolution.y);
-    ssaoBufferBlur.attachTexture(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+    ssaoBufferBlur.attachTexture(GL_RED, GL_RED, GL_UNSIGNED_BYTE);
 }
 
 Texture PostProcessor::postRender(const Camera &cam, const Texture &deferred, const Texture &gPosition, const Texture &gNormal, const Texture &gAlbedo, const Texture &gRoughnessMetallic) {

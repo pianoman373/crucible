@@ -46,7 +46,7 @@ int main() {
 
 
 
-        Renderer::renderPointLight(vec3(0.0f, 2.0f, 5.0f), vec3(1.0f, 0.6f, 0.4f), 5.0f);
+        Renderer::renderPointLight(vec3(0.0f, 2.0f, 5.0f), vec3(1.0f, 0.6f, 0.4f)*10.0f, 5.0f);
         Renderer::debug.renderDebugSphere(lightTransform.position, 5.0f, vec3(1.0f, 0.6f, 0.4f));
 
         Renderer::render(sphere, light, lightTransform);

@@ -29,10 +29,10 @@ public:
     bool vignette = true;
     bool tonemap = true;
     bool bloom = true;
-    bool SSR = true;
+    bool SSR = false;
     float bloomStrength = 0.05f;
     bool ssao = true;
-    float ssaoRadius = 10.0f;
+    float ssaoRadius = 4.0f;
     int ssaoKernelSize = 8;
     float fogInner = 100.0f;
     float fogOuter = 150.0f;

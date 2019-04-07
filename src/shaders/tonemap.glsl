@@ -33,7 +33,7 @@ vec3 postProcess(vec2 texCoord) {
     vec3 color = texture(deferred, texCoord).rgb;
 
     if (ssao) {
-        color *= texture(ssaoTexture, texCoord).rgb;
+        color *= vec3(texture(ssaoTexture, texCoord).r);
     }
 
     if (bloom) {
