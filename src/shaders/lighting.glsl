@@ -9,6 +9,9 @@ struct DirectionalLight {
 vec3 direction;
 vec3 color;
 };
+
+const float PI = 3.14159265359;
+
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
 return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);

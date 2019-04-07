@@ -24,6 +24,8 @@ namespace Resources {
     extern Shader deferredShader;
     extern Shader deferredAmbientShader;
     extern Shader deferredPointShader;
+    extern Shader deferredDirectionalShader;
+
     extern Shader debugShader;
 
     extern Shader tonemapShader;

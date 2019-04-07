@@ -59,6 +59,31 @@ struct matrix4 {
         m31 = 0;
         m32 = 0;
     }
+
+    matrix4(T m00, T m10, T m20, T m30,
+            T m01, T m11, T m21, T m31,
+            T m02, T m12, T m22, T m32,
+            T m03, T m13, T m23, T m33) {
+        
+        this->m00 = m00;
+        this->m11 = m11;
+        this->m22 = m22;
+        this->m33 = m33;
+
+        this->m01 = m01;
+        this->m02 = m02;
+        this->m03 = m03;
+        this->m10 = m10;
+        this->m12 = m12;
+        this->m13 = m13;
+        this->m20 = m20;
+        this->m21 = m21;
+        this->m23 = m23;
+        this->m30 = m30;
+        this->m31 = m31;
+        this->m32 = m32;
+
+    }
 };
 
 template <class T>

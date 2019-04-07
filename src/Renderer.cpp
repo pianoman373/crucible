@@ -370,7 +370,9 @@ namespace Renderer {
         glDepthFunc(GL_ALWAYS);
         glDepthMask(GL_TRUE);
 
-        // render the g-buffers with the deferred shader
+        mat4 inverseView = inverse(cam.getView());
+
+        // light the g-buffers with the deferred shader
         // ---------------------------------------------
         Resources::deferredShader.bind();
 
@@ -386,9 +388,29 @@ namespace Renderer {
         Resources::deferredShader.uniformInt("gRoughnessMetallic", 3);
         gRoughnessMetallic.bind(3);
 
-        Resources::deferredShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
-        Resources::deferredShader.uniformVec3("sun.color", sun.color);
-        Resources::deferredShader.uniformMat4("view", cam.getView());
+        Resources::framebufferMesh.render();
+
+
+
+        // render directional lighting to the buffer
+        // ---------------------------------------------
+        Resources::deferredDirectionalShader.bind();
+
+        Resources::deferredDirectionalShader.uniformInt("gPosition", 0);
+        gPosition.bind(0);
+
+        Resources::deferredDirectionalShader.uniformInt("gNormal", 1);
+        gNormal.bind(1);
+
+        Resources::deferredDirectionalShader.uniformInt("gAlbedo", 2);
+        gAlbedo.bind(2);
+
+        Resources::deferredDirectionalShader.uniformInt("gRoughnessMetallic", 3);
+        gRoughnessMetallic.bind(3);
+
+        Resources::deferredDirectionalShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
+        Resources::deferredDirectionalShader.uniformVec3("sun.color", sun.color);
+        Resources::deferredDirectionalShader.uniformMat4("view", cam.getView());
 
         if (shadows) {
             shadowBuffer0.getAttachment(0).bind(8);
@@ -396,20 +418,27 @@ namespace Renderer {
             shadowBuffer2.getAttachment(0).bind(10);
             shadowBuffer3.getAttachment(0).bind(11);
 
-            Resources::deferredShader.uniformInt("shadowTextures[0]", 8);
-            Resources::deferredShader.uniformInt("shadowTextures[1]", 9);
-            Resources::deferredShader.uniformInt("shadowTextures[2]", 10);
-            Resources::deferredShader.uniformInt("shadowTextures[3]", 11);
+            mat4 biasMatrix = mat4(
+                0.5f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.5f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.5f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f
+            );
 
-            Resources::deferredShader.uniformMat4("lightSpaceMatrix[0]", shadowMatrix0);
-            Resources::deferredShader.uniformMat4("lightSpaceMatrix[1]", shadowMatrix1);
-            Resources::deferredShader.uniformMat4("lightSpaceMatrix[2]", shadowMatrix2);
-            Resources::deferredShader.uniformMat4("lightSpaceMatrix[3]", shadowMatrix3);
+            Resources::deferredDirectionalShader.uniformInt("shadowTextures[0]", 8);
+            Resources::deferredDirectionalShader.uniformInt("shadowTextures[1]", 9);
+            Resources::deferredDirectionalShader.uniformInt("shadowTextures[2]", 10);
+            Resources::deferredDirectionalShader.uniformInt("shadowTextures[3]", 11);
 
-            Resources::deferredShader.uniformFloat("cascadeDistances[0]", cascadeDistances[0]);
-            Resources::deferredShader.uniformFloat("cascadeDistances[1]", cascadeDistances[1]);
-            Resources::deferredShader.uniformFloat("cascadeDistances[2]", cascadeDistances[2]);
-            Resources::deferredShader.uniformFloat("cascadeDistances[3]", cascadeDistances[3]);
+            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[0]", biasMatrix * shadowMatrix0 * inverseView);
+            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[1]", biasMatrix * shadowMatrix1 * inverseView);
+            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[2]", biasMatrix * shadowMatrix2 * inverseView);
+            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[3]", biasMatrix * shadowMatrix3 * inverseView);
+
+            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[0]", cascadeDistances[0]);
+            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[1]", cascadeDistances[1]);
+            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[2]", cascadeDistances[2]);
+            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[3]", cascadeDistances[3]);
         }
         Resources::framebufferMesh.render();
 
@@ -486,9 +515,8 @@ namespace Renderer {
             Resources::deferredAmbientShader.uniformBool("doIBL", false);
         }
 
-        Resources::deferredAmbientShader.uniformVec3("cameraPos", vec3());
         Resources::deferredAmbientShader.uniformVec3("ambient", ambient);
-        Resources::deferredAmbientShader.uniformMat4("view", cam.getView());
+        Resources::deferredAmbientShader.uniformMat4("inverseView", inverseView);
 
         Resources::framebufferMesh.render();
 

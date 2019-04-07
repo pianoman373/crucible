@@ -105,15 +105,15 @@ source_group("Headers" FILES ${PROJECT_HEADERS})
 
 
 if (CRUCIBLE_BUILD_EXAMPLES)
-    add_executable(SceneRendering examples/SceneRendering.cpp)
-    add_dependencies(SceneRendering crucible)
-    target_link_libraries(SceneRendering crucible)
-    set_target_properties(SceneRendering PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    add_executable(SceneRenderingDemo examples/SceneRenderingDemo.cpp)
+    add_dependencies(SceneRenderingDemo crucible)
+    target_link_libraries(SceneRenderingDemo crucible)
+    set_target_properties(SceneRenderingDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-    add_executable(LightSources examples/LightSources.cpp)
-    add_dependencies(LightSources crucible)
-    target_link_libraries(LightSources crucible)
-    set_target_properties(LightSources PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    add_executable(LightSourcesDemo examples/LightSourcesDemo.cpp)
+    add_dependencies(LightSourcesDemo crucible)
+    target_link_libraries(LightSourcesDemo crucible)
+    set_target_properties(LightSourcesDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 

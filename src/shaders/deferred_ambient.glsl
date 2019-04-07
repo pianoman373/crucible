@@ -11,11 +11,8 @@ uniform sampler2D brdf;
 uniform bool doIBL;
 
 uniform vec3 ambient;
-uniform vec3 cameraPos;
 
-uniform mat4 view;
-
-const float PI = 3.14159265359;
+uniform mat4 inverseView;
 
 vec3 postProcess(vec2 texCoord) {
 
@@ -28,7 +25,7 @@ vec3 postProcess(vec2 texCoord) {
 	float metallic = clamp(RoughnessMetallic.g, 0.0, 1.0);
 
     vec3 N = normal;
-	vec3 V = normalize(cameraPos - fragPos);
+	vec3 V = normalize(-fragPos);
 
 	vec3 R = reflect(-V, N);
 
@@ -40,11 +37,11 @@ vec3 postProcess(vec2 texCoord) {
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
 
-	vec3 irradianceColor = texture(irradiance, normalize(mat3(inverse(view)) * N)).rgb;
+	vec3 irradianceColor = texture(irradiance, (inverseView * vec4(N, 0.0)).xyz).rgb;
 	vec3 diffuse = irradianceColor * albedo;
 
 	const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(prefilter, normalize(mat3(inverse(view)) * R),  roughness * MAX_REFLECTION_LOD).rgb;
+    vec3 prefilteredColor = textureLod(prefilter, (inverseView * vec4(R, 0.0)).xyz,  roughness * MAX_REFLECTION_LOD).rgb;
 	vec2 brdfColor = texture(brdf, vec2(max(dot(N, V), 0.0), roughness)).rg;
 
 	vec3 specular = prefilteredColor * (F * brdfColor.x + brdfColor.y);

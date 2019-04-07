@@ -71,7 +71,9 @@ static void load() {
     Resources::deferredShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_glsl).data());
     Resources::deferredAmbientShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_ambient_glsl).data());
     Resources::deferredPointShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_point_glsl).data());
+    Resources::deferredDirectionalShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_deferred_directional_glsl).data());
     Resources::brdfShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_brdf_glsl).data());
+
     Resources::debugShader.load(LOAD_RESOURCE(src_shaders_debug_vsh).data(), LOAD_RESOURCE(src_shaders_debug_fsh).data());
 
     Resources::tonemapShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_tonemap_glsl).data());
@@ -160,6 +162,8 @@ namespace Resources {
     Shader deferredShader;
     Shader deferredAmbientShader;
     Shader deferredPointShader;
+    Shader deferredDirectionalShader;
+    
     Shader debugShader;
 
     Shader tonemapShader;

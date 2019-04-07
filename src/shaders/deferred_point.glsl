@@ -8,8 +8,6 @@ uniform sampler2D gRoughnessMetallic;
 uniform int pointLightCount;
 uniform PointLight[MAX_POINT_LIGHTS] pointLights;
 
-const float PI = 3.14159265359;
-
 vec3 postProcess(vec2 texCoord) {
     // retrieve data from gbuffer
     vec3 fragPos = texture(gPosition, texCoord).rgb;
