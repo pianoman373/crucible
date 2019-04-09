@@ -36,12 +36,14 @@ static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f,
 
 static std::vector<RenderCall> renderQueue;
 static std::vector<PointLight> pointLights;
+static std::vector<PostProcessor*> postProcessors;
 
 static Framebuffer shadowBuffer0;
 static Framebuffer shadowBuffer1;
 static Framebuffer shadowBuffer2;
 static Framebuffer shadowBuffer3;
 static Framebuffer HDRbuffer;
+static Framebuffer HDRbuffer2;
 static Framebuffer gBuffer;
 
 
@@ -153,8 +155,6 @@ namespace Renderer {
     Cubemap irradiance;
     Cubemap specular;
 
-    PostProcessor postProcessor;
-
 
     // public functions
     // ------------------------------------------------------------------------
@@ -193,7 +193,6 @@ namespace Renderer {
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
         resize(resolution.x, resolution.y);
-        postProcessor.init();
     }
 
     void resize(int resolutionX, int resolutionY) {
@@ -204,6 +203,11 @@ namespace Renderer {
         HDRbuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
         HDRbuffer.attachRBO();
 
+        HDRbuffer2.destroy();
+        HDRbuffer2.setup(resolution.x, resolution.y);
+        HDRbuffer2.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT);
+        HDRbuffer2.attachRBO();
+
         gBuffer.destroy();
         gBuffer.setup(resolution.x, resolution.y);
         gBuffer.attachTexture(GL_RGB16F, GL_RGB, GL_FLOAT); //position
@@ -212,7 +216,9 @@ namespace Renderer {
         gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
         gBuffer.attachRBO();
 
-        postProcessor.resize();
+        for (int i = 0; i < postProcessors.size(); i++) {
+            postProcessors[i]->resize();
+        }
     }
 
     void matchWindowResolution(float scale) {
@@ -221,6 +227,9 @@ namespace Renderer {
         }
     }
 
+    void pushPostProcessor(PostProcessor *step) {
+        postProcessors.push_back(step);
+    }
 
     // ------------------------------------------------------------------------
     void renderSkybox(const mat4 &view, const mat4 &projection, const vec3 &cameraPos) {
@@ -547,7 +556,7 @@ namespace Renderer {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
-        Resources::passthroughShader.bind();
+        Resources::gammaCorrectShader.bind();
         t.bind();
         Resources::framebufferMesh.render();
     }
@@ -559,10 +568,6 @@ namespace Renderer {
 
     // ------------------------------------------------------------------------
     const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
-        
-        
-
-
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
 
@@ -574,33 +579,41 @@ namespace Renderer {
         beginQuery(0);
         renderGbuffers(cam, f, doFrustumCulling, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
         endQuery();
-
-
         
         Texture deferred = lightGbuffers(cam, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
 
+        
+        // post processing
         beginQuery(3);
-        Texture final = postProcessor.postRender(cam, deferred, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+        Framebuffer &source = HDRbuffer;
+        Framebuffer &destination = HDRbuffer2;
+
+        if (postProcessors.size() > 0) {
+            for (int i = 0; i < postProcessors.size(); i++) {
+                PostProcessor *step = postProcessors[i];
+
+                step->postProcess(cam, source, destination);
+
+                Framebuffer &temp = destination;
+                destination = source;
+                source = temp;
+            }
+        }
+        else {
+            destination = HDRbuffer;
+        }
         endQuery();
-
-
-        HDRbuffer.bind();
-        Resources::passthroughShader.bind();
-        final.bind();
-        Resources::framebufferMesh.render();
 
         // copy depth and stencil buffer
         // -------------------------------
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, HDRbuffer.fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destination.fbo);
         glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
         // render debug tools
         // ------------------
         debug.flush(cam);
-
-
 
         static bool lastKeydown = false;
         static bool debug = false;
@@ -616,15 +629,7 @@ namespace Renderer {
         pointLights.clear();
         renderQueue.clear();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
-
-        glDisable(GL_DEPTH_TEST);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        return HDRbuffer.getAttachment(0);
+        return destination.getAttachment(0);
     }
     // ------------------------------------------------------------------------
     Cubemap renderToProbe(const vec3 &position) {
@@ -738,5 +743,9 @@ namespace Renderer {
 
     vec2i getResolution() {
         return resolution;
+    }
+
+    Framebuffer &getGBuffer() {
+        return gBuffer;
     }
 }

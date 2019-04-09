@@ -75,8 +75,10 @@ int main() {
 	Window::create({ 1280, 720 }, "Scene Rendering Demo", false, false);
     Renderer::init(true, 2048, 1280, 720);
 
-    Renderer::postProcessor.SSR = false;
-    //Renderer::postProcessor.ssao = false;
+    Renderer::pushPostProcessor(new SsaoPostProcessor());
+    Renderer::pushPostProcessor(new BloomPostProcessor());
+    Renderer::pushPostProcessor(new TonemapPostProcessor());
+    Renderer::pushPostProcessor(new FxaaPostProcessor());
 
 	Camera cam;
 

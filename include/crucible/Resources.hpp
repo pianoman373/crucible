@@ -34,6 +34,8 @@ namespace Resources {
     extern Shader ssaoShader;
     extern Shader ssaoBlurShader;
     extern Shader ssrShader;
+    extern Shader gammaCorrectShader;
+    extern Shader bloomShader;
 
 
 

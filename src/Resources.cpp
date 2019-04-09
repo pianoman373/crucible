@@ -82,6 +82,8 @@ static void load() {
     Resources::ssaoShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssao_glsl).data());
     Resources::ssaoBlurShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssaoBlur_glsl).data());
     Resources::ssrShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_ssr_glsl).data());
+    Resources::gammaCorrectShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_gammaCorrect_glsl).data());
+    Resources::bloomShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_bloom_glsl).data());
 
     /*Resources::standardShader = Resources::getShader("src/shaders/standard.vsh", "src/shaders/standard.fsh");
     Resources::eq2cubeShader = Resources::getShader("src/shaders/cubemap.vsh", "src/shaders/eq2cube.fsh");
@@ -172,6 +174,8 @@ namespace Resources {
     Shader ssaoShader;
     Shader ssaoBlurShader;
     Shader ssrShader;
+    Shader gammaCorrectShader;
+    Shader bloomShader;
 
     Texture brdf;
 

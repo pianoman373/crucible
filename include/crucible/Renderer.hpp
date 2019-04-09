@@ -7,7 +7,7 @@
 #include <crucible/DebugRenderer.hpp>
 #include <crucible/Frustum.hpp>
 #include <crucible/IRenderable.hpp>
-#include <crucible/PostProcessor.hpp>
+#include <crucible/PostProcessing.hpp>
 #include <crucible/Bone.hpp>
 #include <crucible/Mesh.hpp>
 #include <crucible/Model.hpp>
@@ -29,16 +29,10 @@ namespace Renderer {
 	extern vec3 ambient;
 
 	extern DebugRenderer debug;
-    extern PostProcessor postProcessor;
 
 	extern Cubemap environment;
 	extern Cubemap irradiance;
 	extern Cubemap specular;
-
-
-
-
-
 
     /**
      * Sets up vital shaders and variables only once at startup.
@@ -48,6 +42,9 @@ namespace Renderer {
     void resize(int resolutionX, int resolutionY);
 
     void matchWindowResolution(float scale=1.0f);
+
+
+    void pushPostProcessor(PostProcessor *step);
 
     /**
      * Mostly internal function that will only render the skybox and nothing else. This doesn't need to be called under
@@ -127,4 +124,6 @@ namespace Renderer {
     void setSun(const DirectionalLight &light);
 
     vec2i getResolution();
+
+    Framebuffer &getGBuffer();
 };

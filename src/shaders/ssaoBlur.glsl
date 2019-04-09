@@ -1,4 +1,5 @@
 uniform sampler2D ssaoInput;
+uniform sampler2D source;
 
 vec3 postProcess(vec2 texCoord) {
     vec2 texelSize = 1.0 / vec2(textureSize(ssaoInput, 0));
@@ -11,5 +12,5 @@ vec3 postProcess(vec2 texCoord) {
             result += texture(ssaoInput, texCoord + offset).r;
         }
     }
-    return vec3(result / (4.0 * 4.0));
+    return vec3(result / (4.0 * 4.0)) * texture(source, texCoord).rgb;
 }
