@@ -123,10 +123,6 @@ void SsaoPostProcessor::resize() {
 }
 
 
-
-
-
-
 static float gaussianDistribution (float x, float sigma)
 {
     float d = x;

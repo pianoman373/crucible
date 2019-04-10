@@ -34,6 +34,8 @@ namespace Renderer {
 	extern Cubemap irradiance;
 	extern Cubemap specular;
 
+    extern std::vector<std::shared_ptr<PostProcessor>> postProcessingStack;
+
     /**
      * Sets up vital shaders and variables only once at startup.
      */
@@ -95,11 +97,9 @@ namespace Renderer {
         render(&model, &transform, &aabb);
     }
 
-    void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling, Texture &gPosition,
-                               Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic);
+    void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling);
 
-    Texture lightGbuffers(const Camera &cam, const Texture &gPosition, const Texture &gNormal,
-                                 const Texture &gAlbedo, const Texture &gRoughnessMetallic);
+    void lightGbuffers(const Camera &cam);
 
 	Cubemap renderToProbe(const vec3 &position);
 

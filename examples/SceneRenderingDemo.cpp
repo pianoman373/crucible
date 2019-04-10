@@ -75,10 +75,10 @@ int main() {
 	Window::create({ 1280, 720 }, "Scene Rendering Demo", false, false);
     Renderer::init(true, 2048, 1280, 720);
 
-    Renderer::pushPostProcessor(new SsaoPostProcessor());
-    Renderer::pushPostProcessor(new BloomPostProcessor());
-    Renderer::pushPostProcessor(new TonemapPostProcessor());
-    Renderer::pushPostProcessor(new FxaaPostProcessor());
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new SsaoPostProcessor()));
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new BloomPostProcessor()));
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new TonemapPostProcessor()));
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new FxaaPostProcessor()));
 
 	Camera cam;
 

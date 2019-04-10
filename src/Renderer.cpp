@@ -36,7 +36,6 @@ static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f,
 
 static std::vector<RenderCall> renderQueue;
 static std::vector<PointLight> pointLights;
-static std::vector<PostProcessor*> postProcessors;
 
 static Framebuffer shadowBuffer0;
 static Framebuffer shadowBuffer1;
@@ -155,6 +154,8 @@ namespace Renderer {
     Cubemap irradiance;
     Cubemap specular;
 
+    std::vector<std::shared_ptr<PostProcessor>> postProcessingStack;
+
 
     // public functions
     // ------------------------------------------------------------------------
@@ -188,9 +189,6 @@ namespace Renderer {
         glEnable(GL_CULL_FACE);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_STENCIL_TEST);
-        //    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
         resize(resolution.x, resolution.y);
     }
@@ -216,8 +214,8 @@ namespace Renderer {
         gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
         gBuffer.attachRBO();
 
-        for (int i = 0; i < postProcessors.size(); i++) {
-            postProcessors[i]->resize();
+        for (int i = 0; i < postProcessingStack.size(); i++) {
+            postProcessingStack[i]->resize();
         }
     }
 
@@ -225,10 +223,6 @@ namespace Renderer {
         if (!(resolution == vec2i(Window::getWindowSize().x * scale, Window::getWindowSize().y * scale))) {
             resize(Window::getWindowSize().x * scale, Window::getWindowSize().y * scale);
         }
-    }
-
-    void pushPostProcessor(PostProcessor *step) {
-        postProcessors.push_back(step);
     }
 
     // ------------------------------------------------------------------------
@@ -283,12 +277,11 @@ namespace Renderer {
         }
     }
 
-    void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling, Texture &gPosition,
-                                  Texture &gNormal, Texture &gAlbedo, Texture &gRoughnessMetallic) {
+    void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
         // render objects in scene into g-buffer
         // -------------------------------------
         gBuffer.bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, resolution.x, resolution.y);
 
         const Material *lastMaterial = nullptr;
@@ -332,16 +325,9 @@ namespace Renderer {
 
             lastMaterial = call.material;
         }
-
-        gPosition = gBuffer.getAttachment(0);
-        gNormal = gBuffer.getAttachment(1);
-        gAlbedo = gBuffer.getAttachment(2);
-        gRoughnessMetallic = gBuffer.getAttachment(3);
     }
 
-    Texture lightGbuffers(const Camera &cam, const Texture &gPosition, const Texture &gNormal,
-                                    const Texture &gAlbedo, const Texture &gRoughnessMetallic) {
-
+    void lightGbuffers(const Camera &cam) {
         mat4 shadowMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
         mat4 shadowMatrix1 = shadowMatrix(cascadeDistances[1], cam, cascadeDepths[1]);
         mat4 shadowMatrix2 = shadowMatrix(cascadeDistances[2], cam, cascadeDepths[2]);
@@ -386,16 +372,16 @@ namespace Renderer {
         Resources::deferredShader.bind();
 
         Resources::deferredShader.uniformInt("gPosition", 0);
-        gPosition.bind(0);
+        gBuffer.getAttachment(0).bind(0);
 
         Resources::deferredShader.uniformInt("gNormal", 1);
-        gNormal.bind(1);
+        gBuffer.getAttachment(1).bind(1);
 
         Resources::deferredShader.uniformInt("gAlbedo", 2);
-        gAlbedo.bind(2);
+        gBuffer.getAttachment(2).bind(2);
 
         Resources::deferredShader.uniformInt("gRoughnessMetallic", 3);
-        gRoughnessMetallic.bind(3);
+        gBuffer.getAttachment(3).bind(3);
 
         Resources::framebufferMesh.render();
 
@@ -406,16 +392,16 @@ namespace Renderer {
         Resources::deferredDirectionalShader.bind();
 
         Resources::deferredDirectionalShader.uniformInt("gPosition", 0);
-        gPosition.bind(0);
+        gBuffer.getAttachment(0).bind(0);
 
         Resources::deferredDirectionalShader.uniformInt("gNormal", 1);
-        gNormal.bind(1);
+        gBuffer.getAttachment(1).bind(1);
 
         Resources::deferredDirectionalShader.uniformInt("gAlbedo", 2);
-        gAlbedo.bind(2);
+        gBuffer.getAttachment(2).bind(2);
 
         Resources::deferredDirectionalShader.uniformInt("gRoughnessMetallic", 3);
-        gRoughnessMetallic.bind(3);
+        gBuffer.getAttachment(3).bind(3);
 
         Resources::deferredDirectionalShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
         Resources::deferredDirectionalShader.uniformVec3("sun.color", sun.color);
@@ -486,14 +472,6 @@ namespace Renderer {
 
         Resources::framebufferMesh.render();
 
-
-
-
-
-
-
-
-
         // Render ambient lighting to the buffer
         // ---------------------------------------------
         Resources::deferredAmbientShader.bind();
@@ -540,8 +518,6 @@ namespace Renderer {
 
 
         glDepthFunc(GL_LEQUAL);
-
-        return HDRbuffer.getAttachment(0);
     }
 
     void flush(const Camera &cam) {
@@ -571,16 +547,12 @@ namespace Renderer {
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
 
-        Texture gPosition;
-        Texture gNormal;
-        Texture gAlbedo;
-        Texture gRoughnessMetallic;
 
         beginQuery(0);
-        renderGbuffers(cam, f, doFrustumCulling, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+        renderGbuffers(cam, f, doFrustumCulling);
         endQuery();
         
-        Texture deferred = lightGbuffers(cam, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+        lightGbuffers(cam);
 
         
         // post processing
@@ -588,9 +560,9 @@ namespace Renderer {
         Framebuffer &source = HDRbuffer;
         Framebuffer &destination = HDRbuffer2;
 
-        if (postProcessors.size() > 0) {
-            for (int i = 0; i < postProcessors.size(); i++) {
-                PostProcessor *step = postProcessors[i];
+        if (postProcessingStack.size() > 0) {
+            for (int i = 0; i < postProcessingStack.size(); i++) {
+                std::shared_ptr<PostProcessor> step = postProcessingStack[i];
 
                 step->postProcess(cam, source, destination);
 
@@ -705,8 +677,8 @@ namespace Renderer {
             cam.up = ups[i];
             cam.fov = 90.0f;
 
-            renderGbuffers(cam, Frustum(), false, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
-            Texture deferred = lightGbuffers(cam, gPosition, gNormal, gAlbedo, gRoughnessMetallic);
+            renderGbuffers(cam, Frustum(), false);
+            lightGbuffers(cam);
 
             glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
             glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
@@ -715,7 +687,7 @@ namespace Renderer {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             Resources::passthroughShader.bind();
-            deferred.bind();
+            HDRbuffer.getAttachment(0).bind();
             Resources::framebufferMesh.render();
 
 
