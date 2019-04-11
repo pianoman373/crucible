@@ -14,10 +14,10 @@ struct Character {
 
 class Font {
 private:
-    float fontSize;
+    unsigned int size;
 
 public:
-    float descender;
+    int descender;
 
     std::map<unsigned char, Character> characters;
 
@@ -27,7 +27,7 @@ public:
 
     ~Font();
 
-    void loadFromFile(const std::string &path, float fontSize);
+    void loadFromFile(const std::string &path, unsigned int fontSize);
 
-    vec2i getTextSize(const std::string &text) const;
+    vec2 getTextSize(const std::string &text) const;
 };

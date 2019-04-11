@@ -13,6 +13,8 @@ private:
     GameObject *parent;
 
 public:
+    virtual ~Component();
+
     void setParent(GameObject *parent);
 
     GameObject *getParent() const;

@@ -105,7 +105,8 @@ json Material::toJson(const Path &workingDirectory) const {
 //        uniform.tex.bind(uniform.unit);
 //        shader.uniformInt(it.first, uniform.unit);
 
-        uniforms[it->first] = Path(it->second.tex.getFilepath()).relativeTo(workingDirectory);
+        // TODO: Find file path from Resources map
+        //uniforms[it->first] = Path(it->second.tex.getFilepath()).relativeTo(workingDirectory);
 
 
 //        std::cout << "working directory: " << workingDirectory << std::endl;

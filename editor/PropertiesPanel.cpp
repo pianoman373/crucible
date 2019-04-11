@@ -46,13 +46,13 @@ void PropertiesPanel::ImGuiMaterialEditTexture(std::string label, std::string id
     ImGui::Image(ImTextureID((long long) value.getID()), ImVec2(210, 210), ImVec2(0, 0), ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
     if (ImGui::Button(std::string("Browse " + label).c_str(), ImVec2(212, 20))) {
 
-        char const *file = tinyfd_openFileDialog("Open Texture", "", 0, NULL, "Texture file", 0);
+        //char const *file = tinyfd_openFileDialog("Open Texture", "", 0, NULL, "Texture file", 0);
 
-        if (file != NULL) {
-            value.load(Path(file));
-        }
+        // if (file != NULL) {
+        //     value.load(Path(file));
+        // }
 
-        mat.setUniformTexture(id, value, unit);
+       // mat.setUniformTexture(id, value, unit);
     }
 }
 

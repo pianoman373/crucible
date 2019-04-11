@@ -120,7 +120,7 @@ RigidBody *RigidBody::addMeshCollider(const vec3 &origin, const Mesh &mesh, cons
     if (mesh.indices.size() > 0) {
         btTriangleMesh *tm = new btTriangleMesh();
 
-        for (int i = 0; i < mesh.indices.size(); i += 3) {
+        for (size_t i = 0; i < mesh.indices.size(); i += 3) {
             vec3 v1 = mesh.positions[mesh.indices[i]] * scale;
             vec3 v2 = mesh.positions[mesh.indices[i+1]] * scale;
             vec3 v3 = mesh.positions[mesh.indices[i+2]] * scale;

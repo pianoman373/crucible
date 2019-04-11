@@ -9,7 +9,7 @@ void Animation::applyToSkeleton(float time, Bone &skeleton) {
         Bone *bone = skeleton.find(name);
 
         if (bone) {
-            for (int j = 0; j < k.size(); j++) {
+            for (std::size_t j = 0; j < k.size(); j++) {
                 Keyframe keyframe = k[j];
 
                 if (keyframe.time > time) {

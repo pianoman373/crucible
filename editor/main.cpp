@@ -133,29 +133,29 @@ static void ShowApplication()
         ImGui::SetNextWindowSize(ImVec2(230, 500));
         if (ImGui::Begin("Graphics settings", &showGraphicsSettings, ImGuiWindowFlags_NoResize))
         {
-            ImGui::Text("graphics n stuff");
-            ImGui::Checkbox("fxaa", &Renderer::settings.fxaa);
-            ImGui::Checkbox("bloom", &Renderer::settings.bloom);
-            ImGui::DragFloat("bloomStrength", &Renderer::settings.bloomStrength, 0.01f, 0.0f, 1.0f);
-            ImGui::Checkbox("ssao", &Renderer::settings.ssao);
-            ImGui::Separator();
-            ImGui::Text("Environment map");
-            ImGui::Image(ImTextureID((long long) cubemapRaw.getID()), ImVec2(220, 110), ImVec2(0, 0),
-                         ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+            // ImGui::Text("graphics n stuff");
+            // ImGui::Checkbox("fxaa", &Renderer::settings.fxaa);
+            // ImGui::Checkbox("bloom", &Renderer::settings.bloom);
+            // ImGui::DragFloat("bloomStrength", &Renderer::settings.bloomStrength, 0.01f, 0.0f, 1.0f);
+            // ImGui::Checkbox("ssao", &Renderer::settings.ssao);
+            // ImGui::Separator();
+            // ImGui::Text("Environment map");
+            // ImGui::Image(ImTextureID((long long) cubemapRaw.getID()), ImVec2(220, 110), ImVec2(0, 0),
+            //              ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
 
-            if (ImGui::Button("Browse")) {
-                char const *file = tinyfd_openFileDialog("Open environment map", "", 0, NULL, "environment map", 0);
+            // if (ImGui::Button("Browse")) {
+            //     char const *file = tinyfd_openFileDialog("Open environment map", "", 0, NULL, "environment map", 0);
 
-                if (file != NULL) {
-                    cubemap.loadEquirectangular(file);
-                    cubemapRaw.load(file);
+            //     if (file != NULL) {
+            //         cubemap.loadEquirectangular(file);
+            //         cubemapRaw.load(file);
 
-                    Renderer::environment = cubemap;
-                    IBL::generateIBLmaps(vec3(), Renderer::irradiance, Renderer::specular);
-                    cubemap.setID(0);
-                    Renderer::environment = cubemap;
-                }
-            }
+            //         Renderer::environment = cubemap;
+            //         IBL::generateIBLmaps(vec3(), Renderer::irradiance, Renderer::specular);
+            //         cubemap.setID(0);
+            //         Renderer::environment = cubemap;
+            //     }
+            // }
 
 
         }
@@ -169,14 +169,9 @@ int main() {
     Window::create({ 1280, 720 }, "test", false, false);
 
     Renderer::init(true, 2048, 1280, 720);
-    Renderer::settings.tonemap = true;
-    Renderer::settings.vignette = false;
-    Renderer::settings.bloom = true;
-    Renderer::settings.ssao = true;
 
 
     cubemap.loadEquirectangular("resources/canyon.hdr");
-    cubemapRaw.load("resources/canyon.hdr");
 
     Renderer::environment = cubemap;
     IBL::generateIBLmaps(vec3(), Renderer::irradiance, Renderer::specular);

@@ -25,12 +25,6 @@ static void split(const std::string &s, char delim, Out result) {
             *(result++) = item;
     }
 }
-
-static std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, std::back_inserter(elems));
-    return elems;
-}
 // ------------------------------------------------------------------------------------------------
 
 Path::Path() {
@@ -48,7 +42,7 @@ Path::Path(bool absolute) {
 Path::Path(const char *raw): Path(std::string(raw)) {}
 
 Path::Path(const std::string &raw) {
-    int i = 0;
+    size_t i = 0;
 
     //check if absolute
     if (raw[0] == '/' || raw[0] == '\\') {
@@ -149,7 +143,7 @@ std::string Path::toString() const {
         }
     }
 
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         ret += data[i];
 
         if (i != data.size() - 1 || isFolder) {
@@ -271,7 +265,7 @@ Path Path::appendPath(const Path &path) const {
         p.data.pop_back();
     }
 
-    for (int i = 0; i < path.data.size(); i++) {
+    for (size_t i = 0; i < path.data.size(); i++) {
         std::string d = path.data[i];
 
         if (!d.compare("..")) {
@@ -302,7 +296,7 @@ Path Path::relativeTo(const Path &path) const {
     recenteredLeft.isFolder = this->isFolder;
     Path recenteredRight(right.absolute);
 
-    int i = 0;
+    size_t i = 0;
     while (i < this->data.size() && i < right.data.size()) {
         if (this->data[i] == right.data[i]) {
 
@@ -321,7 +315,7 @@ Path Path::relativeTo(const Path &path) const {
 
     //however many folders are in recenteredRight is how many ..'s we add to the beginning of the path
 
-    for (int i = 0; i < recenteredRight.data.size(); i++) {
+    for (size_t i = 0; i < recenteredRight.data.size(); i++) {
         p.data.push_back("..");
     }
 
@@ -352,7 +346,7 @@ std::vector<Path> Path::listDirectory(const Path &path, bool directoryOnly) {
     std::vector<Path> ret;
 
     tinydir_dir dir;
-    int i;
+    size_t i;
     tinydir_open_sorted(&dir, path.toString().c_str());
 
     for (i = 0; i < dir.n_files; i++) {

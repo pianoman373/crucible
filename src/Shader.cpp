@@ -61,7 +61,7 @@ void Shader::load(std::string vertex, std::string fragment, std::string geometry
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl << fragment << std::endl;
     }
 
-    unsigned int geometryShader;
+    unsigned int geometryShader = 0;
 
     if (!geometry.empty()) {
         geometryShader = glCreateShader(GL_GEOMETRY_SHADER);

@@ -4,10 +4,6 @@
 #include <glad/glad.h>
 #include <crucible/Resources.hpp>
 
-void DebugRenderer::init() {
-
-}
-
 void DebugRenderer::renderDebugLine(const vec3 &v1, const vec3 &v2, const vec3 &color) {
     positions.push_back(v1);
     colors.push_back(color);

@@ -8,7 +8,7 @@
 
 #include <random>
 
-void PostProcessor::postProcess(const Camera &cam, const Framebuffer &source, const Framebuffer &destination) {
+void PostProcessor::postProcess(const Camera &, const Framebuffer &source, const Framebuffer &destination) {
     destination.bind();
     Resources::getPostProcessingShader("resources/invert.glsl").bind();
 
@@ -20,7 +20,7 @@ void PostProcessor::resize() {
 
 }
 
-void FxaaPostProcessor::postProcess(const Camera &cam, const Framebuffer &source, const Framebuffer &destination) {
+void FxaaPostProcessor::postProcess(const Camera &, const Framebuffer &source, const Framebuffer &destination) {
     destination.bind();
     Resources::fxaaShader.bind();
 
@@ -28,7 +28,7 @@ void FxaaPostProcessor::postProcess(const Camera &cam, const Framebuffer &source
     Resources::framebufferMesh.render();
 }
 
-void TonemapPostProcessor::postProcess(const Camera &cam, const Framebuffer &source, const Framebuffer &destination) {
+void TonemapPostProcessor::postProcess(const Camera &, const Framebuffer &source, const Framebuffer &destination) {
     destination.bind();
     Resources::tonemapShader.bind();
 
@@ -143,7 +143,7 @@ BloomPostProcessor::BloomPostProcessor() {
     resize();
 }
 
-void BloomPostProcessor::postProcess(const Camera &cam, const Framebuffer &source, const Framebuffer &destination) {
+void BloomPostProcessor::postProcess(const Camera &, const Framebuffer &source, const Framebuffer &destination) {
     vec2i resolution = Renderer::getResolution();
 
     int blurRadius = 8;

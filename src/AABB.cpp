@@ -5,7 +5,7 @@
 AABB::AABB() {
     this->min = vec3();
     this->max = vec3();
-};
+}
 
 AABB::AABB(const vec3 &min, const vec3 &max) {
     this->min.x = std::min(min.x, max.x);
@@ -51,7 +51,7 @@ bool AABB::raycast(const vec3 &start, const vec3 &dir, vec3 &collisionPoint, vec
                         && (collisionPoint.y <= max.y)
                         && (collisionPoint.z >= min.z)
                         && (collisionPoint.z <= max.z)) {
-                    collisionNormal = vec3((dir.x > 0) ? -1 : 1, 0, 0);
+                    collisionNormal = vec3((dir.x > 0) ? -1.0f : 1.0f, 0.0f, 0.0f);
                     return true;
                 }
             }
@@ -70,7 +70,7 @@ bool AABB::raycast(const vec3 &start, const vec3 &dir, vec3 &collisionPoint, vec
                         && (collisionPoint.x <= max.x)
                         && (collisionPoint.z >= min.z)
                         && (collisionPoint.z <= max.z)) {
-                    collisionNormal = vec3(0, (dir.y > 0) ? -1 : 1, 0);
+                    collisionNormal = vec3(0, (dir.y > 0) ? -1.0f : 1.0f, 0.0f);
                     return true;
                 }
             }
@@ -89,7 +89,7 @@ bool AABB::raycast(const vec3 &start, const vec3 &dir, vec3 &collisionPoint, vec
                         && (collisionPoint.x <= max.x)
                         && (collisionPoint.y >= min.y)
                         && (collisionPoint.y <= max.y)) {
-                    collisionNormal = vec3(0, 0, (dir.z > 0) ? -1 : 1);
+                    collisionNormal = vec3(0, 0, (dir.z > 0) ? -1.0f : 1.0f);
                     return true;
                 }
             }

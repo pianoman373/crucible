@@ -14,7 +14,7 @@ private:
 	int numAttachments = 0;
 
 public:
-	unsigned int fbo;
+	unsigned int fbo = 0;
 
 	void setup(int width, int height);
 

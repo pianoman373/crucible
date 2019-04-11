@@ -19,7 +19,7 @@ public:
 public:
     Camera();
 
-    Camera(vec3 position);
+    Camera(vec3 pos);
 
     const vec3 &getPosition() const;
 
@@ -32,9 +32,9 @@ public:
 
     vec3 getUp() const;
 
-    void setPosition(const vec3 &position);
+    void setPosition(const vec3 &pos);
 
-    void setDirection(const vec3 &direction);
+    void setDirection(const vec3 &dir);
 
     mat4 getView() const;
 

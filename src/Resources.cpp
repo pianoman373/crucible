@@ -194,7 +194,7 @@ namespace Resources {
 
 
             if (image) {
-                texture.load(image, width, height, pixelated, false, path);
+                texture.load(image, width, height, pixelated, false);
 
                 stbi_image_free(image);
             }

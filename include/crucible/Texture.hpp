@@ -7,11 +7,9 @@
 class Texture {
 private:
     unsigned int id = 0;
-
-	std::string filepath;
 public:
 
-    void load(const unsigned char *data, int width, int height, bool pixelated=false, bool singleChannel=false, const std::string &filepath="");
+    void load(const unsigned char *data, int width, int height, bool pixelated=false, bool singleChannel=false);
 
     void loadFromSingleColor(const vec4 &color);
 
@@ -20,8 +18,6 @@ public:
     unsigned int getID() const;
 
 	void setID(unsigned int id);
-
-	std::string getFilepath() const;
 
 	void destroy();
 

@@ -23,9 +23,9 @@ public:
 
     Bone getSkeleton();
 
-    Mesh getMesh(int index=0);
+    Mesh getMesh(unsigned int index=0);
 
-    int numMeshes();
+    unsigned int numMeshes();
 
     Animation getAnimation();
 };

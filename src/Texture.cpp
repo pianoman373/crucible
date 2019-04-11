@@ -6,7 +6,7 @@
 #include <stb_image.h>
 #include <glad/glad.h>
 
-void Texture::load(const unsigned char *data, int width, int height, bool pixelated, bool singleChannel, const std::string &filepath) {
+void Texture::load(const unsigned char *data, int width, int height, bool pixelated, bool singleChannel) {
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
 
@@ -60,13 +60,8 @@ void Texture::setID(unsigned int id) {
 	this->id = id;
 }
 
-std::string Texture::getFilepath() const {
-	return filepath;
-}
-
 void Texture::destroy() {
 	glDeleteTextures(1, &id);
-	filepath = "";
 	id = 0;
 }
 

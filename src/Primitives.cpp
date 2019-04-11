@@ -111,10 +111,9 @@ Mesh Primitives::sphere(unsigned int xSegments, unsigned int ySegments) {
 		}
 	}
 
-	bool oddRow = false;
-	for (int y = 0; y < ySegments; ++y)
+	for (unsigned int y = 0; y < ySegments; ++y)
 	{
-		for (int x = 0; x < xSegments; ++x)
+		for (unsigned int x = 0; x < xSegments; ++x)
 		{
 			m.indices.push_back((y + 1) * (xSegments + 1) + x);
 			m.indices.push_back(y       * (xSegments + 1) + x);

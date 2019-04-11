@@ -20,15 +20,15 @@ void CrucibleBulletDebugDraw::drawLine(const btVector3& from,const btVector3& to
     Renderer::debug.renderDebugLine({from.x(), from.y(), from.z()}, {to.x(), to.y(), to.z()}, {color.x(), color.y(), color.z()});
 }
 
-void CrucibleBulletDebugDraw::drawContactPoint(const btVector3 &PointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color){}
+void CrucibleBulletDebugDraw::drawContactPoint(const btVector3 &, const btVector3 &, btScalar, int, const btVector3 &) {}
 
 void CrucibleBulletDebugDraw::reportErrorWarning(const char *warningString){
     std::cout << "[Bullet Warning]: " << warningString << std::endl;
 }
 
-void CrucibleBulletDebugDraw::draw3dText(const btVector3 &location, const char *textString){}
+void CrucibleBulletDebugDraw::draw3dText(const btVector3 &, const char *) {}
 
-void CrucibleBulletDebugDraw::setDebugMode(int debugMode){}
+void CrucibleBulletDebugDraw::setDebugMode(int) {}
 
 int CrucibleBulletDebugDraw::getDebugMode() const {
     return DBG_DrawWireframe;
@@ -36,7 +36,7 @@ int CrucibleBulletDebugDraw::getDebugMode() const {
 // debug draw ---------------------------------
 
 Scene::~Scene() {
-    for (int i = 0; i < objects.size(); i++) {
+    for (size_t i = 0; i < objects.size(); i++) {
         delete objects[i];
     }
     objects.clear();
@@ -63,7 +63,7 @@ void Scene::render() {
         //dynamicsWorld->debugDrawWorld();
     }
 
-    for (int i = 0; i < objects.size(); i++) {
+    for (size_t i = 0; i < objects.size(); i++) {
         objects[i]->render();
     }
 }
@@ -71,7 +71,7 @@ void Scene::render() {
 void Scene::update(float delta) {
     dynamicsWorld->stepSimulation(delta, 10);
 
-    for (int i = 0; i < objects.size(); i++) {
+    for (size_t i = 0; i < objects.size(); i++) {
         objects[i]->update(delta);
     }
 }

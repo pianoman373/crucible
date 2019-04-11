@@ -23,13 +23,13 @@ Bone &Bone::addChild(Bone b) {
     return children.back();
 }
 
-Bone *Bone::find(const std::string &name) {
-    if (this->name == name) {
+Bone *Bone::find(const std::string &boneName) {
+    if (this->name == boneName) {
         return this;
     }
 
-    for (int i = 0; i < children.size(); i++) {
-        Bone *b = children[i].find(name);
+    for (size_t i = 0; i < children.size(); i++) {
+        Bone *b = children[i].find(boneName);
 
         if (b) {
             return b;
@@ -62,10 +62,10 @@ std::vector<mat4> Bone::getStartingTransforms() const {
 
     transforms.push_back(local);
 
-    for (int i = 0; i < children.size(); i++) {
+    for (size_t i = 0; i < children.size(); i++) {
         std::vector<mat4> childTransforms = children[i].getStartingTransforms();
 
-        for (int j = 0; j < childTransforms.size(); j++) {
+        for (size_t j = 0; j < childTransforms.size(); j++) {
             transforms.push_back(local * childTransforms[j]);
         }
     }
@@ -81,10 +81,10 @@ std::vector<mat4> Bone::getSkeletonTransforms() const {
 
     transforms.push_back(local);
 
-    for (int i = 0; i < children.size(); i++) {
+    for (size_t i = 0; i < children.size(); i++) {
         std::vector<mat4> childTransforms = children[i].getSkeletonTransforms();
 
-        for (int j = 0; j < childTransforms.size(); j++) {
+        for (size_t j = 0; j < childTransforms.size(); j++) {
             transforms.push_back(local * childTransforms[j]);
         }
     }
@@ -96,7 +96,7 @@ std::vector<mat4> Bone::getSkinningTransforms() const {
     std::vector<mat4> transforms = getSkeletonTransforms();
     std::vector<mat4> startingTransforms = getStartingTransforms();
 
-    for (int i = 0; i < transforms.size(); i++) {
+    for (size_t i = 0; i < transforms.size(); i++) {
         transforms[i] =  transforms[i] * inverse(startingTransforms[i]);
     }
 
@@ -118,7 +118,7 @@ void Bone::debugDraw(const mat4 &parentTransform) const {
 
     renderMat4(local);
 
-    for (int i = 0; i < children.size(); i++) {
+    for (size_t i = 0; i < children.size(); i++) {
         Renderer::debug.renderDebugLine(vec3(local * vec4(0.0f, 0.0f, 0.0f, 1.0f)), vec3(local * vec4(children[i].position, 1.0f)), vec3(1.0f, 1.0f, 1.0f));
 
 

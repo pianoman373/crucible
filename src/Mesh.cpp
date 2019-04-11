@@ -69,16 +69,20 @@ void Mesh::generate() {
             // Since integers and floats both take up 4 bytes in opengl we can actually store an integer value in a float buffer.
             // This is crazy but it seems to work great.
             float f0;
-            *(unsigned int *)&f0 = boneIDs[i].x;
+            //*(unsigned int *)&f0 = boneIDs[i].x;
+            memcpy(&f0, &boneIDs[i].x, 4);
 
             float f1;
-            *(unsigned int *)&f1 = boneIDs[i].y;
+            //*(unsigned int *)&f1 = boneIDs[i].y;
+            memcpy(&f1, &boneIDs[i].y, 4);
 
             float f2;
-            *(unsigned int *)&f2 = boneIDs[i].z;
+            //*(unsigned int *)&f2 = boneIDs[i].z;
+            memcpy(&f2, &boneIDs[i].z, 4);
 
             float f3;
-            *(unsigned int *)&f3 = boneIDs[i].w;
+            //*(unsigned int *)&f3 = boneIDs[i].w;
+            memcpy(&f3, &boneIDs[i].w, 4);
 
             data.push_back(f0);
             data.push_back(f1);
@@ -200,7 +204,7 @@ json Mesh::toJson() const {
     json j;
 
     std::string sPositions;
-    for (int i = 0; i < positions.size(); i++) {
+    for (size_t i = 0; i < positions.size(); i++) {
         sPositions += std::to_string(positions[i].x);
         sPositions += ",";
         sPositions += std::to_string(positions[i].y);
@@ -212,7 +216,7 @@ json Mesh::toJson() const {
 
     std::string sNormals;
     if (normals.size() > 0) {
-        for (int i = 0; i < normals.size(); i++) {
+        for (size_t i = 0; i < normals.size(); i++) {
             sNormals += std::to_string(normals[i].x);
             sNormals += ",";
             sNormals += std::to_string(normals[i].y);
@@ -225,7 +229,7 @@ json Mesh::toJson() const {
 
     std::string sUvs;
     if (uvs.size() > 0) {
-        for (int i = 0; i < uvs.size(); i++) {
+        for (size_t i = 0; i < uvs.size(); i++) {
             sUvs += std::to_string(uvs[i].x);
             sUvs += ",";
             sUvs += std::to_string(uvs[i].y);
@@ -236,7 +240,7 @@ json Mesh::toJson() const {
 
     std::string sTangents;
     if (tangents.size() > 0) {
-        for (int i = 0; i < tangents.size(); i++) {
+        for (size_t i = 0; i < tangents.size(); i++) {
             sTangents += std::to_string(tangents[i].x);
             sTangents += ",";
             sTangents += std::to_string(tangents[i].y);
@@ -250,7 +254,7 @@ json Mesh::toJson() const {
 
     std::string sIndices;
     if (indices.size() > 0) {
-        for (int i = 0; i < indices.size(); i++) {
+        for (size_t i = 0; i < indices.size(); i++) {
             sIndices += std::to_string(indices[i]);
             sIndices += ",";
         }
@@ -272,35 +276,35 @@ void Mesh::fromJson(const json &j) {
     if (jPositions.is_string()) {
         std::vector<std::string> sPositions = split(jPositions, ',');
 
-        for (int i = 0; i < sPositions.size(); i += 3) {
+        for (size_t i = 0; i < sPositions.size(); i += 3) {
             positions.push_back(vec3(stof(sPositions[i]), stof(sPositions[i+1]), stof(sPositions[i+2])));
         }
     }
     if (jNormals.is_string()) {
         std::vector<std::string> sNormals = split(jNormals, ',');
 
-        for (int i = 0; i < sNormals.size(); i += 3) {
+        for (size_t i = 0; i < sNormals.size(); i += 3) {
             normals.push_back(vec3(stof(sNormals[i]), stof(sNormals[i+1]), stof(sNormals[i+2])));
         }
     }
     if (jUvs.is_string()) {
         std::vector<std::string> sUvs = split(jUvs, ',');
 
-        for (int i = 0; i < sUvs.size(); i += 2) {
+        for (size_t i = 0; i < sUvs.size(); i += 2) {
             uvs.push_back(vec2(stof(sUvs[i]), stof(sUvs[i+1])));
         }
     }
     if (jTangents.is_string()) {
         std::vector<std::string> sTangents = split(jTangents, ',');
 
-        for (int i = 0; i < sTangents.size(); i += 3) {
+        for (size_t i = 0; i < sTangents.size(); i += 3) {
             tangents.push_back(vec3(stof(sTangents[i]), stof(sTangents[i+1]), stof(sTangents[i+2])));
         }
     }
     if (jIndices.is_string()) {
         std::vector<std::string> sIndices = split(jIndices, ',');
 
-        for (int i = 0; i < sIndices.size(); i++) {
+        for (size_t i = 0; i < sIndices.size(); i++) {
             indices.push_back(stoi(sIndices[i]));
         }
     }

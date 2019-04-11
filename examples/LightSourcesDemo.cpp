@@ -24,11 +24,7 @@ int main() {
     light.setPBRUniforms(vec3(1.0f, 0.6f, 0.4f), 0.0f, 0.0f);
     light.setUniformFloat("emission", 3.0f);
 
-	Material &wood = Resources::getMaterial("resources/wood.crmaterial");
-    Material &plastic = Resources::getMaterial("resources/plastic.crmaterial");
     Material &rustediron = Resources::getMaterial("resources/rustediron.crmaterial");
-    Material &gold = Resources::getMaterial("resources/gold.crmaterial");
-    Material &ceramic = Resources::getMaterial("resources/ceramic.crmaterial");
     Material &checker = Resources::getMaterial("resources/checkerboard.crmaterial");
 
     Transform shaderballTransform(vec3(0.0f, 1.9f, 0.0f), quaternion(), vec3(0.25f));

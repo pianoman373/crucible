@@ -6,8 +6,8 @@ Camera::Camera() {
 
 }
 
-Camera::Camera(vec3 position) {
-    this->position = position;
+Camera::Camera(vec3 pos) {
+    this->position = pos;
 }
 
 const vec3 &Camera::getPosition() const {
@@ -26,12 +26,12 @@ vec3 Camera::getUp() const {
     return normalize(cross(getRight(), this->direction));
 }
 
-void Camera::setPosition(const vec3 &position) {
-    this->position = position;
+void Camera::setPosition(const vec3 &pos) {
+    this->position = pos;
 }
 
-void Camera::setDirection(const vec3 &direction) {
-    this->direction = direction;
+void Camera::setDirection(const vec3 &dir) {
+    this->direction = dir;
 }
 
 mat4 Camera::getView() const {

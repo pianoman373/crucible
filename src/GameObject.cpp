@@ -4,6 +4,10 @@
 
 #include <iostream>
 
+Component::~Component() {
+    
+}
+
 void Component::setParent(GameObject *parent) {
     this->parent = parent;
 }
@@ -20,7 +24,7 @@ void Component::render() {
 
 }
 
-void Component::update(float delta) {
+void Component::update(float) {
 
 }
 
@@ -41,7 +45,7 @@ Material& ModelComponent::getMaterial() {
 }
 
 GameObject::~GameObject() {
-    for (int i = 0; i < components.size(); i++) {
+    for (size_t i = 0; i < components.size(); i++) {
         delete components[i];
     }
     components.clear();
@@ -109,11 +113,11 @@ void GameObject::render() {
     }
 
 
-    for (int i = 0; i < components.size(); i++) {
+    for (size_t i = 0; i < components.size(); i++) {
         components[i]->render();
     }
 
-    for (int i = 0; i < children.size(); i++) {
+    for (size_t i = 0; i < children.size(); i++) {
         children[i]->render();
     }
 }
@@ -125,10 +129,10 @@ void GameObject::update(float delta) {
     }
 
 
-    for (int i = 0; i < components.size(); i++) {
+    for (size_t i = 0; i < components.size(); i++) {
         components[i]->update(delta);
     }
-    for (int i = 0; i < children.size(); i++) {
+    for (size_t i = 0; i < children.size(); i++) {
         children[i]->update(delta);
     }
 }

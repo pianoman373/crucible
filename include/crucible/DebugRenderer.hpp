@@ -15,8 +15,6 @@ private:
     std::vector<vec3> colors;
 
 public:
-    void init();
-
     /**
      * Render a line of the specified color from point v1 to v2
      */

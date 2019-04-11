@@ -14,7 +14,7 @@ Font::Font() {
 Font::~Font() {
 }
 
-void Font::loadFromFile(const std::string &path, float fontSize) {
+void Font::loadFromFile(const std::string &path, unsigned int fontSize) {
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
@@ -42,12 +42,12 @@ void Font::loadFromFile(const std::string &path, float fontSize) {
                 tex,
                 vec2i(face->glyph->bitmap.width, face->glyph->bitmap.rows),
                 vec2i(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                face->glyph->advance.x
+                static_cast<int>(face->glyph->advance.x)
         };
         this->characters.insert(std::pair<char, Character>(c, character));
     }
 
-    this->fontSize = (face->size->metrics.ascender >> 6) - (face->size->metrics.descender >> 6);
+    this->size = (face->size->metrics.ascender >> 6) - (face->size->metrics.descender >> 6);
     this->descender = -(face->size->metrics.descender >> 6);
 
 
@@ -55,20 +55,15 @@ void Font::loadFromFile(const std::string &path, float fontSize) {
     FT_Done_FreeType(ft);
 }
 
-vec2i Font::getTextSize(const std::string &text) const {
-    vec2i size = vec2i(0.0f, fontSize);
+vec2 Font::getTextSize(const std::string &text) const {
+    vec2 ret = vec2(0.0f, static_cast<float>(size));
 
-   for (int i = 0; i < text.size(); i++) {
+   for (size_t i = 0; i < text.size(); i++) {
         const Character &ch = characters.at(text[i]);
 
+       ret.x += (ch.advance >> 6);
 
-//        size.x += ch.bearing.x;
-       size.x += (ch.advance >> 6);
-
-        if (i != text.size() - 1) {
-
-        }
     }
 
-    return size;
+    return ret;
 }

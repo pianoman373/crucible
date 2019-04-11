@@ -23,7 +23,7 @@ public:
 
     Bone &addChild(Bone b);
 
-    Bone *find(const std::string &name);
+    Bone *find(const std::string &boneName);
 
     mat4 getLocalTransform() const;
 

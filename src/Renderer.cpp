@@ -45,6 +45,8 @@ static Framebuffer HDRbuffer;
 static Framebuffer HDRbuffer2;
 static Framebuffer gBuffer;
 
+static Shader skyboxShader;
+
 
 static bool shadows;
 static int shadow_resolution;
@@ -93,7 +95,7 @@ static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f,
 
             std::vector<mat4> skinningMatrices = c.bones->getSkinningTransforms();
 
-            for (int i = 0; i < skinningMatrices.size(); i++) {
+            for (size_t i = 0; i < skinningMatrices.size(); i++) {
                 mat4 trans = skinningMatrices.at(i);
 
 				Resources::ShadowShader.uniformMat4("bones["+std::to_string(i)+"]", trans);
@@ -125,8 +127,6 @@ static void endQuery() {
 
 // ------------------------------------------------------------------------
 static void renderDebugGui() {
-	float aspect = (float)resolution.x / (float)resolution.y;
-
 	bool p_open = false;
 	if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImVec2(0, 0), 0.3f,
 					 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
@@ -163,9 +163,7 @@ namespace Renderer {
         resolution = vec2i(resolutionX, resolutionY);
 
         Resources::loadDefaultResources();
-
-        debug.init();
-
+        
         shadows = doShadows;
         shadow_resolution = shadowResolution;
 
@@ -214,7 +212,7 @@ namespace Renderer {
         gBuffer.attachTexture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); //roughness + metallic + 2 extra channels
         gBuffer.attachRBO();
 
-        for (int i = 0; i < postProcessingStack.size(); i++) {
+        for (size_t i = 0; i < postProcessingStack.size(); i++) {
             postProcessingStack[i]->resize();
         }
     }
@@ -309,7 +307,7 @@ namespace Renderer {
 
                 std::vector<mat4> skinningMatrices = call.bones->getSkinningTransforms();
 
-                for (int i = 0; i < skinningMatrices.size(); i++) {
+                for (size_t i = 0; i < skinningMatrices.size(); i++) {
                     mat4 trans = skinningMatrices.at(i);
 
                     s.uniformMat4("bones["+std::to_string(i)+"]", trans);
@@ -561,7 +559,7 @@ namespace Renderer {
         Framebuffer &destination = HDRbuffer2;
 
         if (postProcessingStack.size() > 0) {
-            for (int i = 0; i < postProcessingStack.size(); i++) {
+            for (size_t i = 0; i < postProcessingStack.size(); i++) {
                 std::shared_ptr<PostProcessor> step = postProcessingStack[i];
 
                 step->postProcess(cam, source, destination);
@@ -705,7 +703,7 @@ namespace Renderer {
 
     // ------------------------------------------------------------------------
     void setSkyboxShader(const Shader &s) {
-        //skyboxShader = s;
+        skyboxShader = s;
     }
 
     // ------------------------------------------------------------------------

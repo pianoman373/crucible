@@ -7,7 +7,7 @@
 
 
 void AssimpFile::processNode(Bone &b, aiNode *node) {
-    for (int i = 0; i < node->mNumChildren; i++) {
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
         aiNode *child = node->mChildren[i];
 
         aiVector3D position;
@@ -58,11 +58,11 @@ Bone AssimpFile::getSkeleton() {
     return bone;
 }
 
-Mesh AssimpFile::getMesh(int index) {
+Mesh AssimpFile::getMesh(unsigned int index) {
     Mesh mesh;
 
     if (scene) {
-        if (index >= 0 && index < scene->mNumMeshes) {
+        if (index < scene->mNumMeshes) {
             aiMesh *aMesh = scene->mMeshes[index];
 
             mesh.positions.resize(aMesh->mNumVertices);
@@ -100,12 +100,12 @@ Mesh AssimpFile::getMesh(int index) {
 
 
 
-                for (int i = 0; i < aMesh->mNumBones; i++) {
+                for (unsigned int i = 0; i < aMesh->mNumBones; i++) {
                     aiBone *bone = aMesh->mBones[i];
 
                     std::cout << bone->mName.C_Str() << std::endl;
 
-                    for (int j = 0; j < bone->mNumWeights; j++) {
+                    for (unsigned int j = 0; j < bone->mNumWeights; j++) {
                         aiVertexWeight weight = bone->mWeights[j];
 
                         tempBoneIDs[weight.mVertexId].push_back(i);
@@ -113,11 +113,11 @@ Mesh AssimpFile::getMesh(int index) {
                     }
                 }
 
-                for (int i = 0; i < tempBoneIDs.size(); i++) {
+                for (size_t i = 0; i < tempBoneIDs.size(); i++) {
                     std::vector<int> idsAtVertex = tempBoneIDs[i];
                     std::vector<float> weightsAtVertex = tempBoneWeights[i];
 
-                    int size = idsAtVertex.size();
+                    size_t size = idsAtVertex.size();
 
                     vec4i boneID;
                     vec4 boneWeight;
@@ -157,7 +157,7 @@ Mesh AssimpFile::getMesh(int index) {
     return mesh;
 }
 
-int AssimpFile::numMeshes() {
+unsigned int AssimpFile::numMeshes() {
     return scene->mNumMeshes;
 }
 
@@ -176,7 +176,7 @@ Animation AssimpFile::getAnimation() {
 
 
 
-        for (int i = 1; i < anim->mNumChannels; i++) {
+        for (unsigned int i = 1; i < anim->mNumChannels; i++) {
             aiNodeAnim* nodeAnim = anim->mChannels[i];
 
 
@@ -189,7 +189,7 @@ Animation AssimpFile::getAnimation() {
 //        std::cout << nodeAnim->mNumRotationKeys << std::endl;
 //        std::cout << nodeAnim->mNumScalingKeys << std::endl;
 
-            for (int j = 0; j < nodeAnim->mNumPositionKeys; j++) {
+            for (unsigned int j = 0; j < nodeAnim->mNumPositionKeys; j++) {
                 Transform t;
 
                 aiVectorKey posKey = nodeAnim->mPositionKeys[j];

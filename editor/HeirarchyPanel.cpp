@@ -55,7 +55,7 @@ void HeirarchyPanel::renderContents() {
             view.context.materialCache.push_back(mat);
 
             Mesh *mesh = new Mesh();
-            Primitives::cube(*mesh, 1.0f, 1.0f, 1.0f);
+            *mesh = Primitives::cube();
 
             view.context.meshCache.push_back(mesh);
 

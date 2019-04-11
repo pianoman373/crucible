@@ -35,7 +35,7 @@ void Model::fromJson(const json &j, const Path &workingDirectory) {
 
     json jMaterials = j["materials"];
 
-    for (int i = 0; i < jMaterials.size(); i++) {
+    for (size_t i = 0; i < jMaterials.size(); i++) {
         json jMaterial = jMaterials[i];
 
         Material mat;
@@ -50,7 +50,7 @@ void Model::fromJson(const json &j, const Path &workingDirectory) {
 
     json jMeshes = j["meshes"];
 
-    for (int i = 0; i < jMeshes.size(); i++) {
+    for (size_t i = 0; i < jMeshes.size(); i++) {
         json jMesh = jMeshes[i];
 
 
@@ -68,7 +68,7 @@ void Model::fromJson(const json &j, const Path &workingDirectory) {
 json Model::toJson(const Path &workingDirectory) const {
    json j;
 
-    for (int i = 0; i < nodes.size(); i++) {
+    for (size_t i = 0; i < nodes.size(); i++) {
         ModelNode node = nodes[i];
         json jMesh;
         jMesh["name"] = node.name;
@@ -78,7 +78,7 @@ json Model::toJson(const Path &workingDirectory) const {
         j["meshes"][i] = jMesh;
     }
 
-    for (int i = 0; i < materials.size(); i++) {
+    for (size_t i = 0; i < materials.size(); i++) {
         Material mat = materials[i];
 
         j["materials"][i]  = mat.toJson(workingDirectory);
