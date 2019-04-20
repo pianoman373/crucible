@@ -35,6 +35,7 @@ static const float cascadeDepths[4] = { 400.0f, 400.0f, 400.0f, 400.0f };
 static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f, 1.3f, 1.0f) * 5.0f };
 
 static std::vector<RenderCall> renderQueue;
+static std::vector<RenderCall> renderQueueForward;
 static std::vector<PointLight> pointLights;
 
 static Framebuffer shadowBuffer0;
@@ -264,7 +265,13 @@ namespace Renderer {
         call.aabb = aabb;
         call.bones = bones;
 
-        renderQueue.push_back(call);
+        if (material->deferred) {
+            renderQueue.push_back(call);
+        }
+        else {
+            renderQueueForward.push_back(call);
+        }
+        
     }
 
     // ------------------------------------------------------------------------
@@ -273,6 +280,10 @@ namespace Renderer {
             const ModelNode *node = &model->nodes[i];
             render(&node->mesh, &model->materials[node->materialIndex], transform, aabb);
         }
+    }
+
+    void renderSkybox(const Material *material) {
+        render(&Resources::cubemapMesh, material, nullptr, nullptr, nullptr);
     }
 
     void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
@@ -317,7 +328,63 @@ namespace Renderer {
                 s.uniformBool("doAnimation", false);
             }
 
-            s.uniformMat4("model", call.transform->getMatrix());
+            if (call.transform) {
+                s.uniformMat4("model", call.transform->getMatrix());
+            }
+            else {
+                s.uniformMat4("model", mat4());
+            }
+            
+
+            call.mesh->render();
+
+            lastMaterial = call.material;
+        }
+    }
+
+    void renderForwardPass(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+        const Material *lastMaterial = nullptr;
+
+        //renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
+
+        for (RenderCall call : renderQueueForward) {
+            if (doFrustumCulling) {
+                if (!f.isBoxInside(*call.aabb)) {
+                    continue;
+                }
+            }
+
+            Shader s = call.material->getShader();
+
+            if (call.material != lastMaterial) {
+                s.bind();
+                call.material->bindUniforms();
+
+                s.uniformMat4("view", cam.getView());
+                s.uniformMat4("projection", cam.getProjection());
+            }
+
+            if (call.bones) {
+                s.uniformBool("doAnimation", true);
+
+                std::vector<mat4> skinningMatrices = call.bones->getSkinningTransforms();
+
+                for (size_t i = 0; i < skinningMatrices.size(); i++) {
+                    mat4 trans = skinningMatrices.at(i);
+
+                    s.uniformMat4("bones["+std::to_string(i)+"]", trans);
+                }
+            }
+            else {
+                s.uniformBool("doAnimation", false);
+            }
+
+            if (call.transform) {
+                s.uniformMat4("model", call.transform->getMatrix());
+            }
+            else {
+                s.uniformMat4("model", mat4());
+            }
 
             call.mesh->render();
 
@@ -506,16 +573,6 @@ namespace Renderer {
         Resources::framebufferMesh.render();
 
         endQuery();
-
-        glDisable(GL_BLEND);
-        glDepthFunc(GL_LEQUAL);
-
-        // render the skybox
-        // -----------------
-        renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
-
-
-        glDepthFunc(GL_LEQUAL);
     }
 
     void flush(const Camera &cam) {
@@ -552,6 +609,19 @@ namespace Renderer {
         
         lightGbuffers(cam);
 
+        // copy depth and stencil buffer
+        // -------------------------------
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, HDRbuffer.fbo);
+        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+
+
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        renderForwardPass(cam, f, doFrustumCulling);
+
         
         // post processing
         beginQuery(3);
@@ -574,13 +644,6 @@ namespace Renderer {
         }
         endQuery();
 
-        // copy depth and stencil buffer
-        // -------------------------------
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destination.fbo);
-        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-
         // render debug tools
         // ------------------
         debug.flush(cam);
@@ -598,6 +661,7 @@ namespace Renderer {
 
         pointLights.clear();
         renderQueue.clear();
+        renderQueueForward.clear();
 
         return destination.getAttachment(0);
     }
@@ -677,6 +741,20 @@ namespace Renderer {
 
             renderGbuffers(cam, Frustum(), false);
             lightGbuffers(cam);
+
+            // copy depth and stencil buffer
+            // -------------------------------
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, HDRbuffer.fbo);
+            glBlitFramebuffer(0, 0, resolution, resolution, 0, 0, resolution, resolution, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            glBlitFramebuffer(0, 0, resolution, resolution, 0, 0, resolution, resolution, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+
+
+            glDepthFunc(GL_LEQUAL);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            renderForwardPass(cam, Frustum(), false);
+            glDisable(GL_BLEND);
 
             glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
             glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);

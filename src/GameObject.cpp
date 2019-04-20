@@ -33,7 +33,7 @@ ModelComponent::ModelComponent(Mesh &mesh, Material &material): mesh(mesh), mate
 }
 
 void ModelComponent::render() {
-    Renderer::render(mesh, material, this->getParent()->worldTransform);
+    Renderer::render(&mesh, &material, &this->getParent()->worldTransform);
 }
 
 Mesh& ModelComponent::getMesh() {

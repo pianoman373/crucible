@@ -69,35 +69,11 @@ namespace Renderer {
      */
     void render(const Model *model, const Transform *transform, const AABB *aabb=nullptr);
 
-
-    // macro functions for usability
-    inline void render(const IRenderable &mesh, const Material &material, const Transform &transform) {
-        render(&mesh, &material, &transform, nullptr, nullptr);
-    }
-
-    inline void render(const IRenderable &mesh, const Material &material, const Transform &transform, const AABB &aabb) {
-        render(&mesh, &material, &transform, &aabb, nullptr);
-    }
-
-    inline void render(const IRenderable &mesh, const Material &material, const Transform &transform, const Bone &bones) {
-        render(&mesh, &material, &transform, nullptr, &bones);
-    }
-
-    inline void render(const IRenderable &mesh, const Material &material, const Transform &transform, const AABB &aabb, const Bone &bones) {
-        render(&mesh, &material, &transform, &aabb, &bones);
-    }
-
-
-
-    inline void render(const Model &model, const Transform &transform) {
-        render(&model, &transform, nullptr);
-    }
-
-    inline void render(const Model &model, const Transform &transform, const AABB &aabb) {
-        render(&model, &transform, &aabb);
-    }
+    void renderSkybox(const Material *material);
 
     void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling);
+
+    void renderForwardPass(const Camera &cam, const Frustum &f, bool doFrustumCulling);
 
     void lightGbuffers(const Camera &cam);
 

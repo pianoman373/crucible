@@ -41,15 +41,15 @@ int main() {
         cam.position = vec3(sin(Window::getTime()*0.1f), 0.3f, cos(Window::getTime()*0.1f)) * 8.0f;
         cam.direction = normalize(-cam.position);
 
-        Renderer::render(shaderball, rustediron, shaderballTransform);
-        Renderer::render(cube, checker, groundTransform);
+        Renderer::render(&shaderball, &rustediron, &shaderballTransform);
+        Renderer::render(&cube, &checker, &groundTransform);
 
 
 
         Renderer::renderPointLight(vec3(0.0f, 2.0f, 5.0f), vec3(1.0f, 0.6f, 0.4f)*10.0f, 5.0f);
         Renderer::debug.renderDebugSphere(lightTransform.position, 5.0f, vec3(1.0f, 0.6f, 0.4f));
 
-        Renderer::render(sphere, light, lightTransform);
+        Renderer::render(&sphere, &light, &lightTransform);
 
         Renderer::flush(cam);
         Window::end();

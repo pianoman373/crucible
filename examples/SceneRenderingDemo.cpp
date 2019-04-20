@@ -84,8 +84,7 @@ int main() {
 
 	Cubemap cubemap;
 	cubemap.loadEquirectangular("resources/canyon.hdr");
-    Renderer::environment = cubemap;
-    IBL::generateIBLmaps(vec3(), Renderer::irradiance, Renderer::specular);
+    
 	Renderer::setSun({ vec3(1.05f, -1.2f, -1.3f), vec3(10.0f, 10.0f, 10.0f) });
 
 	Mesh cube = Primitives::cube();
@@ -103,6 +102,15 @@ int main() {
     Material &ceramic = Resources::getMaterial("resources/ceramic.crmaterial");
     Material &checker = Resources::getMaterial("resources/checkerboard.crmaterial");
 
+    Material skybox;
+    skybox.deferred = false;
+    skybox.setShader(Resources::cubemapShader);
+    skybox.setUniformCubemap("environmentMap", cubemap);
+
+    Material forward;
+    forward.deferred = false;
+    forward.setShader(Resources::getShader("resources/shaders/glass.vsh", "resources/shaders/glass.fsh"));
+
     Scene scene;
     scene.setupPhysicsWorld();
 
@@ -110,7 +118,7 @@ int main() {
     scene.createMeshObject(shaderBall, wood, Transform(vec3(4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 1").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
     scene.createMeshObject(shaderBall, rustediron, Transform(vec3(-4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 2").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
     scene.createMeshObject(shaderBall, gold, Transform(vec3(8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 3").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
-    scene.createMeshObject(shaderBall, checker, Transform(vec3(-8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 4").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
+    scene.createMeshObject(shaderBall, forward, Transform(vec3(-8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 4").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
 
     scene.createMeshObject(environment, checker, Transform(vec3(), quaternion(), vec3(0.5f)), "environment").addRigidBody(0.0f, scene)->addMeshCollider(vec3(), environment, vec3(0.5f));
 
@@ -157,6 +165,8 @@ int main() {
         torusObject0.transform.rotation = q2;
         torusObject1.transform.rotation = q1;
         torusObject2.transform.rotation = q0;
+
+        Renderer::renderSkybox(&skybox);
 
         scene.update(Window::deltaTime());
         scene.render();

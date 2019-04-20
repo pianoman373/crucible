@@ -16,6 +16,11 @@ struct UniformTexture {
     unsigned int unit;
 };
 
+struct UniformCubemap {
+    Cubemap tex;
+    unsigned int unit;
+};
+
 /**
  * Stores a list of uniforms to pass on to a shader. Unlike Textures and Shaders, Materials store all their data in
  * object memory itself. This makes passing Materials by value expensive compared to Shaders and Textures.
@@ -26,6 +31,8 @@ private:
 
     std::map<std::string, UniformTexture> textures;
 
+    std::map<std::string, UniformCubemap> cubemaps;
+
     std::map<std::string, vec3> vec3Uniforms;
 
     std::map<std::string, float> floatUniforms;
@@ -34,6 +41,7 @@ private:
 
 public:
 	std::string name;
+    bool deferred = true;
 
     Material();
 
@@ -87,6 +95,8 @@ public:
 
     void setUniformTexture(const std::string &name, const Texture &value, unsigned int unit = 0);
 
+    void setUniformCubemap(const std::string &name, const Cubemap &value, unsigned int unit = 0);
+
     void setUniformVec3(const std::string &name, const vec3 &value);
 
     void setUniformFloat(const std::string &name, float value);
@@ -110,6 +120,8 @@ public:
     const Shader &getShader() const;
 
     const std::map<std::string, UniformTexture> &getTextureUniforms() const;
+
+    const std::map<std::string, UniformCubemap> &getCubemapUniforms() const;
 
     const std::map<std::string, vec3> &getVec3Uniforms() const;
 

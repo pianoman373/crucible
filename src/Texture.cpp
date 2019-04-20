@@ -106,7 +106,9 @@ void Cubemap::loadEquirectangular(const Path &file, int resolution) {
 	unsigned int hdrTexture;
 	unsigned int envCubemap;
 
-	static mat4 captureProjection = perspective(90.0f, 1.0f, 0.1f, 10.0f);
+	glDepthFunc(GL_LEQUAL);
+
+	static mat4 captureProjection = perspective(90.0f, 1.0f, 0.1f, 10000.0f);
 	static mat4 captureViews[] =
 	{
 		LookAt(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f,  0.0f,  0.0f), vec3(0.0f, -1.0f,  0.0f)),

@@ -10,11 +10,7 @@ uniform bool isTextured;
 
 void main()
 {
-    vec3 envColor;
-    if (isTextured)
-        envColor = texture(environmentMap, fPosition).rgb;
-    else
-        envColor = ambient;
+    vec3 envColor = texture(environmentMap, fPosition).rgb;
 
     outColor = vec4(envColor, 1.0);
 }
