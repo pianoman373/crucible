@@ -1,6 +1,5 @@
 #include <crucible/Renderer.hpp>
 #include <crucible/Framebuffer.hpp>
-#include <glad/glad.h>
 #include <crucible/Window.hpp>
 #include <crucible/Camera.hpp>
 #include <crucible/AABB.hpp>
@@ -13,12 +12,11 @@
 #include <crucible/IBL.hpp>
 #include <crucible/DebugRenderer.hpp>
 #include <crucible/Resources.hpp>
-
 #include <crucible/Resource.h>
 
+#include <glad/glad.h>
+
 #include <imgui.h>
-#include <stack>
-#include <string>
 
 struct RenderCall {
 	const IRenderable *mesh;
@@ -46,21 +44,19 @@ static Framebuffer HDRbuffer;
 static Framebuffer HDRbuffer2;
 static Framebuffer gBuffer;
 
-static Shader skyboxShader;
-
-
 static bool shadows;
 static int shadow_resolution;
 
 static vec2i resolution;
 
+static vec3 clearColor;
+
 // private functions
 // -----------------
-
 static mat4 shadowMatrix(float radius, const Camera &cam, float depth) {
 	return orthographic(-radius, radius, -radius, radius, -depth, depth) * LookAt(cam.getPosition() - sun.direction, cam.getPosition(), vec3(0.0f, 1.0f, 0.0f));
 }
-// ------------------------------------------------------------------------
+
 static Frustum shadowFrustum(float radius, const Camera &cam, float depth) {
 	Frustum shadowFrustum;
 	shadowFrustum.setupInternalsOrthographic(-radius, radius, -radius, radius, -depth, depth);
@@ -69,25 +65,21 @@ static Frustum shadowFrustum(float radius, const Camera &cam, float depth) {
 	shadowCam.setDirection(sun.direction);
 	shadowFrustum.updateCamPosition(shadowCam);
 
-
-
 	return shadowFrustum;
 }
-// ------------------------------------------------------------------------
+
 static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f, bool doFrustumCulling) {
 	glViewport(0, 0, fbuffer.getWidth(), fbuffer.getHeight());
 	fbuffer.bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-
 	for (RenderCall c : renderQueue) {
-
 		if (doFrustumCulling) {
 			if (!f.isBoxInside(*c.aabb)) {
 				continue;
 			}
 		}
-
 
 		Resources::ShadowShader.bind();
 
@@ -126,37 +118,14 @@ static void endQuery() {
     glEndQuery(GL_TIME_ELAPSED);
 }
 
-// ------------------------------------------------------------------------
-static void renderDebugGui() {
-	bool p_open = false;
-	if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImVec2(0, 0), 0.3f,
-					 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-					 ImGuiWindowFlags_NoSavedSettings)) {
-		            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-					ImGui::GetIO().Framerate);
-
-                    ImGui::Text("geometry: %.2f ms", queryResults[0]*0.000001f);
-                    ImGui::Text("shadow pass: %.2f ms", queryResults[1]*0.000001f);
-                    ImGui::Text("deferred lighting: %.2f ms", queryResults[2]*0.000001f);
-                    ImGui::Text("post processing: %.2f ms", queryResults[3]*0.000001f);
-		ImGui::End();
-	}
-
-    ImGui::ShowDemoWindow();
-}
-
-
 namespace Renderer {
-    vec3 ambient = vec3(0.01f);
 
     DebugRenderer debug;
 
-    Cubemap environment;
     Cubemap irradiance;
     Cubemap specular;
 
     std::vector<std::shared_ptr<PostProcessor>> postProcessingStack;
-
 
     // public functions
     // ------------------------------------------------------------------------
@@ -170,7 +139,6 @@ namespace Renderer {
 
         glGenQueries(4, queries);
 
-
         if (shadows) {
             shadowBuffer0.setup(shadow_resolution, shadow_resolution);
             shadowBuffer1.setup(shadow_resolution, shadow_resolution);
@@ -181,9 +149,7 @@ namespace Renderer {
             shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
             shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
             shadowBuffer3.attachShadow(shadow_resolution, shadow_resolution);
-
         }
-
 
         glEnable(GL_CULL_FACE);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -224,29 +190,6 @@ namespace Renderer {
         }
     }
 
-    // ------------------------------------------------------------------------
-    void renderSkybox(const mat4 &view, const mat4 &projection, const vec3 &cameraPos) {
-        Resources::cubemapShader.bind();
-
-        Resources::cubemapShader.uniformMat4("view", view);
-        Resources::cubemapShader.uniformMat4("projection", projection);
-        Resources::cubemapShader.uniformVec3("sun.direction", sun.direction);
-        Resources::cubemapShader.uniformVec3("sun.color", sun.color);
-        Resources::cubemapShader.uniformVec3("ambient", ambient);
-        Resources::cubemapShader.uniformVec3("cameraPos", cameraPos);
-
-        if (environment.getID() != 0) {
-            environment.bind(0);
-            Resources::cubemapShader.uniformBool("isTextured", true);
-        }
-        else {
-            Resources::cubemapShader.uniformBool("isTextured", false);
-        }
-
-        Resources::cubemapMesh.render();
-    }
-
-    // ------------------------------------------------------------------------
     void renderPointLight(const vec3 &position, const vec3 &color, float radius) {
         PointLight p;
         p.position = position;
@@ -256,7 +199,6 @@ namespace Renderer {
         pointLights.push_back(p);
     }
 
-    // ------------------------------------------------------------------------
     void render(const IRenderable *mesh, const Material *material, const Transform *transform, const AABB *aabb, const Bone *bones) {
         RenderCall call;
         call.mesh = mesh;
@@ -271,10 +213,8 @@ namespace Renderer {
         else {
             renderQueueForward.push_back(call);
         }
-        
     }
 
-    // ------------------------------------------------------------------------
     void render(const Model *model, const Transform *transform, const AABB *aabb) {
         for (unsigned int i = 0; i < model->nodes.size(); i++) {
             const ModelNode *node = &model->nodes[i];
@@ -290,6 +230,7 @@ namespace Renderer {
         // render objects in scene into g-buffer
         // -------------------------------------
         gBuffer.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, resolution.x, resolution.y);
 
@@ -344,8 +285,6 @@ namespace Renderer {
 
     void renderForwardPass(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
         const Material *lastMaterial = nullptr;
-
-        //renderSkybox(cam.getView(), cam.getProjection(), cam.getPosition());
 
         for (RenderCall call : renderQueueForward) {
             if (doFrustumCulling) {
@@ -407,28 +346,27 @@ namespace Renderer {
 
         // render scene multiple times to shadow buffers
         if (shadows) {
-            //glDisable(GL_CULL_FACE);
-            //glCullFace(GL_FRONT);
             renderShadow(shadowBuffer0, shadowMatrix0, shadowFrustum0, false);
             renderShadow(shadowBuffer1, shadowMatrix1, shadowFrustum1, false);
             renderShadow(shadowBuffer2, shadowMatrix2, shadowFrustum2, false);
             renderShadow(shadowBuffer3, shadowMatrix3, shadowFrustum3, false);
-            //glCullFace(GL_BACK);
-            //glEnable(GL_CULL_FACE);
         }
 
         endQuery();
-
         beginQuery(2);
 
         HDRbuffer.bind();
         glViewport(0, 0, resolution.x, resolution.y);
+        glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
         glDepthFunc(GL_ALWAYS);
         glDepthMask(GL_TRUE);
+
+        gBuffer.getAttachment(0).bind(0);
+        gBuffer.getAttachment(1).bind(1);
+        gBuffer.getAttachment(2).bind(2);
+        gBuffer.getAttachment(3).bind(3);
 
         mat4 inverseView = inverse(cam.getView());
 
@@ -437,36 +375,23 @@ namespace Renderer {
         Resources::deferredShader.bind();
 
         Resources::deferredShader.uniformInt("gPosition", 0);
-        gBuffer.getAttachment(0).bind(0);
-
         Resources::deferredShader.uniformInt("gNormal", 1);
-        gBuffer.getAttachment(1).bind(1);
-
         Resources::deferredShader.uniformInt("gAlbedo", 2);
-        gBuffer.getAttachment(2).bind(2);
-
         Resources::deferredShader.uniformInt("gRoughnessMetallic", 3);
-        gBuffer.getAttachment(3).bind(3);
 
         Resources::framebufferMesh.render();
 
-
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
 
         // render directional lighting to the buffer
         // ---------------------------------------------
         Resources::deferredDirectionalShader.bind();
 
         Resources::deferredDirectionalShader.uniformInt("gPosition", 0);
-        gBuffer.getAttachment(0).bind(0);
-
         Resources::deferredDirectionalShader.uniformInt("gNormal", 1);
-        gBuffer.getAttachment(1).bind(1);
-
         Resources::deferredDirectionalShader.uniformInt("gAlbedo", 2);
-        gBuffer.getAttachment(2).bind(2);
-
         Resources::deferredDirectionalShader.uniformInt("gRoughnessMetallic", 3);
-        gBuffer.getAttachment(3).bind(3);
 
         Resources::deferredDirectionalShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
         Resources::deferredDirectionalShader.uniformVec3("sun.color", sun.color);
@@ -502,29 +427,14 @@ namespace Renderer {
         }
         Resources::framebufferMesh.render();
 
-
         // Render point light lighting to the buffer
         // ---------------------------------------------
         Resources::deferredPointShader.bind();
 
         Resources::deferredPointShader.uniformInt("gPosition", 0);
-        gBuffer.getAttachment(0).bind(0);
-
         Resources::deferredPointShader.uniformInt("gNormal", 1);
-        gBuffer.getAttachment(1).bind(1);
-
         Resources::deferredPointShader.uniformInt("gAlbedo", 2);
-        gBuffer.getAttachment(2).bind(2);
-
         Resources::deferredPointShader.uniformInt("gRoughnessMetallic", 3);
-        gBuffer.getAttachment(3).bind(3);
-
-        Resources::deferredPointShader.uniformInt("irradiance", 4);
-        irradiance.bind(4);
-        Resources::deferredPointShader.uniformInt("prefilter", 5);
-        specular.bind(5);
-        Resources::deferredPointShader.uniformInt("brdf", 6);
-        Resources::brdf.bind(6);
 
         Resources::deferredPointShader.uniformInt("pointLightCount", (int) pointLights.size());
         for (unsigned int i = 0; i < pointLights.size(); i++) {
@@ -542,16 +452,10 @@ namespace Renderer {
         Resources::deferredAmbientShader.bind();
 
         Resources::deferredAmbientShader.uniformInt("gPosition", 0);
-        gBuffer.getAttachment(0).bind(0);
-
         Resources::deferredAmbientShader.uniformInt("gNormal", 1);
-        gBuffer.getAttachment(1).bind(1);
-
         Resources::deferredAmbientShader.uniformInt("gAlbedo", 2);
-        gBuffer.getAttachment(2).bind(2);
-
         Resources::deferredAmbientShader.uniformInt("gRoughnessMetallic", 3);
-        gBuffer.getAttachment(3).bind(3);
+        
 
         Resources::deferredAmbientShader.uniformInt("irradiance", 4);
         irradiance.bind(4);
@@ -560,14 +464,6 @@ namespace Renderer {
         Resources::deferredAmbientShader.uniformInt("brdf", 6);
         Resources::brdf.bind(6);
 
-        if (irradiance.getID() != 0 && specular.getID() != 0) {
-            Resources::deferredAmbientShader.uniformBool("doIBL", true);
-        }
-        else {
-            Resources::deferredAmbientShader.uniformBool("doIBL", false);
-        }
-
-        Resources::deferredAmbientShader.uniformVec3("ambient", ambient);
         Resources::deferredAmbientShader.uniformMat4("inverseView", inverseView);
 
         Resources::framebufferMesh.render();
@@ -581,9 +477,7 @@ namespace Renderer {
     }
 
     void flush(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
-
         const Texture &t = flushToTexture(cam, f, doFrustumCulling);
-
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, Window::getWindowSize().x, Window::getWindowSize().y);
@@ -597,11 +491,9 @@ namespace Renderer {
         return flushToTexture(cam, f, false);
     }
 
-    // ------------------------------------------------------------------------
     const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
-
 
         beginQuery(0);
         renderGbuffers(cam, f, doFrustumCulling);
@@ -616,12 +508,10 @@ namespace Renderer {
         glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
-
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         renderForwardPass(cam, f, doFrustumCulling);
-
         
         // post processing
         beginQuery(3);
@@ -644,8 +534,6 @@ namespace Renderer {
         }
         endQuery();
 
-        // render debug tools
-        // ------------------
         debug.flush(cam);
 
         static bool lastKeydown = false;
@@ -656,7 +544,21 @@ namespace Renderer {
         lastKeydown = Input::isKeyDown(Input::KEY_F1);
 
         if (debug) {
-            renderDebugGui();
+            bool p_open = false;
+            if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImVec2(0, 0), 0.3f,
+                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                            ImGuiWindowFlags_NoSavedSettings)) {
+                            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                            ImGui::GetIO().Framerate);
+
+                            ImGui::Text("geometry: %.2f ms", queryResults[0]*0.000001f);
+                            ImGui::Text("shadow pass: %.2f ms", queryResults[1]*0.000001f);
+                            ImGui::Text("deferred lighting: %.2f ms", queryResults[2]*0.000001f);
+                            ImGui::Text("post processing: %.2f ms", queryResults[3]*0.000001f);
+                ImGui::End();
+            }
+
+            ImGui::ShowDemoWindow();
         }
 
         pointLights.clear();
@@ -665,7 +567,7 @@ namespace Renderer {
 
         return destination.getAttachment(0);
     }
-    // ------------------------------------------------------------------------
+
     Cubemap renderToProbe(const vec3 &position) {
         static const int resolution = 512;
 
@@ -712,20 +614,13 @@ namespace Renderer {
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        // convert HDR equirectangular environment map to cubemap equivalent
-
         vec2i internalResolution = getResolution();
         resize(resolution, resolution);
 
-        glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
+        glViewport(0, 0, resolution, resolution);
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
         for (unsigned int i = 0; i < 6; ++i)
         {
-            //eq2cubeShader.uniformMat4("view", captureViews[i]);
-            //cubemapMesh.render(); // renders a 1x1 cube
-
-            //renderSkybox(captureViews[i], captureProjection);
-
             Texture gPosition;
             Texture gNormal;
             Texture gAlbedo;
@@ -749,25 +644,23 @@ namespace Renderer {
             glBlitFramebuffer(0, 0, resolution, resolution, 0, 0, resolution, resolution, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
             glBlitFramebuffer(0, 0, resolution, resolution, 0, 0, resolution, resolution, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
-
             glDepthFunc(GL_LEQUAL);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             renderForwardPass(cam, Frustum(), false);
             glDisable(GL_BLEND);
 
-            glViewport(0, 0, resolution, resolution); // don't forget to configure the viewport to the capture dimensions.
+            glViewport(0, 0, resolution, resolution);
             glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                   GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+            glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             Resources::passthroughShader.bind();
             HDRbuffer.getAttachment(0).bind();
             Resources::framebufferMesh.render();
-
-
         }
+
         resize(internalResolution.x, internalResolution.y);
 
         glDeleteFramebuffers(1, &captureFBO);
@@ -779,14 +672,12 @@ namespace Renderer {
         return c;
     }
 
-    // ------------------------------------------------------------------------
-    void setSkyboxShader(const Shader &s) {
-        skyboxShader = s;
-    }
-
-    // ------------------------------------------------------------------------
     void setSun(const DirectionalLight &light) {
         sun = light;
+    }
+
+    void setClearColor(vec3 color) {
+        clearColor = color;
     }
 
     vec2i getResolution() {

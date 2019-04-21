@@ -10,7 +10,6 @@ out vec3 fPosition;
 uniform mat4 projection;
 uniform mat4 view;
 
-
 void main()
 {
     fPosition = vPosition;

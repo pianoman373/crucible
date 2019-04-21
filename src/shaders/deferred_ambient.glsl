@@ -8,10 +8,6 @@ uniform samplerCube irradiance;
 uniform samplerCube prefilter;
 uniform sampler2D brdf;
 
-uniform bool doIBL;
-
-uniform vec3 ambient;
-
 uniform mat4 inverseView;
 
 vec3 postProcess(vec2 texCoord) {

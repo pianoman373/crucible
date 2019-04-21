@@ -26,11 +26,9 @@ struct PointLight {
 };
 
 namespace Renderer {
-	extern vec3 ambient;
 
 	extern DebugRenderer debug;
 
-	extern Cubemap environment;
 	extern Cubemap irradiance;
 	extern Cubemap specular;
 
@@ -44,15 +42,6 @@ namespace Renderer {
     void resize(int resolutionX, int resolutionY);
 
     void matchWindowResolution(float scale=1.0f);
-
-
-    void pushPostProcessor(PostProcessor *step);
-
-    /**
-     * Mostly internal function that will only render the skybox and nothing else. This doesn't need to be called under
-     * normal rendering circumstances.
-     */
-    void renderSkybox(const mat4 &view, const mat4 &projection, const vec3 &cameraPos = {0, 0, 0});
 
 	/**
 	 * Pushes a point light to the render buffer for the next flush event.
@@ -95,9 +84,11 @@ namespace Renderer {
 
 	const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling = true);
 
-    void setSkyboxShader(const Shader &s);
+    void renderToFramebuffer(const Camera &cam, const Frustum &f, bool doFrustumCulling = true);
 
     void setSun(const DirectionalLight &light);
+
+    void setClearColor(vec3 color);
 
     vec2i getResolution();
 

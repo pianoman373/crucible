@@ -4,16 +4,14 @@ int main() {
 	Window::create({ 1280, 720 }, "Light Sources Demo", false, false);
     Renderer::init(true, 2048, 1280, 720);
 
+    Renderer::setClearColor(vec3(0.01f));
+
     
     Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new SsaoPostProcessor()));
     Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new BloomPostProcessor()));
     Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new TonemapPostProcessor()));
     Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new FxaaPostProcessor()));
 
-	// Cubemap cubemap;
-	// cubemap.loadEquirectangular("resources/canyon.hdr");
-    // Renderer::environment = cubemap;
-    // IBL::generateIBLmaps(vec3(), Renderer::irradiance, Renderer::specular);
 	Renderer::setSun({ vec3(1.05f, -1.2f, -1.3f), vec3(1.2f) });
 
 	Mesh shaderball = Resources::getAssimpFile("resources/shaderball.fbx").getMesh(0);
@@ -43,8 +41,6 @@ int main() {
 
         Renderer::render(&shaderball, &rustediron, &shaderballTransform);
         Renderer::render(&cube, &checker, &groundTransform);
-
-
 
         Renderer::renderPointLight(vec3(0.0f, 2.0f, 5.0f), vec3(1.0f, 0.6f, 0.4f)*10.0f, 5.0f);
         Renderer::debug.renderDebugSphere(lightTransform.position, 5.0f, vec3(1.0f, 0.6f, 0.4f));
