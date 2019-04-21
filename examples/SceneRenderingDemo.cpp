@@ -56,7 +56,6 @@ public:
         Window::setMouseGrabbed(Input::isMouseButtonDown(1));
 
         if (Input::isMouseButtonDown(1)) {
-            //rotation
             vec2 offset = Input::getCursorPos() - lastMousePos;
             float xOffset = -offset.x / 10.0f;
             float yOffset = -offset.y / 10.0f;
@@ -72,29 +71,36 @@ public:
 };
 
 int main() {
+    // set up renderer
 	Window::create({ 1280, 720 }, "Scene Rendering Demo", false, false);
-    Renderer::init(true, 2048, 1280, 720);
+    Renderer::init(1280, 720);
 
-    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new SsaoPostProcessor()));
-    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new BloomPostProcessor()));
-    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new TonemapPostProcessor()));
-    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new FxaaPostProcessor()));
+    // add post processing effects
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new SsaoPostProcessor())); // SSAO
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new BloomPostProcessor())); // Bloom
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new TonemapPostProcessor())); // Tonemapping
+    Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new FxaaPostProcessor())); // FXAA
 
 	Camera cam;
 
+    // store sun object
+    DirectionalLight sun(normalize(vec3(0.4f, -1.2f, -1.0f)), vec3(1.0f, 1.0f, 1.0f) * 5.0f);
+
+    // load skybox
 	Cubemap cubemap;
 	cubemap.loadEquirectangular("resources/canyon.hdr");
     
-	Renderer::setSun({ vec3(1.05f, -1.2f, -1.3f), vec3(10.0f, 10.0f, 10.0f) });
-
+    // load procedural meshes
 	Mesh cube = Primitives::cube();
 	Mesh torus0 = Primitives::torus(2.0f, 0.5f, 64, 64);
     Mesh torus1 = Primitives::torus(3.0f, 0.5f, 64, 64);
     Mesh torus2 = Primitives::torus(4.0f, 0.5f, 64, 64);
 
+    // load meshes from disk
 	Mesh shaderBall = Resources::getAssimpFile("resources/shaderball.fbx").getMesh(0);
 	Mesh environment =  Resources::getAssimpFile("resources/environment.fbx").getMesh(0);
 
+    // load materials from disk
 	Material &wood = Resources::getMaterial("resources/wood.crmaterial");
     Material &plastic = Resources::getMaterial("resources/plastic.crmaterial");
     Material &rustediron = Resources::getMaterial("resources/rustediron.crmaterial");
@@ -102,15 +108,18 @@ int main() {
     Material &ceramic = Resources::getMaterial("resources/ceramic.crmaterial");
     Material &checker = Resources::getMaterial("resources/checkerboard.crmaterial");
 
+    // skybox material
     Material skybox;
     skybox.deferred = false;
     skybox.setShader(Resources::cubemapShader);
     skybox.setUniformCubemap("environmentMap", cubemap);
 
-    Material forward;
-    forward.deferred = false;
-    forward.setShader(Resources::getShader("resources/shaders/glass.vsh", "resources/shaders/glass.fsh"));
+    // custom forward rendered material
+    Material glass;
+    glass.deferred = false;
+    glass.setShader(Resources::getShader("resources/shaders/glass.vsh", "resources/shaders/glass.fsh"));
 
+    // add all objects to the scene
     Scene scene;
     scene.setupPhysicsWorld();
 
@@ -118,7 +127,7 @@ int main() {
     scene.createMeshObject(shaderBall, wood, Transform(vec3(4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 1").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
     scene.createMeshObject(shaderBall, rustediron, Transform(vec3(-4.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 2").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
     scene.createMeshObject(shaderBall, gold, Transform(vec3(8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 3").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
-    scene.createMeshObject(shaderBall, forward, Transform(vec3(-8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 4").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
+    scene.createMeshObject(shaderBall, glass, Transform(vec3(-8.0f, 1.9f, -10.0f), quaternion(), vec3(0.25f)), "shaderball 4").addRigidBody(0.0f, scene)->addSphereCollider(vec3(), 1.5f)->addCylinderCollider(vec3(0.f, -1.7f, 0.0f), 1.5f, 0.2f);
 
     scene.createMeshObject(environment, checker, Transform(vec3(), quaternion(), vec3(0.5f)), "environment").addRigidBody(0.0f, scene)->addMeshCollider(vec3(), environment, vec3(0.5f));
 
@@ -133,15 +142,17 @@ int main() {
     rb->setAngularFactor(0.0f);
     player.addComponent(new CharacterController(cam));
 
-
     bool first = true;
     bool keyDown = false;
 
     while (Window::isOpen()) {
         Window::begin();
+
+        // dynamically scale reesolution to window size
         cam.matchWindowResolution();
         Renderer::matchWindowResolution();
 
+        // shoot cubes when clicked
         if (keyDown) {
 			if (!Input::isMouseButtonDown(0)) {
 				keyDown = false;
@@ -158,6 +169,8 @@ int main() {
 			}
         }
 
+
+        // rotate toruses
         quaternion q0 = quaternion(vec3(1.0f, 0.0f, 0.0f), Window::getTime());
         quaternion q1 = normalize(q0 * quaternion(vec3(0.0f, 1.0f, 0.0f), Window::getTime()*2.0f));
         quaternion q2 = normalize(q1 * quaternion(vec3(1.0f, 0.0f, 0.0f), Window::getTime()*3.0f));
@@ -166,20 +179,24 @@ int main() {
         torusObject1.transform.rotation = q1;
         torusObject2.transform.rotation = q0;
 
+        //render skybox and sunlight
         Renderer::renderSkybox(&skybox);
+        Renderer::renderDirectionalLight(&sun);
 
+        // update scene physics
         scene.update(Window::deltaTime());
+
+        // render all objects in the scene
         scene.render();
 
+        // if this is the first frame, render scene into a light probe
         if (first) {
             IBL::generateIBLmaps(vec3(0.0f,  2.0f, 0.0f), Renderer::irradiance, Renderer::specular);
             first = false;
         }
         
-
+        // render the scene to the screen
         Renderer::flush(cam);
-
-        
 
         Window::end();
     }

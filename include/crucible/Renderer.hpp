@@ -11,22 +11,21 @@
 #include <crucible/Bone.hpp>
 #include <crucible/Mesh.hpp>
 #include <crucible/Model.hpp>
+#include <crucible/DirectionalLight.hpp>
+#include <crucible/PointLight.hpp>
 
 #include <vector>
 
-struct DirectionalLight {
-    vec3 direction;
-    vec3 color;
-};
 
-struct PointLight {
-    vec3 position;
-    vec3 color;
-    float radius;
+struct RenderCall {
+	const IRenderable *mesh;
+	const Material *material;
+	const Transform *transform;
+	const AABB *aabb;
+	const Bone *bones;
 };
 
 namespace Renderer {
-
 	extern DebugRenderer debug;
 
 	extern Cubemap irradiance;
@@ -37,7 +36,7 @@ namespace Renderer {
     /**
      * Sets up vital shaders and variables only once at startup.
      */
-    void init(bool shadows, int shadowResolution, int resolutionX, int resolutionY);
+    void init(int resolutionX, int resolutionY);
 
     void resize(int resolutionX, int resolutionY);
 
@@ -46,7 +45,9 @@ namespace Renderer {
 	/**
 	 * Pushes a point light to the render buffer for the next flush event.
 	 */
-    void renderPointLight(const vec3 &position, const vec3 &color, float radius);
+    void renderPointLight(PointLight *light);
+
+    void renderDirectionalLight(DirectionalLight *light);
 
     /**
      * General purpose abstraction of all render calls to an internal renderer.
@@ -63,6 +64,8 @@ namespace Renderer {
     void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling);
 
     void renderForwardPass(const Camera &cam, const Frustum &f, bool doFrustumCulling);
+
+    void renderToDepth(const Camera &cam, const Framebuffer &target, const Frustum &f, bool doFrustumCulling);
 
     void lightGbuffers(const Camera &cam);
 
@@ -85,8 +88,6 @@ namespace Renderer {
 	const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling = true);
 
     void renderToFramebuffer(const Camera &cam, const Frustum &f, bool doFrustumCulling = true);
-
-    void setSun(const DirectionalLight &light);
 
     void setClearColor(vec3 color);
 

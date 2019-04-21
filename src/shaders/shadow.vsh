@@ -7,14 +7,16 @@ layout (location = 3) in vec3 vTangent;
 layout (location = 4) in ivec4 vBoneIDs;
 layout (location = 5) in vec4 vBoneWeights;
 
-uniform mat4 lightSpaceMatrix;
+
 uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main()
 {
 	vec4 viewPos;
 
-    viewPos = lightSpaceMatrix * model * vec4(vPosition, 1.0f);
+    viewPos = projection * view * model * vec4(vPosition, 1.0f);
 
     gl_Position = viewPos;
 }

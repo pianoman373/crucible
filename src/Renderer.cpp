@@ -18,93 +18,19 @@
 
 #include <imgui.h>
 
-struct RenderCall {
-	const IRenderable *mesh;
-	const Material *material;
-	const Transform *transform;
-	const AABB *aabb;
-	const Bone *bones;
-};
-
-// private variables
-// -----------------
-static const float cascadeDistances[4] = { 20.0f, 60.0f, 150.0f, 400.0f };
-static const float cascadeDepths[4] = { 400.0f, 400.0f, 400.0f, 400.0f };
-static DirectionalLight sun = { normalize(vec3(-0.4f, -0.7f, -1.0f)), vec3(1.4f, 1.3f, 1.0f) * 5.0f };
 
 static std::vector<RenderCall> renderQueue;
 static std::vector<RenderCall> renderQueueForward;
-static std::vector<PointLight> pointLights;
+static std::vector<PointLight*> pointLights;
+static std::vector<DirectionalLight*> directionalLights;
 
-static Framebuffer shadowBuffer0;
-static Framebuffer shadowBuffer1;
-static Framebuffer shadowBuffer2;
-static Framebuffer shadowBuffer3;
 static Framebuffer HDRbuffer;
 static Framebuffer HDRbuffer2;
 static Framebuffer gBuffer;
 
-static bool shadows;
-static int shadow_resolution;
-
 static vec2i resolution;
 
 static vec3 clearColor;
-
-// private functions
-// -----------------
-static mat4 shadowMatrix(float radius, const Camera &cam, float depth) {
-	return orthographic(-radius, radius, -radius, radius, -depth, depth) * LookAt(cam.getPosition() - sun.direction, cam.getPosition(), vec3(0.0f, 1.0f, 0.0f));
-}
-
-static Frustum shadowFrustum(float radius, const Camera &cam, float depth) {
-	Frustum shadowFrustum;
-	shadowFrustum.setupInternalsOrthographic(-radius, radius, -radius, radius, -depth, depth);
-	Camera shadowCam;
-	shadowCam.setPosition(cam.getPosition());
-	shadowCam.setDirection(sun.direction);
-	shadowFrustum.updateCamPosition(shadowCam);
-
-	return shadowFrustum;
-}
-
-static void renderShadow(Framebuffer &fbuffer, mat4 lightSpaceMatrix, Frustum f, bool doFrustumCulling) {
-	glViewport(0, 0, fbuffer.getWidth(), fbuffer.getHeight());
-	fbuffer.bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_DEPTH_BUFFER_BIT);
-
-	for (RenderCall c : renderQueue) {
-		if (doFrustumCulling) {
-			if (!f.isBoxInside(*c.aabb)) {
-				continue;
-			}
-		}
-
-		Resources::ShadowShader.bind();
-
-        if (c.bones) {
-			Resources::ShadowShader.uniformBool("doAnimation", true);
-
-            std::vector<mat4> skinningMatrices = c.bones->getSkinningTransforms();
-
-            for (size_t i = 0; i < skinningMatrices.size(); i++) {
-                mat4 trans = skinningMatrices.at(i);
-
-				Resources::ShadowShader.uniformMat4("bones["+std::to_string(i)+"]", trans);
-            }
-        }
-        else {
-			Resources::ShadowShader.uniformBool("doAnimation", false);
-        }
-
-		Resources::ShadowShader.uniformMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-		Resources::ShadowShader.uniformMat4("model", c.transform->getMatrix());
-
-		c.mesh->render();
-	}
-}
 
 static GLuint queries[4]; // The unique query id
 static GLuint queryResults[4]; // Save the time, in nanoseconds
@@ -119,7 +45,6 @@ static void endQuery() {
 }
 
 namespace Renderer {
-
     DebugRenderer debug;
 
     Cubemap irradiance;
@@ -127,29 +52,12 @@ namespace Renderer {
 
     std::vector<std::shared_ptr<PostProcessor>> postProcessingStack;
 
-    // public functions
-    // ------------------------------------------------------------------------
-    void init(bool doShadows, int shadowResolution, int resolutionX, int resolutionY) {
+    void init(int resolutionX, int resolutionY) {
         resolution = vec2i(resolutionX, resolutionY);
 
         Resources::loadDefaultResources();
-        
-        shadows = doShadows;
-        shadow_resolution = shadowResolution;
 
         glGenQueries(4, queries);
-
-        if (shadows) {
-            shadowBuffer0.setup(shadow_resolution, shadow_resolution);
-            shadowBuffer1.setup(shadow_resolution, shadow_resolution);
-            shadowBuffer2.setup(shadow_resolution, shadow_resolution);
-            shadowBuffer3.setup(shadow_resolution, shadow_resolution);
-
-            shadowBuffer0.attachShadow(shadow_resolution, shadow_resolution);
-            shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
-            shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
-            shadowBuffer3.attachShadow(shadow_resolution, shadow_resolution);
-        }
 
         glEnable(GL_CULL_FACE);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -190,13 +98,12 @@ namespace Renderer {
         }
     }
 
-    void renderPointLight(const vec3 &position, const vec3 &color, float radius) {
-        PointLight p;
-        p.position = position;
-        p.color = color;
-        p.radius = radius;
+    void renderPointLight(PointLight *light) {
+        pointLights.push_back(light);
+    }
 
-        pointLights.push_back(p);
+    void renderDirectionalLight(DirectionalLight *light) {
+        directionalLights.push_back(light);
     }
 
     void render(const IRenderable *mesh, const Material *material, const Transform *transform, const AABB *aabb, const Bone *bones) {
@@ -331,26 +238,53 @@ namespace Renderer {
         }
     }
 
-    void lightGbuffers(const Camera &cam) {
-        mat4 shadowMatrix0 = shadowMatrix(cascadeDistances[0], cam, cascadeDepths[0]);
-        mat4 shadowMatrix1 = shadowMatrix(cascadeDistances[1], cam, cascadeDepths[1]);
-        mat4 shadowMatrix2 = shadowMatrix(cascadeDistances[2], cam, cascadeDepths[2]);
-        mat4 shadowMatrix3 = shadowMatrix(cascadeDistances[3], cam, cascadeDepths[3]);
+    void renderToDepth(const Camera &cam, const Framebuffer &target, const Frustum &f, bool doFrustumCulling) {
+        glViewport(0, 0, target.getWidth(), target.getHeight());
+        target.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
 
-        Frustum shadowFrustum0 = shadowFrustum(cascadeDistances[0], cam, cascadeDepths[0]);
-        Frustum shadowFrustum1 = shadowFrustum(cascadeDistances[1], cam, cascadeDepths[1]);
-        Frustum shadowFrustum2 = shadowFrustum(cascadeDistances[2], cam, cascadeDepths[2]);
-        Frustum shadowFrustum3 = shadowFrustum(cascadeDistances[3], cam, cascadeDepths[3]);
+        for (RenderCall c : renderQueue) {
+            if (doFrustumCulling) {
+                if (!f.isBoxInside(*c.aabb)) {
+                    continue;
+                }
+            }
+
+            Resources::ShadowShader.bind();
+
+            if (c.bones) {
+                Resources::ShadowShader.uniformBool("doAnimation", true);
+
+                std::vector<mat4> skinningMatrices = c.bones->getSkinningTransforms();
+
+                for (size_t i = 0; i < skinningMatrices.size(); i++) {
+                    mat4 trans = skinningMatrices.at(i);
+
+                    Resources::ShadowShader.uniformMat4("bones["+std::to_string(i)+"]", trans);
+                }
+            }
+            else {
+                Resources::ShadowShader.uniformBool("doAnimation", false);
+            }
+
+            Resources::ShadowShader.uniformMat4("view", cam.getView());
+            Resources::ShadowShader.uniformMat4("projection", cam.getProjection());
+            Resources::ShadowShader.uniformMat4("model", c.transform->getMatrix());
+
+            c.mesh->render();
+        }
+    }
+
+    void lightGbuffers(const Camera &cam) {
+        
 
         beginQuery(1);
 
-        // render scene multiple times to shadow buffers
-        if (shadows) {
-            renderShadow(shadowBuffer0, shadowMatrix0, shadowFrustum0, false);
-            renderShadow(shadowBuffer1, shadowMatrix1, shadowFrustum1, false);
-            renderShadow(shadowBuffer2, shadowMatrix2, shadowFrustum2, false);
-            renderShadow(shadowBuffer3, shadowMatrix3, shadowFrustum3, false);
+        for (int i = 0; i < directionalLights.size(); i++) {
+            directionalLights[i]->preRender(cam);
         }
+        
 
         endQuery();
         beginQuery(2);
@@ -386,46 +320,9 @@ namespace Renderer {
 
         // render directional lighting to the buffer
         // ---------------------------------------------
-        Resources::deferredDirectionalShader.bind();
-
-        Resources::deferredDirectionalShader.uniformInt("gPosition", 0);
-        Resources::deferredDirectionalShader.uniformInt("gNormal", 1);
-        Resources::deferredDirectionalShader.uniformInt("gAlbedo", 2);
-        Resources::deferredDirectionalShader.uniformInt("gRoughnessMetallic", 3);
-
-        Resources::deferredDirectionalShader.uniformVec3("sun.direction", vec3(vec4(sun.direction, 0.0f) * cam.getView()));
-        Resources::deferredDirectionalShader.uniformVec3("sun.color", sun.color);
-        Resources::deferredDirectionalShader.uniformMat4("view", cam.getView());
-
-        if (shadows) {
-            shadowBuffer0.getAttachment(0).bind(8);
-            shadowBuffer1.getAttachment(0).bind(9);
-            shadowBuffer2.getAttachment(0).bind(10);
-            shadowBuffer3.getAttachment(0).bind(11);
-
-            mat4 biasMatrix = mat4(
-                0.5f, 0.0f, 0.0f, 0.0f,
-                0.0f, 0.5f, 0.0f, 0.0f,
-                0.0f, 0.0f, 0.5f, 0.0f,
-                0.5f, 0.5f, 0.5f, 1.0f
-            );
-
-            Resources::deferredDirectionalShader.uniformInt("shadowTextures[0]", 8);
-            Resources::deferredDirectionalShader.uniformInt("shadowTextures[1]", 9);
-            Resources::deferredDirectionalShader.uniformInt("shadowTextures[2]", 10);
-            Resources::deferredDirectionalShader.uniformInt("shadowTextures[3]", 11);
-
-            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[0]", biasMatrix * shadowMatrix0 * inverseView);
-            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[1]", biasMatrix * shadowMatrix1 * inverseView);
-            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[2]", biasMatrix * shadowMatrix2 * inverseView);
-            Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[3]", biasMatrix * shadowMatrix3 * inverseView);
-
-            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[0]", cascadeDistances[0]);
-            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[1]", cascadeDistances[1]);
-            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[2]", cascadeDistances[2]);
-            Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[3]", cascadeDistances[3]);
+        for (int i = 0; i < directionalLights.size(); i++) {
+            directionalLights[i]->render(cam);
         }
-        Resources::framebufferMesh.render();
 
         // Render point light lighting to the buffer
         // ---------------------------------------------
@@ -439,10 +336,10 @@ namespace Renderer {
         Resources::deferredPointShader.uniformInt("pointLightCount", (int) pointLights.size());
         for (unsigned int i = 0; i < pointLights.size(); i++) {
             Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
-                                                  vec3(vec4(pointLights[i].position, 1.0f) * cam.getView()));
-            Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i].color);
+                                                  vec3(vec4(pointLights[i]->m_position, 1.0f) * cam.getView()));
+            Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i]->m_color);
 
-            Resources::deferredPointShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i].radius);
+            Resources::deferredPointShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i]->m_radius);
         }
 
         Resources::framebufferMesh.render();
@@ -492,7 +389,6 @@ namespace Renderer {
     }
 
     const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
-        glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
 
         beginQuery(0);
@@ -562,6 +458,7 @@ namespace Renderer {
         }
 
         pointLights.clear();
+        directionalLights.clear();
         renderQueue.clear();
         renderQueueForward.clear();
 
@@ -670,10 +567,6 @@ namespace Renderer {
         c.setID(envCubemap);
 
         return c;
-    }
-
-    void setSun(const DirectionalLight &light) {
-        sun = light;
     }
 
     void setClearColor(vec3 color) {
