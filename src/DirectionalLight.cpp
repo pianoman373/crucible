@@ -66,10 +66,10 @@ void DirectionalLight::preRender(const Camera &cam) {
     Frustum shadowFrustum2 = getShadowFrustum(cascadeDistances[2], cam, cascadeDepths[2]);
     Frustum shadowFrustum3 = getShadowFrustum(cascadeDistances[3], cam, cascadeDepths[3]);
 
-    Renderer::renderToDepth(shadowCamera0, shadowBuffer0, shadowFrustum0, false);
-    Renderer::renderToDepth(shadowCamera1, shadowBuffer1, shadowFrustum1, false);
-    Renderer::renderToDepth(shadowCamera2, shadowBuffer2, shadowFrustum2, false);
-    Renderer::renderToDepth(shadowCamera3, shadowBuffer3, shadowFrustum3, false);
+    Renderer::renderToDepth(shadowBuffer0, shadowCamera0, shadowFrustum0, false);
+    Renderer::renderToDepth(shadowBuffer1, shadowCamera1, shadowFrustum1, false);
+    Renderer::renderToDepth(shadowBuffer2, shadowCamera2, shadowFrustum2, false);
+    Renderer::renderToDepth(shadowBuffer3, shadowCamera3, shadowFrustum3, false);
 }
 
 void DirectionalLight::render(const Camera &cam) {

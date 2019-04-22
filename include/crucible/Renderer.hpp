@@ -61,15 +61,11 @@ namespace Renderer {
 
     void renderSkybox(const Material *material);
 
-    void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling);
-
-    void renderForwardPass(const Camera &cam, const Frustum &f, bool doFrustumCulling);
-
-    void renderToDepth(const Camera &cam, const Framebuffer &target, const Frustum &f, bool doFrustumCulling);
-
-    void lightGbuffers(const Camera &cam);
+    void renderToDepth(const Framebuffer &target, const Camera &cam, const Frustum &f, bool doFrustumCulling);
 
 	Cubemap renderToProbe(const vec3 &position);
+
+    void renderToFramebuffer(const Camera &cam, const Frustum &f, bool doFrustumCulling);
 
 	/**
 	* Flush command with frustum culling disabled.

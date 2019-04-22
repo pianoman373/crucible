@@ -44,6 +44,75 @@ static void endQuery() {
     glEndQuery(GL_TIME_ELAPSED);
 }
 
+static void iterateCommandBuffer(std::vector<RenderCall> &buffer, const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+    const Material *lastMaterial = nullptr;
+
+    for (RenderCall &call : buffer) {
+        if (doFrustumCulling) {
+            if (!f.isBoxInside(*call.aabb)) {
+                continue;
+            }
+        }
+
+        Shader s = call.material->getShader();
+
+        if (call.material != lastMaterial) {
+            s.bind();
+            call.material->bindUniforms();
+
+            s.uniformMat4("view", cam.getView());
+            s.uniformMat4("projection", cam.getProjection());
+
+        }
+
+        if (call.bones) {
+            s.uniformBool("doAnimation", true);
+
+            std::vector<mat4> skinningMatrices = call.bones->getSkinningTransforms();
+
+            for (size_t i = 0; i < skinningMatrices.size(); i++) {
+                mat4 trans = skinningMatrices.at(i);
+
+                s.uniformMat4("bones["+std::to_string(i)+"]", trans);
+            }
+        }
+        else {
+            s.uniformBool("doAnimation", false);
+        }
+
+        if (call.transform) {
+            s.uniformMat4("model", call.transform->getMatrix());
+        }
+        else {
+            s.uniformMat4("model", mat4());
+        }
+        
+
+        call.mesh->render();
+
+        lastMaterial = call.material;
+    }
+}
+
+static void iterateCommandBufferDepthOnly(std::vector<RenderCall> &buffer, const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+    Resources::ShadowShader.bind();
+
+    Resources::ShadowShader.uniformMat4("view", cam.getView());
+    Resources::ShadowShader.uniformMat4("projection", cam.getProjection());
+    
+    for (RenderCall c : buffer) {
+        if (doFrustumCulling) {
+            if (!f.isBoxInside(*c.aabb)) {
+                continue;
+            }
+        }
+
+        Resources::ShadowShader.uniformMat4("model", c.transform->getMatrix());
+
+        c.mesh->render();
+    }
+}
+
 namespace Renderer {
     DebugRenderer debug;
 
@@ -133,7 +202,19 @@ namespace Renderer {
         render(&Resources::cubemapMesh, material, nullptr, nullptr, nullptr);
     }
 
-    void renderGbuffers(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+    void renderToDepth(const Framebuffer &target, const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+        glViewport(0, 0, target.getWidth(), target.getHeight());
+        target.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        iterateCommandBufferDepthOnly(renderQueue, cam, f, doFrustumCulling);        
+    }
+
+    void renderToFramebuffer(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
+        glDisable(GL_BLEND);
+
+        beginQuery(0);
         // render objects in scene into g-buffer
         // -------------------------------------
         gBuffer.bind();
@@ -141,144 +222,11 @@ namespace Renderer {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, resolution.x, resolution.y);
 
-        const Material *lastMaterial = nullptr;
-
-        for (RenderCall call : renderQueue) {
-            if (doFrustumCulling) {
-                if (!f.isBoxInside(*call.aabb)) {
-                    continue;
-                }
-            }
-
-            Shader s = call.material->getShader();
-
-            if (call.material != lastMaterial) {
-                s.bind();
-                call.material->bindUniforms();
-
-                s.uniformMat4("view", cam.getView());
-                s.uniformMat4("projection", cam.getProjection());
-
-            }
-
-            if (call.bones) {
-                s.uniformBool("doAnimation", true);
-
-                std::vector<mat4> skinningMatrices = call.bones->getSkinningTransforms();
-
-                for (size_t i = 0; i < skinningMatrices.size(); i++) {
-                    mat4 trans = skinningMatrices.at(i);
-
-                    s.uniformMat4("bones["+std::to_string(i)+"]", trans);
-                }
-            }
-            else {
-                s.uniformBool("doAnimation", false);
-            }
-
-            if (call.transform) {
-                s.uniformMat4("model", call.transform->getMatrix());
-            }
-            else {
-                s.uniformMat4("model", mat4());
-            }
-            
-
-            call.mesh->render();
-
-            lastMaterial = call.material;
-        }
-    }
-
-    void renderForwardPass(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
-        const Material *lastMaterial = nullptr;
-
-        for (RenderCall call : renderQueueForward) {
-            if (doFrustumCulling) {
-                if (!f.isBoxInside(*call.aabb)) {
-                    continue;
-                }
-            }
-
-            Shader s = call.material->getShader();
-
-            if (call.material != lastMaterial) {
-                s.bind();
-                call.material->bindUniforms();
-
-                s.uniformMat4("view", cam.getView());
-                s.uniformMat4("projection", cam.getProjection());
-            }
-
-            if (call.bones) {
-                s.uniformBool("doAnimation", true);
-
-                std::vector<mat4> skinningMatrices = call.bones->getSkinningTransforms();
-
-                for (size_t i = 0; i < skinningMatrices.size(); i++) {
-                    mat4 trans = skinningMatrices.at(i);
-
-                    s.uniformMat4("bones["+std::to_string(i)+"]", trans);
-                }
-            }
-            else {
-                s.uniformBool("doAnimation", false);
-            }
-
-            if (call.transform) {
-                s.uniformMat4("model", call.transform->getMatrix());
-            }
-            else {
-                s.uniformMat4("model", mat4());
-            }
-
-            call.mesh->render();
-
-            lastMaterial = call.material;
-        }
-    }
-
-    void renderToDepth(const Camera &cam, const Framebuffer &target, const Frustum &f, bool doFrustumCulling) {
-        glViewport(0, 0, target.getWidth(), target.getHeight());
-        target.bind();
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        for (RenderCall c : renderQueue) {
-            if (doFrustumCulling) {
-                if (!f.isBoxInside(*c.aabb)) {
-                    continue;
-                }
-            }
-
-            Resources::ShadowShader.bind();
-
-            if (c.bones) {
-                Resources::ShadowShader.uniformBool("doAnimation", true);
-
-                std::vector<mat4> skinningMatrices = c.bones->getSkinningTransforms();
-
-                for (size_t i = 0; i < skinningMatrices.size(); i++) {
-                    mat4 trans = skinningMatrices.at(i);
-
-                    Resources::ShadowShader.uniformMat4("bones["+std::to_string(i)+"]", trans);
-                }
-            }
-            else {
-                Resources::ShadowShader.uniformBool("doAnimation", false);
-            }
-
-            Resources::ShadowShader.uniformMat4("view", cam.getView());
-            Resources::ShadowShader.uniformMat4("projection", cam.getProjection());
-            Resources::ShadowShader.uniformMat4("model", c.transform->getMatrix());
-
-            c.mesh->render();
-        }
-    }
-
-    void lightGbuffers(const Camera &cam) {
+        iterateCommandBuffer(renderQueue, cam, f, doFrustumCulling);
+        endQuery();
         
-
+        // apply lighting to g-buffers
+        // -------------------------------
         beginQuery(1);
 
         for (int i = 0; i < directionalLights.size(); i++) {
@@ -366,6 +314,21 @@ namespace Renderer {
         Resources::framebufferMesh.render();
 
         endQuery();
+
+        // copy depth and stencil buffer
+        // -------------------------------
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, HDRbuffer.fbo);
+        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+
+
+        // render the forward pass
+        // -------------------------------
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        iterateCommandBuffer(renderQueueForward, cam, f, doFrustumCulling);
     }
 
     void flush(const Camera &cam) {
@@ -389,25 +352,7 @@ namespace Renderer {
     }
 
     const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
-        glDisable(GL_BLEND);
-
-        beginQuery(0);
-        renderGbuffers(cam, f, doFrustumCulling);
-        endQuery();
-        
-        lightGbuffers(cam);
-
-        // copy depth and stencil buffer
-        // -------------------------------
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, HDRbuffer.fbo);
-        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBlitFramebuffer(0, 0, resolution.x, resolution.y, 0, 0, resolution.x, resolution.y, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-
-        glDepthFunc(GL_LEQUAL);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        renderForwardPass(cam, f, doFrustumCulling);
+        renderToFramebuffer(cam, f, doFrustumCulling);
         
         // post processing
         beginQuery(3);
@@ -531,21 +476,7 @@ namespace Renderer {
             cam.up = ups[i];
             cam.fov = 90.0f;
 
-            renderGbuffers(cam, Frustum(), false);
-            lightGbuffers(cam);
-
-            // copy depth and stencil buffer
-            // -------------------------------
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.fbo);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, HDRbuffer.fbo);
-            glBlitFramebuffer(0, 0, resolution, resolution, 0, 0, resolution, resolution, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-            glBlitFramebuffer(0, 0, resolution, resolution, 0, 0, resolution, resolution, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-
-            glDepthFunc(GL_LEQUAL);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            renderForwardPass(cam, Frustum(), false);
-            glDisable(GL_BLEND);
+            renderToFramebuffer(cam, Frustum(), false);
 
             glViewport(0, 0, resolution, resolution);
             glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
