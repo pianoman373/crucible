@@ -105,6 +105,11 @@ source_group("Headers" FILES ${PROJECT_HEADERS})
 
 
 if (CRUCIBLE_BUILD_EXAMPLES)
+    add_executable(HelloWindowDemo examples/HelloWindowDemo.cpp)
+    add_dependencies(HelloWindowDemo crucible)
+    target_link_libraries(HelloWindowDemo crucible)
+    set_target_properties(HelloWindowDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
     add_executable(SceneRenderingDemo examples/SceneRenderingDemo.cpp)
     add_dependencies(SceneRenderingDemo crucible)
     target_link_libraries(SceneRenderingDemo crucible)
