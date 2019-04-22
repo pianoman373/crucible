@@ -80,13 +80,6 @@ vec3 postProcess(vec2 texCoord) {
     vec3 light = lighting(FragPos, Albedo, Normal, Roughness, Metallic);
     //vec3 light = Albedo;
 	if (length(FragPos) > 0.0) {
-        if (length(light) >= 0.5) {
-            return normalize(light)*1.0;
-        }
-        if (length(light) < 0.5) {
-            return normalize(light)*1.0;
-        }
-
 		return light;
 	}
 	else {
