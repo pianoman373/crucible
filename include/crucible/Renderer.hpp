@@ -31,6 +31,9 @@ namespace Renderer {
 	extern Cubemap irradiance;
 	extern Cubemap specular;
 
+    extern Framebuffer HDRbuffer;
+    extern Framebuffer HDRbuffer1;
+
     extern std::vector<std::shared_ptr<PostProcessor>> postProcessingStack;
 
     /**

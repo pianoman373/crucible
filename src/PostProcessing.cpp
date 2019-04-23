@@ -23,6 +23,7 @@ void PostProcessor::resize() {
 void FxaaPostProcessor::postProcess(const Camera &, const Framebuffer &source, const Framebuffer &destination) {
     destination.bind();
     Resources::fxaaShader.bind();
+    Resources::fxaaShader.uniformInt("source", 0);
 
     source.getAttachment(0).bind();
     Resources::framebufferMesh.render();
@@ -31,6 +32,7 @@ void FxaaPostProcessor::postProcess(const Camera &, const Framebuffer &source, c
 void TonemapPostProcessor::postProcess(const Camera &, const Framebuffer &source, const Framebuffer &destination) {
     destination.bind();
     Resources::tonemapShader.bind();
+    Resources::tonemapShader.uniformInt("source", 0);
 
     source.getAttachment(0).bind();
     Resources::framebufferMesh.render();

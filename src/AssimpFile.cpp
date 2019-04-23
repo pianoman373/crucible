@@ -25,12 +25,12 @@ AssimpFile::AssimpFile() {
 
 }
 
-AssimpFile::AssimpFile(const aiScene *scene) {
-    this->scene = scene;
-}
-
 AssimpFile::~AssimpFile() {
 
+}
+
+void AssimpFile::load(const aiScene *scene) {
+    this->scene = scene;
 }
 
 Bone AssimpFile::getSkeleton() {
@@ -45,7 +45,7 @@ Bone AssimpFile::getSkeleton() {
         //std::cout << rootNode->mName.C_Str() << std::endl;
 
         rootNode->mTransformation.DecomposeNoScaling(rotation, position);
-
+        
         bone.name = rootNode->mName.C_Str();
         bone.position = vec3(position.x, position.y, position.z);
         bone.startingPosition = bone.position;

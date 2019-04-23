@@ -146,7 +146,6 @@ static void load() {
     Resources::brdf.setID(brdfLUTTexture);
 }
 
-
 namespace Resources {
     Mesh cubemapMesh;
     Mesh framebufferMesh;
@@ -194,7 +193,6 @@ namespace Resources {
             int width, height, components;
             unsigned char* image = stbi_load(path.toString().c_str(), &width, &height, &components, STBI_rgb_alpha);
 
-
             if (image) {
                 texture.load(image, width, height, pixelated, false);
 
@@ -203,8 +201,6 @@ namespace Resources {
             else {
                 std::cerr << "error loading texture: " << path << std::endl;
             }
-
-
 
             textureRegistry.insert(std::make_pair(path, texture));
         }
@@ -319,7 +315,8 @@ namespace Resources {
                 std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
             }
 
-            assimpFileRegistry.insert(std::make_pair(path, AssimpFile(scene)));
+            assimpFileRegistry.insert(std::make_pair(path, AssimpFile()));
+            assimpFileRegistry.at(path).load(scene);
         }
 
         return assimpFileRegistry.at(path);

@@ -12,14 +12,16 @@ class AssimpFile {
 private:
     const aiScene* scene = nullptr;
 
+    std::vector<Mesh> meshes;
+
     void processNode(Bone &b, aiNode *node);
 
 public:
     AssimpFile();
 
-    AssimpFile(const aiScene *scene);
-
     ~AssimpFile();
+
+    void load(const aiScene *scene);
 
     Bone getSkeleton();
 

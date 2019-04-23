@@ -24,8 +24,6 @@ static std::vector<RenderCall> renderQueueForward;
 static std::vector<PointLight*> pointLights;
 static std::vector<DirectionalLight*> directionalLights;
 
-static Framebuffer HDRbuffer;
-static Framebuffer HDRbuffer2;
 static Framebuffer gBuffer;
 
 static vec2i resolution;
@@ -118,6 +116,10 @@ namespace Renderer {
 
     Cubemap irradiance;
     Cubemap specular;
+
+    
+    Framebuffer HDRbuffer;
+    Framebuffer HDRbuffer2;
 
     std::vector<std::shared_ptr<PostProcessor>> postProcessingStack;
 
@@ -416,7 +418,7 @@ namespace Renderer {
     }
 
     Cubemap renderToProbe(const vec3 &position) {
-        static const int resolution = 512;
+        static const int resolution = 128;
 
         static vec3 forwards[] = {
                 vec3(1.0f,  0.0f,  0.0f),
