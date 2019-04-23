@@ -15,16 +15,25 @@ private:
 
     void setupFramebuffers();
 
-public:
-    Framebuffer shadowBuffer0;
-    Framebuffer shadowBuffer1;
-    Framebuffer shadowBuffer2;
-    Framebuffer shadowBuffer3;
+    bool m_hasShadows;
+    int m_shadowResolution;
 
+    float m_shadowDepth;
+    std::vector<float> m_shadowDistances;
+
+    std::vector<Framebuffer> shadowBuffers;
+
+public:
     vec3 m_direction;
     vec3 m_color;
 
     DirectionalLight(vec3 direction, vec3 color);
+
+    DirectionalLight(vec3 direction, vec3 color, int shadowResolution);
+
+    DirectionalLight(vec3 direction, vec3 color, int shadowResolution, int numCascades, float farDistance);
+
+    DirectionalLight(vec3 direction, vec3 color, int shadowResolution, std::vector<float> distances);
 
     
 

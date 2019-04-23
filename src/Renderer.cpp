@@ -274,44 +274,49 @@ namespace Renderer {
 
         // Render point light lighting to the buffer
         // ---------------------------------------------
-        Resources::deferredPointShader.bind();
+        if (pointLights.size() > 0) {
+            Resources::deferredPointShader.bind();
 
-        Resources::deferredPointShader.uniformInt("gPosition", 0);
-        Resources::deferredPointShader.uniformInt("gNormal", 1);
-        Resources::deferredPointShader.uniformInt("gAlbedo", 2);
-        Resources::deferredPointShader.uniformInt("gRoughnessMetallic", 3);
+            Resources::deferredPointShader.uniformInt("gPosition", 0);
+            Resources::deferredPointShader.uniformInt("gNormal", 1);
+            Resources::deferredPointShader.uniformInt("gAlbedo", 2);
+            Resources::deferredPointShader.uniformInt("gRoughnessMetallic", 3);
 
-        Resources::deferredPointShader.uniformInt("pointLightCount", (int) pointLights.size());
-        for (unsigned int i = 0; i < pointLights.size(); i++) {
-            Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
-                                                  vec3(vec4(pointLights[i]->m_position, 1.0f) * cam.getView()));
-            Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i]->m_color);
+            Resources::deferredPointShader.uniformInt("pointLightCount", (int) pointLights.size());
+            for (unsigned int i = 0; i < pointLights.size(); i++) {
+                Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].position",
+                                                    vec3(vec4(pointLights[i]->m_position, 1.0f) * cam.getView()));
+                Resources::deferredPointShader.uniformVec3("pointLights[" + std::to_string(i) + "].color", pointLights[i]->m_color);
 
-            Resources::deferredPointShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i]->m_radius);
+                Resources::deferredPointShader.uniformFloat("pointLights[" + std::to_string(i) + "].radius", pointLights[i]->m_radius);
+            }
+
+            Resources::framebufferMesh.render();
         }
-
-        Resources::framebufferMesh.render();
 
         // Render ambient lighting to the buffer
         // ---------------------------------------------
-        Resources::deferredAmbientShader.bind();
+        if (irradiance.getID() != 0 && specular.getID() != 0) {
+            Resources::deferredAmbientShader.bind();
 
-        Resources::deferredAmbientShader.uniformInt("gPosition", 0);
-        Resources::deferredAmbientShader.uniformInt("gNormal", 1);
-        Resources::deferredAmbientShader.uniformInt("gAlbedo", 2);
-        Resources::deferredAmbientShader.uniformInt("gRoughnessMetallic", 3);
+            Resources::deferredAmbientShader.uniformInt("gPosition", 0);
+            Resources::deferredAmbientShader.uniformInt("gNormal", 1);
+            Resources::deferredAmbientShader.uniformInt("gAlbedo", 2);
+            Resources::deferredAmbientShader.uniformInt("gRoughnessMetallic", 3);
+            
+
+            Resources::deferredAmbientShader.uniformInt("irradiance", 4);
+            irradiance.bind(4);
+            Resources::deferredAmbientShader.uniformInt("prefilter", 5);
+            specular.bind(5);
+            Resources::deferredAmbientShader.uniformInt("brdf", 6);
+            Resources::brdf.bind(6);
+
+            Resources::deferredAmbientShader.uniformMat4("inverseView", inverseView);
+
+            Resources::framebufferMesh.render();
+        }
         
-
-        Resources::deferredAmbientShader.uniformInt("irradiance", 4);
-        irradiance.bind(4);
-        Resources::deferredAmbientShader.uniformInt("prefilter", 5);
-        specular.bind(5);
-        Resources::deferredAmbientShader.uniformInt("brdf", 6);
-        Resources::brdf.bind(6);
-
-        Resources::deferredAmbientShader.uniformMat4("inverseView", inverseView);
-
-        Resources::framebufferMesh.render();
 
         endQuery();
 

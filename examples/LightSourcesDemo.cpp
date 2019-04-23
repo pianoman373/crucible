@@ -13,7 +13,7 @@ int main() {
     Renderer::postProcessingStack.push_back(std::shared_ptr<PostProcessor>(new FxaaPostProcessor())); // FXAA
 
     // store scene lighting
-    DirectionalLight sun(vec3(1.05f, -1.2f, -1.3f), vec3(1.2f));
+    DirectionalLight sun(vec3(1.05f, -1.2f, -1.3f), vec3(1.2f), 2048);
     PointLight lamp(vec3(0.0f, 2.0f, 5.0f), vec3(1.0f, 0.6f, 0.4f)*10.0f, 5.0f);
 
     // create all meshes to be used in the scene

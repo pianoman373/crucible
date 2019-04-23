@@ -84,7 +84,7 @@ int main() {
 	Camera cam;
 
     // store sun object
-    DirectionalLight sun(normalize(vec3(0.4f, -1.2f, -1.0f)), vec3(1.0f, 1.0f, 1.0f) * 5.0f);
+    DirectionalLight sun(normalize(vec3(0.4f, -1.2f, -1.0f)), vec3(1.0f, 1.0f, 1.0f) * 5.0f, 2048, 2, 100.0f);
 
     // load skybox
 	Cubemap cubemap;

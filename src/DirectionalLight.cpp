@@ -6,9 +6,6 @@
 
 #include <glad/glad.h>
 
-static const float cascadeDistances[4] = { 20.0f, 60.0f, 150.0f, 400.0f };
-static const float cascadeDepths[4] = { 400.0f, 400.0f, 400.0f, 400.0f };
-
 Camera DirectionalLight::getShadowCamera(float radius, const Camera &cam, float depth) {
     Camera ret;
     ret.position = cam.getPosition();
@@ -33,95 +30,151 @@ Frustum DirectionalLight::getShadowFrustum(float radius, const Camera &cam, floa
 }
 
 void DirectionalLight::setupFramebuffers() {
-    int shadow_resolution = 2048;
+    shadowBuffers = {Framebuffer(), Framebuffer(), Framebuffer(), Framebuffer()};
 
-    shadowBuffer0.setup(shadow_resolution, shadow_resolution);
-    shadowBuffer1.setup(shadow_resolution, shadow_resolution);
-    shadowBuffer2.setup(shadow_resolution, shadow_resolution);
-    shadowBuffer3.setup(shadow_resolution, shadow_resolution);
+    for (int i = 0; i < m_shadowDistances.size(); i++) {
+        shadowBuffers.push_back(Framebuffer());
 
-    shadowBuffer0.attachShadow(shadow_resolution, shadow_resolution);
-    shadowBuffer1.attachShadow(shadow_resolution, shadow_resolution);
-    shadowBuffer2.attachShadow(shadow_resolution, shadow_resolution);
-    shadowBuffer3.attachShadow(shadow_resolution, shadow_resolution);
+        shadowBuffers[i].setup(m_shadowResolution, m_shadowResolution);
+        shadowBuffers[i].attachShadow(m_shadowResolution, m_shadowResolution);
+    }
 }
 
-DirectionalLight::DirectionalLight(vec3 direction, vec3 color): m_direction(direction), m_color(color) {
+DirectionalLight::DirectionalLight(vec3 direction, vec3 color) {
+    m_direction = direction;
+    m_color = color;
+    m_shadowResolution = 0;
+    m_hasShadows = false;
+    m_shadowDepth = 0;
+}
 
+DirectionalLight::DirectionalLight(vec3 direction, vec3 color, int shadowResolution) {
+    m_direction = direction;
+    m_color = color;
+    m_shadowResolution = shadowResolution;
+    m_hasShadows = true;
+
+    m_shadowDepth = 400.0f;
+    m_shadowDistances = { 20.0f, 60.0f, 150.0f, 400.0f };
+}
+
+DirectionalLight::DirectionalLight(vec3 direction, vec3 color, int shadowResolution, int numCascades, float farDistance) {
+    m_direction = direction;
+    m_color = color;
+    m_shadowResolution = shadowResolution;
+    m_hasShadows = true;
+
+    float cascadeSplitLambda = 0.5f;
+
+    float nearClip = 0.1f;
+    float farClip = farDistance;
+    float clipRange = farClip - nearClip;
+
+    float minZ = nearClip;
+    float maxZ = nearClip + clipRange;
+
+    float range = maxZ - minZ;
+    float ratio = maxZ / minZ;
+
+    // Calculate split depths based on view camera furstum
+    // Based on method presentd in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+    for (uint32_t i = 0; i < numCascades; i++) {
+        float p = (i + 1) / static_cast<float>(numCascades);
+        float log = minZ * std::pow(ratio, p);
+        float uniform = minZ + range * p;
+        float d = cascadeSplitLambda * (log - uniform) + uniform;
+        m_shadowDistances.push_back((d - nearClip));
+    }
+
+    m_shadowDepth = m_shadowDistances[m_shadowDistances.size()];
+}
+
+DirectionalLight::DirectionalLight(vec3 direction, vec3 color, int shadowResolution, std::vector<float> distances) {
+    m_direction = direction;
+    m_color = color;
+    m_shadowResolution = shadowResolution;
+    m_hasShadows = true;
+
+    m_shadowDistances = distances;
+    m_shadowDepth = m_shadowDistances[m_shadowDistances.size()];
 }
 
 void DirectionalLight::preRender(const Camera &cam) {
-    if (!isFramebufferSetup) {
-        setupFramebuffers();
-        isFramebufferSetup = true;
+    if (m_hasShadows) {
+        if (!isFramebufferSetup) {
+            setupFramebuffers();
+            isFramebufferSetup = true;
+        }
+
+        for (int i = 0; i < m_shadowDistances.size(); i++) {
+            Camera shadowCamera = getShadowCamera(m_shadowDistances[i], cam, m_shadowDepth);
+            Frustum shadowFrustum = getShadowFrustum(m_shadowDistances[i], cam, m_shadowDepth);
+
+            Renderer::renderToDepth(shadowBuffers[i], shadowCamera, shadowFrustum, false);
+        }
     }
-    
-    Camera shadowCamera0 = getShadowCamera(cascadeDistances[0], cam, cascadeDepths[0]);
-    Camera shadowCamera1 = getShadowCamera(cascadeDistances[1], cam, cascadeDepths[1]);
-    Camera shadowCamera2 = getShadowCamera(cascadeDistances[2], cam, cascadeDepths[2]);
-    Camera shadowCamera3 = getShadowCamera(cascadeDistances[3], cam, cascadeDepths[3]);
-
-    Frustum shadowFrustum0 = getShadowFrustum(cascadeDistances[0], cam, cascadeDepths[0]);
-    Frustum shadowFrustum1 = getShadowFrustum(cascadeDistances[1], cam, cascadeDepths[1]);
-    Frustum shadowFrustum2 = getShadowFrustum(cascadeDistances[2], cam, cascadeDepths[2]);
-    Frustum shadowFrustum3 = getShadowFrustum(cascadeDistances[3], cam, cascadeDepths[3]);
-
-    Renderer::renderToDepth(shadowBuffer0, shadowCamera0, shadowFrustum0, false);
-    Renderer::renderToDepth(shadowBuffer1, shadowCamera1, shadowFrustum1, false);
-    Renderer::renderToDepth(shadowBuffer2, shadowCamera2, shadowFrustum2, false);
-    Renderer::renderToDepth(shadowBuffer3, shadowCamera3, shadowFrustum3, false);
 }
 
 void DirectionalLight::render(const Camera &cam) {
-    Camera shadowCamera0 = getShadowCamera(cascadeDistances[0], cam, cascadeDepths[0]);
-    Camera shadowCamera1 = getShadowCamera(cascadeDistances[1], cam, cascadeDepths[1]);
-    Camera shadowCamera2 = getShadowCamera(cascadeDistances[2], cam, cascadeDepths[2]);
-    Camera shadowCamera3 = getShadowCamera(cascadeDistances[3], cam, cascadeDepths[3]);
+    if (m_hasShadows) {
+        Resources::deferredDirectionalShadowShader.bind();
 
-    Resources::deferredDirectionalShader.bind();
+        mat4 inverseView = inverse(cam.getView());
 
-    mat4 inverseView = inverse(cam.getView());
+        Renderer::getGBuffer().getAttachment(0).bind(0);
+        Renderer::getGBuffer().getAttachment(1).bind(1);
+        Renderer::getGBuffer().getAttachment(2).bind(2);
+        Renderer::getGBuffer().getAttachment(3).bind(3);
 
-    Renderer::getGBuffer().getAttachment(0).bind(0);
-    Renderer::getGBuffer().getAttachment(1).bind(1);
-    Renderer::getGBuffer().getAttachment(2).bind(2);
-    Renderer::getGBuffer().getAttachment(3).bind(3);
+        Resources::deferredDirectionalShadowShader.uniformInt("gPosition", 0);
+        Resources::deferredDirectionalShadowShader.uniformInt("gNormal", 1);
+        Resources::deferredDirectionalShadowShader.uniformInt("gAlbedo", 2);
+        Resources::deferredDirectionalShadowShader.uniformInt("gRoughnessMetallic", 3);
 
-    Resources::deferredDirectionalShader.uniformInt("gPosition", 0);
-    Resources::deferredDirectionalShader.uniformInt("gNormal", 1);
-    Resources::deferredDirectionalShader.uniformInt("gAlbedo", 2);
-    Resources::deferredDirectionalShader.uniformInt("gRoughnessMetallic", 3);
+        Resources::deferredDirectionalShadowShader.uniformVec3("sun.direction", vec3(vec4(m_direction, 0.0f) * cam.getView()));
+        Resources::deferredDirectionalShadowShader.uniformVec3("sun.color", m_color);
+        Resources::deferredDirectionalShadowShader.uniformMat4("view", cam.getView());
 
-    Resources::deferredDirectionalShader.uniformVec3("sun.direction", vec3(vec4(m_direction, 0.0f) * cam.getView()));
-    Resources::deferredDirectionalShader.uniformVec3("sun.color", m_color);
-    Resources::deferredDirectionalShader.uniformMat4("view", cam.getView());
+        mat4 biasMatrix = mat4(
+            0.5f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f
+        );
 
-    shadowBuffer0.getAttachment(0).bind(8);
-    shadowBuffer1.getAttachment(0).bind(9);
-    shadowBuffer2.getAttachment(0).bind(10);
-    shadowBuffer3.getAttachment(0).bind(11);
+        for (int i = 0; i < m_shadowDistances.size(); i++) {
+            shadowBuffers[i].getAttachment(0).bind(8+i);
+            Resources::deferredDirectionalShadowShader.uniformInt("shadowTextures["+std::to_string(i)+"]", 8+i);
 
-    mat4 biasMatrix = mat4(
-        0.5f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.5f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f
-    );
+            Camera shadowCamera = getShadowCamera(m_shadowDistances[i], cam, m_shadowDepth);
 
-    Resources::deferredDirectionalShader.uniformInt("shadowTextures[0]", 8);
-    Resources::deferredDirectionalShader.uniformInt("shadowTextures[1]", 9);
-    Resources::deferredDirectionalShader.uniformInt("shadowTextures[2]", 10);
-    Resources::deferredDirectionalShader.uniformInt("shadowTextures[3]", 11);
+            Resources::deferredDirectionalShadowShader.uniformMat4("lightSpaceMatrix["+std::to_string(i)+"]", biasMatrix * shadowCamera.getProjection() * shadowCamera.getView() * inverseView);
+            Resources::deferredDirectionalShadowShader.uniformFloat("shadowDistances["+std::to_string(i)+"]", m_shadowDistances[i]);
+        }
 
-    Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[0]", biasMatrix * shadowCamera0.getProjection() * shadowCamera0.getView() * inverseView);
-    Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[1]", biasMatrix * shadowCamera1.getProjection() * shadowCamera1.getView() * inverseView);
-    Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[2]", biasMatrix * shadowCamera2.getProjection() * shadowCamera2.getView() * inverseView);
-    Resources::deferredDirectionalShader.uniformMat4("lightSpaceMatrix[3]", biasMatrix * shadowCamera3.getProjection() * shadowCamera3.getView() * inverseView);
+        Resources::deferredDirectionalShadowShader.uniformInt("numCascades", m_shadowDistances.size());
 
-    Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[0]", cascadeDistances[0]);
-    Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[1]", cascadeDistances[1]);
-    Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[2]", cascadeDistances[2]);
-    Resources::deferredDirectionalShader.uniformFloat("cascadeDistances[3]", cascadeDistances[3]);
+        Resources::framebufferMesh.render();
+    }
+    else {
+        Resources::deferredDirectionalShader.bind();
 
-    Resources::framebufferMesh.render();
+        mat4 inverseView = inverse(cam.getView());
+
+        Renderer::getGBuffer().getAttachment(0).bind(0);
+        Renderer::getGBuffer().getAttachment(1).bind(1);
+        Renderer::getGBuffer().getAttachment(2).bind(2);
+        Renderer::getGBuffer().getAttachment(3).bind(3);
+
+        Resources::deferredDirectionalShader.uniformInt("gPosition", 0);
+        Resources::deferredDirectionalShader.uniformInt("gNormal", 1);
+        Resources::deferredDirectionalShader.uniformInt("gAlbedo", 2);
+        Resources::deferredDirectionalShader.uniformInt("gRoughnessMetallic", 3);
+
+        Resources::deferredDirectionalShader.uniformVec3("sun.direction", vec3(vec4(m_direction, 0.0f) * cam.getView()));
+        Resources::deferredDirectionalShader.uniformVec3("sun.color", m_color);
+        Resources::deferredDirectionalShader.uniformMat4("view", cam.getView());
+
+        Resources::framebufferMesh.render();
+    }
 }
