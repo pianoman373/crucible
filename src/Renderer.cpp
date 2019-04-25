@@ -196,7 +196,7 @@ namespace Renderer {
     void render(const Model *model, const Transform *transform, const AABB *aabb) {
         for (unsigned int i = 0; i < model->nodes.size(); i++) {
             const ModelNode *node = &model->nodes[i];
-            render(&node->mesh, &model->materials[node->materialIndex], transform, aabb);
+            render(node->mesh, &model->materials[node->materialIndex], transform, aabb);
         }
     }
 
@@ -361,26 +361,29 @@ namespace Renderer {
     const Texture &flushToTexture(const Camera &cam, const Frustum &f, bool doFrustumCulling) {
         renderToFramebuffer(cam, f, doFrustumCulling);
         
+        glDepthFunc(GL_ALWAYS);
         // post processing
         beginQuery(3);
-        Framebuffer &source = HDRbuffer;
-        Framebuffer &destination = HDRbuffer2;
+        Framebuffer *source = &HDRbuffer;
+        Framebuffer *destination = &HDRbuffer2;
 
         if (postProcessingStack.size() > 0) {
             for (size_t i = 0; i < postProcessingStack.size(); i++) {
                 std::shared_ptr<PostProcessor> step = postProcessingStack[i];
 
-                step->postProcess(cam, source, destination);
+                step->postProcess(cam, *source, *destination);
 
-                Framebuffer &temp = destination;
+                Framebuffer *temp = destination;
                 destination = source;
                 source = temp;
             }
         }
         else {
-            destination = HDRbuffer;
+            destination = &HDRbuffer;
         }
         endQuery();
+
+        glDepthFunc(GL_LEQUAL);
 
         debug.flush(cam);
 
@@ -414,7 +417,7 @@ namespace Renderer {
         renderQueue.clear();
         renderQueueForward.clear();
 
-        return destination.getAttachment(0);
+        return destination->getAttachment(0);
     }
 
     Cubemap renderToProbe(const vec3 &position) {

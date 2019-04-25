@@ -42,5 +42,7 @@ public:
 
     void updateSpaceCamera(float speed);
 
+    void updateFpsCamera(float speed);
+
     void matchWindowResolution();
 };

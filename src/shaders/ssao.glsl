@@ -10,7 +10,8 @@ uniform vec3 samples[256];
 
 uniform mat4 projection;
 
-uniform float radius = 10.5;
+uniform float radius;
+uniform float strength;
 float bias = 0.025;
 
 // tile noise texture over screen based on screen dimensions divided by noise size
@@ -50,7 +51,7 @@ vec3 postProcess(vec2 texCoord) {
             occlusion += (sampleDepth >= sample.z + bias ? 1.0 : 0.0) * rangeCheck;
         }
     }
-    occlusion = 1.0 - (occlusion / kernelSize);
+    occlusion = 1.0 - (occlusion*strength / kernelSize);
 
 
 

@@ -316,7 +316,7 @@ namespace Resources {
             }
 
             assimpFileRegistry.insert(std::make_pair(path, AssimpFile()));
-            assimpFileRegistry.at(path).load(scene);
+            assimpFileRegistry.at(path).load(scene, path.getParent());
         }
 
         return assimpFileRegistry.at(path);

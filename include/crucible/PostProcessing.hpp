@@ -30,7 +30,9 @@ private:
 
 public:
     float ssaoRadius = 4.0f;
-    int ssaoKernelSize = 8;
+    float strength = 1.0f;
+    int ssaoKernelSize = 6;
+    bool highQuality = true;
 
     SsaoPostProcessor();
 

@@ -97,8 +97,8 @@ int main() {
     Mesh torus2 = Primitives::torus(4.0f, 0.5f, 64, 64);
 
     // load meshes from disk
-	Mesh shaderBall = Resources::getAssimpFile("resources/shaderball.fbx").getMesh(0);
-	Mesh environment =  Resources::getAssimpFile("resources/environment.fbx").getMesh(0);
+	Mesh &shaderBall = Resources::getAssimpFile("resources/shaderball.fbx").getMesh(0);
+	Mesh &environment =  Resources::getAssimpFile("resources/environment.fbx").getMesh(0);
 
     // load materials from disk
 	Material &wood = Resources::getMaterial("resources/wood.crmaterial");

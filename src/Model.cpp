@@ -10,14 +10,14 @@
 #include <fstream>
 
 void Model::addSubmesh(const Mesh &mesh, const Material &material, const std::string &name) {
-    materials.push_back(material);
+    // materials.push_back(material);
 
-    ModelNode node;
-    node.mesh = mesh;
-    node.materialIndex = materials.size();
-    node.name = name;
+    // ModelNode node;
+    // node.mesh = mesh;
+    // node.materialIndex = materials.size();
+    // node.name = name;
 
-    nodes.push_back(node);
+    // nodes.push_back(node);
 }
 
 void Model::openFile(const Path &filename) {
@@ -54,14 +54,14 @@ void Model::fromJson(const json &j, const Path &workingDirectory) {
         json jMesh = jMeshes[i];
 
 
-        ModelNode node;
-        node.mesh.fromJson(jMesh["data"]);
-        node.mesh.generate();
+        // ModelNode node;
+        // node.mesh.fromJson(jMesh["data"]);
+        // node.mesh.generate();
 
-        node.materialIndex = jMesh["materialIndex"];
-        node.name = jMesh["name"];
+        // node.materialIndex = jMesh["materialIndex"];
+        // node.name = jMesh["name"];
 
-        nodes.push_back(node);
+        // nodes.push_back(node);
     }
 }
 
@@ -72,7 +72,7 @@ json Model::toJson(const Path &workingDirectory) const {
         ModelNode node = nodes[i];
         json jMesh;
         jMesh["name"] = node.name;
-        jMesh["data"] = node.mesh.toJson();
+        jMesh["data"] = node.mesh->toJson();
         jMesh["materialIndex"] = node.materialIndex;
 
         j["meshes"][i] = jMesh;

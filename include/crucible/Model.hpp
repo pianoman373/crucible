@@ -8,7 +8,7 @@
 #include <string>
 
 struct ModelNode {
-    Mesh mesh;
+    Mesh *mesh;
     int materialIndex;
     std::string name;
 };

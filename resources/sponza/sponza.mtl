@@ -1,0 +1,351 @@
+# Blender MTL File: 'None'
+# Material Count: 25
+
+newmtl Material__25
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Lion_Albedo.tga
+disp Lion_Normal.tga
+map_Bump Lion_Normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl Material__298
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Background_Albedo.tga
+disp Background_Normal.tga
+map_Bump Background_Normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl Material__47
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Material__57
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd VasePlant_diffuse_alpha.tga
+disp VasePlant_normal.tga
+map_Bump VasePlant_normal.tga
+map_Ks Dielectric_metallic.tga
+map_d vase_plant_mask.tga
+
+newmtl arch
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Arch_diffuse.tga
+disp Sponza_Arch_normal.tga
+map_Bump Sponza_Arch_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl bricks
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Bricks_a_Albedo.tga
+disp Sponza_Bricks_a_Normal.tga
+map_Bump Sponza_Bricks_a_Normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl ceiling
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Ceiling_diffuse.tga
+disp Sponza_Ceiling_normal.tga
+map_Bump Sponza_Ceiling_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl chain
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd ChainTexture_Albedo_alpha.tga
+disp ChainTexture_Normal.tga
+map_Bump ChainTexture_Normal.tga
+map_Ks ChainTexture_Metallic.tga
+map_d chain_texture_mask.tga
+
+newmtl column_a
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Column_a_diffuse.tga
+disp Sponza_Column_a_normal.tga
+map_Bump Sponza_Column_a_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl column_b
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Column_b_diffuse.tga
+disp Sponza_Column_b_normal.tga
+map_Bump Sponza_Column_b_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl column_c
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Column_c_diffuse.tga
+disp Sponza_Column_c_normal.tga
+map_Bump Sponza_Column_c_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl details
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Details_diffuse.tga
+disp Sponza_Details_normal.tga
+map_Bump Sponza_Details_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl fabric_a
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Fabric_Red_diffuse.tga
+disp Sponza_Fabric_Red_normal.tga
+map_Bump Sponza_Fabric_Red_normal.tga
+map_Ks Sponza_Fabric_metallic.tga
+
+newmtl fabric_c
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Curtain_Red_diffuse.tga
+disp Sponza_Curtain_Red_normal.tga
+map_Bump Sponza_Curtain_Red_normal.tga
+map_Ks Sponza_Curtain_metallic.tga
+
+newmtl fabric_d
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Fabric_Blue_diffuse.tga
+disp Sponza_Fabric_Blue_normal.tga
+map_Bump Sponza_Fabric_Blue_normal.tga
+map_Ks Sponza_Fabric_metallic.tga
+
+newmtl fabric_e
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Fabric_Green_diffuse.tga
+disp Sponza_Fabric_Green_normal.tga
+map_Bump Sponza_Fabric_Green_normal.tga
+map_Ks Sponza_Fabric_metallic.tga
+
+newmtl fabric_f
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Curtain_Green_diffuse.tga
+disp Sponza_Curtain_Green_normal.tga
+map_Bump Sponza_Curtain_Green_normal.tga
+map_Ks Sponza_Curtain_metallic.tga
+
+newmtl fabric_g
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Curtain_Blue_diffuse.tga
+disp Sponza_Curtain_Blue_normal.tga
+map_Bump Sponza_Curtain_Blue_normal.tga
+map_Ks Sponza_Curtain_metallic.tga
+
+newmtl flagpole
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_FlagPole_diffuse.tga
+disp Sponza_FlagPole_normal.tga
+map_Bump Sponza_FlagPole_normal.tga
+map_Ks Metallic_metallic.tga
+
+newmtl floor
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Floor_diffuse.tga
+disp Sponza_Floor_normal.tga
+map_Bump Sponza_Floor_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl leaf
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Thorn_diffuse_alpha.tga
+disp Sponza_Thorn_normal.tga
+map_Bump Sponza_Thorn_normal.tga
+map_Ks Dielectric_metallic.tga
+map_d sponza_thorn_mask.tga
+
+newmtl roof
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Sponza_Roof_diffuse.tga
+disp Sponza_Roof_normal.tga
+map_Bump Sponza_Roof_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl vase
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Vase_diffuse.tga
+disp Vase_normal.tga
+map_Bump Vase_normal.tga
+map_Ks Dielectric_metallic.tga
+
+newmtl vase_hanging
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd VaseHanging_diffuse.tga
+disp VaseHanging_normal.tga
+map_Bump VaseHanging_normal.tga
+map_Ks Metallic_metallic.tga
+
+newmtl vase_round
+Ns 9.803922
+Ka 0.588000 0.588000 0.588000
+Kd 0.588000 0.588000 0.588000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd VaseRound_diffuse.tga
+disp VaseRound_normal.tga
+map_Bump VaseRound_normal.tga
+map_Ks Dielectric_metallic.tga

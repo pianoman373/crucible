@@ -84,6 +84,7 @@ void SsaoPostProcessor::postProcess(const Camera &cam, const Framebuffer &source
 
     // render the g-buffers for SSAO
     // ---------------------------------------------
+    glViewport(0, 0, ssaoBuffer.getWidth(), ssaoBuffer.getHeight());
     ssaoBuffer.bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Resources::ssaoShader.bind();
@@ -99,14 +100,17 @@ void SsaoPostProcessor::postProcess(const Camera &cam, const Framebuffer &source
 
     Resources::ssaoShader.uniformMat4("projection", cam.getProjection());
     Resources::ssaoShader.uniformFloat("radius", ssaoRadius);
+    Resources::ssaoShader.uniformFloat("strength", strength);
     Resources::ssaoShader.uniformInt("kernelSize", ssaoKernelSize);
-    Resources::ssaoShader.uniformVec3("noiseScale",  vec3(resolution.x/4.0f, resolution.y/4.0f, 0.0f));
+
+    Resources::ssaoShader.uniformVec3("noiseScale",  vec3(ssaoBuffer.getWidth()/4.0f, ssaoBuffer.getHeight()/4.0f, 0.0f));
 
     for (int i = 0; i < ssaoKernelSize; i++) {
         Resources::ssaoShader.uniformVec3(std::string("samples[") + std::to_string(i) + std::string("]"), ssaoKernel[i]);
     }
     Resources::framebufferMesh.render();
 
+    glViewport(0, 0, resolution.x, resolution.y);
     destination.bind();
     Resources::ssaoBlurShader.bind();
     ssaoBuffer.getAttachment(0).bind(0);
@@ -120,7 +124,13 @@ void SsaoPostProcessor::resize() {
     vec2i resolution = Renderer::getResolution();
 
     ssaoBuffer.destroy();
-    ssaoBuffer.setup(resolution.x, resolution.y);
+    if (highQuality) {
+        ssaoBuffer.setup(resolution.x, resolution.y);
+    }
+    else {
+        ssaoBuffer.setup(resolution.x/2, resolution.y/2);
+    }
+    
     ssaoBuffer.attachTexture(GL_RED, GL_RED, GL_UNSIGNED_BYTE);
 }
 

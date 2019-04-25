@@ -119,6 +119,11 @@ if (CRUCIBLE_BUILD_EXAMPLES)
     add_dependencies(LightSourcesDemo crucible)
     target_link_libraries(LightSourcesDemo crucible)
     set_target_properties(LightSourcesDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
+    add_executable(SponzaDemo examples/SponzaDemo.cpp)
+    add_dependencies(SponzaDemo crucible)
+    target_link_libraries(SponzaDemo crucible)
+    set_target_properties(SponzaDemo PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 

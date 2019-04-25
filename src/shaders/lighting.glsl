@@ -196,9 +196,64 @@ float ShadowCalculation(float bias, vec4 fragPosLightSpace, sampler2D shadowMap)
     float shadow = currentDepth- bias > closestDepth  ? 1.0 : 0.0;
 
     return 1.0-shadow;
-//
-//float visibility = 1.0;
-//visibility -= (1.0-texture(shadowMap, vec3(fragPosLightSpace.xy, (fragPosLightSpace.z)/fragPosLightSpace.w-bias) ));
-//return clamp(visibility, 0, 1);
 }
+
+float ShadowCalculation(float bias, vec4 fragPosLightSpace, vec2 offset, sampler2D shadowMap)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy+offset).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth- bias > closestDepth  ? 1.0 : 0.0;
+
+    return 1.0-shadow;
+}
+
+// all credit for these functions goes to http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping/
+// ---------------------------------------------------------------------------------------------------
+float texture2DCompare(sampler2D depths, vec2 uv, float compare){
+    float depth = texture2D(depths, uv).r;
+    return step(compare, depth);
+}
+
+float texture2DShadowLerp(sampler2D depths, vec2 size, vec2 uv, float compare){
+    vec2 texelSize = vec2(1.0)/size;
+    vec2 f = fract(uv*size+0.5);
+    vec2 centroidUV = floor(uv*size+0.5)/size;
+
+    float lb = texture2DCompare(depths, centroidUV+texelSize*vec2(0.0, 0.0), compare);
+    float lt = texture2DCompare(depths, centroidUV+texelSize*vec2(0.0, 1.0), compare);
+    float rb = texture2DCompare(depths, centroidUV+texelSize*vec2(1.0, 0.0), compare);
+    float rt = texture2DCompare(depths, centroidUV+texelSize*vec2(1.0, 1.0), compare);
+    float a = mix(lb, lt, f.y);
+    float b = mix(rb, rt, f.y);
+    float c = mix(a, b, f.x);
+    return c;
+}
+
+//slightly modified to use poisson sampling
+float PCF(sampler2D depths, vec2 size, vec2 uv, float compare, float shadowRadius){
+    float result = 0.0;
+    
+        for(int index=0; index < 8; index++){
+            vec2 off = poissonDisk[index]/shadowRadius*0.05;
+            result += texture2DShadowLerp(depths, size, uv+off, compare);
+        }
+    
+    return result/9.0;
+}
+// ---------------------------------------------------------------------------------------------------
+
+float ShadowCalculationLinear(float bias, vec4 fragPosLightSpace, sampler2D shadowMap, float shadowRadius) {
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+
+    return PCF(shadowMap,textureSize(shadowMap, 0), projCoords.xy, projCoords.z-bias, shadowRadius);
+}
+
+
 #endif

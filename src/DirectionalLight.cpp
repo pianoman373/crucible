@@ -11,7 +11,7 @@ Camera DirectionalLight::getShadowCamera(float radius, const Camera &cam, float 
     ret.position = cam.getPosition();
     ret.direction = m_direction;
     ret.up = vec3(0.0f, 1.0f, 0.0f);
-    ret.dimensions = vec2(radius*2.0f, radius*2.0f);
+    ret.dimensions = vec2(radius*1.01*2.0f, radius*1.01*2.0f);
 
     ret.orthographic = true;
     
@@ -20,7 +20,7 @@ Camera DirectionalLight::getShadowCamera(float radius, const Camera &cam, float 
 
 Frustum DirectionalLight::getShadowFrustum(float radius, const Camera &cam, float depth) {
 	Frustum shadowFrustum;
-	shadowFrustum.setupInternalsOrthographic(-radius, radius, -radius, radius, -depth, depth);
+	shadowFrustum.setupInternalsOrthographic(-radius*1.01, radius*1.01, -radius*1.01, radius*1.01, -depth, depth);
 	Camera shadowCam;
 	shadowCam.setPosition(cam.getPosition());
 	shadowCam.setDirection(m_direction);
@@ -86,7 +86,7 @@ DirectionalLight::DirectionalLight(vec3 direction, vec3 color, int shadowResolut
         m_shadowDistances.push_back((d - nearClip));
     }
 
-    m_shadowDepth = m_shadowDistances[m_shadowDistances.size()];
+    m_shadowDepth = m_shadowDistances.back();
 }
 
 DirectionalLight::DirectionalLight(vec3 direction, vec3 color, int shadowResolution, std::vector<float> distances) {
