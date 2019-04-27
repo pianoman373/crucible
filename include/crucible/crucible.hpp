@@ -19,3 +19,4 @@
 #include <crucible/GameObject.hpp>
 #include <crucible/RigidBody.hpp>
 #include <crucible/AssimpFile.hpp>
+#include <crucible/ParticleSystem.hpp>

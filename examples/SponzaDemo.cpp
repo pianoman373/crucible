@@ -1,5 +1,7 @@
 #include <crucible/crucible.hpp>
 
+#include <glad/glad.h>
+
 int main() {
     // set up renderer
 	Window::create({ 1280, 720 }, "Sponza Demo", false, false);

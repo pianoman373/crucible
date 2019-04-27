@@ -76,6 +76,7 @@ static void load() {
     Resources::brdfShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_brdf_glsl).data());
 
     Resources::debugShader.load(LOAD_RESOURCE(src_shaders_debug_vsh).data(), LOAD_RESOURCE(src_shaders_debug_fsh).data());
+    Resources::particleShader.load(LOAD_RESOURCE(src_shaders_particle_vsh).data(), LOAD_RESOURCE(src_shaders_particle_fsh).data(), LOAD_RESOURCE(src_shaders_particle_gsh).data());
 
     Resources::tonemapShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_tonemap_glsl).data());
     Resources::fxaaShader.loadPostProcessing(LOAD_RESOURCE(src_shaders_fxaa_glsl).data());
@@ -168,6 +169,7 @@ namespace Resources {
     Shader deferredDirectionalShader;
     
     Shader debugShader;
+    Shader particleShader;
 
     Shader tonemapShader;
     Shader fxaaShader;

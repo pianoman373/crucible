@@ -58,6 +58,7 @@ static void iterateCommandBuffer(std::vector<RenderCall> &buffer, const Camera &
             s.bind();
             call.material->bindUniforms();
 
+            s.uniformVec3("cameraPos", cam.position);
             s.uniformMat4("view", cam.getView());
             s.uniformMat4("projection", cam.getProjection());
 

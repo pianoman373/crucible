@@ -21,6 +21,11 @@ struct UniformCubemap {
     unsigned int unit;
 };
 
+enum class BlendType {
+    NORMAL,
+    ADDITIVE
+};
+
 /**
  * Stores a list of uniforms to pass on to a shader. Unlike Textures and Shaders, Materials store all their data in
  * object memory itself. This makes passing Materials by value expensive compared to Shaders and Textures.
@@ -42,6 +47,7 @@ private:
 public:
 	std::string name;
     bool deferred = true;
+    BlendType blendType = BlendType::NORMAL;
 
     Material();
 

@@ -1122,3 +1122,12 @@ namespace std
         }
     };
 }
+
+
+inline float randf() {
+    return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+}
+
+inline float srandf() {
+    return ((static_cast <float> (rand()) / static_cast <float> (RAND_MAX)) * 2.0f) - 1.0f;
+}
