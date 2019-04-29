@@ -8,6 +8,9 @@ public:
     vec3 direction = vec3(0.0f, 0.0f, -1.0f);
     vec3 up = vec3(0.0f, 1.0f, 0.0f);
 
+    float nearPlane = 0.1f;
+    float farPlane = 10000.0f;
+
     float fov = 70.0f;
 
     /** If true, no perspective will be used, and the output will be "2D" **/

@@ -13,6 +13,9 @@ Camera DirectionalLight::getShadowCamera(float radius, const Camera &cam, float 
     ret.up = vec3(0.0f, 1.0f, 0.0f);
     ret.dimensions = vec2(radius*1.01*2.0f, radius*1.01*2.0f);
 
+    ret.nearPlane = -depth;
+    ret.farPlane = depth;
+
     ret.orthographic = true;
     
     return ret;
@@ -86,7 +89,7 @@ DirectionalLight::DirectionalLight(vec3 direction, vec3 color, int shadowResolut
         m_shadowDistances.push_back((d - nearClip));
     }
 
-    m_shadowDepth = m_shadowDistances.back();
+    m_shadowDepth = farDistance;
 }
 
 DirectionalLight::DirectionalLight(vec3 direction, vec3 color, int shadowResolution, std::vector<float> distances) {

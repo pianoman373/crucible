@@ -42,11 +42,11 @@ mat4 Camera::getProjection() const {
     vec2 size = dimensions;
 
     if (this->orthographic) {
-        return ::orthographic(-size.x/2.0f, size.x/2.0f, -size.y/2.0f, size.y/2.0f, -100.0f, 100.0f);
+        return ::orthographic(-size.x/2.0f, size.x/2.0f, -size.y/2.0f, size.y/2.0f, nearPlane, farPlane);
     }
     else {
 
-        return perspective(fov, size.x / size.y, 0.1f, 10000.0f);
+        return perspective(fov, size.x / size.y, nearPlane, farPlane);
     }
 }
 
