@@ -21,4 +21,4 @@ An OpenGL base game engine created for educational purposes. Some features of th
 
 ![example 1](images/crucible-1.png "example 1")
 ![example 2](images/crucible-2.png "example 2")
-![example 3](images/crucible-3.png "example 3")
+![example 3](images/crucible-3.PNG "example 3")
