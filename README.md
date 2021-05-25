@@ -9,7 +9,7 @@ An OpenGL base game engine created for educational purposes. Some features of th
 * Queue based rendering architecture with draw calls being submitted to the queue
 * Runtime-Baked global illumination using light probes
 * Cascaded shadow mapping with multiple filtering modes
-* Post processing stack support, with built in shaders for tonemapping, ambient occlusion, bloom, FXAA, and experimental screen space reflections.
+* Post processing stack support, with built in shaders for tonemapping, ambient occlusion, bloom, and FXAA
 * Scene rendering with physics using the Bullet Physics library
 * Easy to use custom vector math library with built in operator support
 * Loading Material definitions from disk using a JSON based file format
